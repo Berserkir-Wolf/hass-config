@@ -2,9 +2,7 @@
   - platform: wake_on_lan
     name: WOL_lounge
     mac: !secret lounge_mac
-"74:D4:35:EF:F5:05"
     host: !secret lounge_host
-192.168.10.60
     turn_off:
       service: hassio.addon_stdin
       data:

@@ -1,0 +1,1 @@
+bash /usr/share/hassio/homeassistant/system_scripts/update_config_from_github.sh
