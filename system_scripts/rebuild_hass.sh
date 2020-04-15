@@ -38,8 +38,5 @@ rm ~/hacs.zip
 echo 'Pulling latest hassio installer script and installing'
 curl -sL https://raw.githubusercontent.com/home-assistant/installer/master/installer.sh | bash -s # Pulls latest install script and pipes to bash
 
-echo 'Updating DNS container'
-ha dns update # Just in case
-
 echo "Supervisor will launch the HAss containers shortly, including your configured addons."
 echo "Done."
