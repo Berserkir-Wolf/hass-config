@@ -25,6 +25,8 @@ html5_push_registrations.conf
 ip_bans.yaml
 known_devices.yaml
 secrets.yaml
+zones/home.yaml
+zones/work.yaml
 
 # Ignore files created by IDE's
 .vscode
