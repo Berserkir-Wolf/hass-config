@@ -29,7 +29,7 @@ frontend:
   themes: !include_dir_merge_named themes
 
 ## Includes
-# All Files in Folder
+# All Files in Folder (save each type in the relevant directory)
 device_tracker: !include_dir_merge_list device_trackers
 group: !include_dir_merge_list groups
 notify: !include_dir_merge_list notify
@@ -41,8 +41,8 @@ zone: !include_dir_merge_list zones
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
-# Specific Integration types (save all under sensors/%name%.yaml)
-#influxdb: !include individuals/influxdb.yaml
+# Specific Integration types (save all under individuals/%name%.yaml)
+#influxdb: !include individuals/influxdb.yaml #disabled for system load
 nzbget: !include individuals/nzbget.yaml
 ombi: !include individuals/ombi.yaml
 spotify: !include individuals/spotify.yaml
