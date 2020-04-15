@@ -1,0 +1,6 @@
+# NZBGet Template
+#- platform: template
+sensors:
+  nzbget_uptime_hours:
+    value_template:  >-
+      {{  (states.sensor.nzbget_uptime.state.split(" ")[0] | int *60 ) | timestamp_custom("%H:%M hours") }}

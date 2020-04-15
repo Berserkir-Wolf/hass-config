@@ -1,0 +1,7 @@
+## Unifi AP Connected Devices
+  - platform: my_unifi
+    name: Unifi_Clients
+    region: default
+    username: !secret unifi_user
+    password: !secret unifi_pass
+    url: !secret unifi_url

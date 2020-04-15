@@ -1,0 +1,21 @@
+carbon-green: 
+  #Color List
+  make-light-carbon: "#93A5AB"
+  make-carbon: "#111924"
+  make-grey: "#DEE5E7"
+  make-green: "#C2DD08"
+  make-blue: "#00A3DA"
+  make-red: "#EC5D57"
+  make-yellow: "#FCF933"
+  make-orange: "#E49D64"
+  make-white: "#FFFFFF"
+  make-disable: "#bdbdbd"
+  light-primary-color: "var(make-light-carbon)"
+  background-color: "var(--make-grey)"
+  dark-primary-color: "var(-make-carbon)"
+  #Main Colors
+  primary-background-color: "var(--make-light-carbon)" #Background color settings
+  secondary-background-color: "var(--make-grey)" #Background tabs
+  primary-text-color: "var(--make-carbon)" #Primary Text 
+  secondary-text-color: "var(--make-green)" #sub text etc.
+

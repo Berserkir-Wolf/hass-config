@@ -1,0 +1,6 @@
+all_lights:
+  name: All Lights
+  entities:
+    - light.bedroom
+    - light.lounge
+    - light.office

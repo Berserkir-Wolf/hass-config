@@ -1,0 +1,16 @@
+###########################################
+# TV Sensors
+###########################################
+  - platform: sonarr
+    api_key: !secret sonarr_api
+    host: !secret sonarr_host
+    urlbase: !secret sonarr_baseurl
+    port: !secret sonarr_port
+    days: 1
+    monitored_conditions:
+      - upcoming
+      - series
+      - wanted
+      - queue
+    unit: TB
+

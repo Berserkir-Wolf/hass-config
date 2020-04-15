@@ -1,0 +1,8 @@
+# Influx
+  host: !secret influx_host
+  port: !secret influx_port
+  database: !secret influxdb
+  username: !secret influx_username
+  password: !secret influx_password
+  max_retries: 3
+  default_measurement: state

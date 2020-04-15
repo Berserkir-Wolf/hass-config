@@ -1,0 +1,20 @@
+###########################################
+# Steam
+###########################################
+  - platform: steam_online
+    api_key: !secret steam_api_key
+    accounts:
+      - 76561198056470571
+      - 76561198120534583
+      - 76561197970574113
+      - 76561197992785642
+      - 76561198039654892
+      - 76561198151879355
+
+#Game template
+#  - platform: template
+#    sensors:
+#      steam_game:
+#        friendly_name: "Game"
+#        value_template: "{{ states.sensor.steam_76561198056470571.attributes.game }}"
+

@@ -1,0 +1,10 @@
+# https://home-assistant.io/components/switch.wake_on_lan/
+  - platform: wake_on_lan
+    mac: "AC-9E-17-49-CE-5E"
+    name: WOL_duplica
+    host: 192.168.10.30
+    turn_off:
+      service: hassio.addon_stdin
+      data:
+        addon: core_rpc_shutdown
+        input: duplica.table.berserkir.net

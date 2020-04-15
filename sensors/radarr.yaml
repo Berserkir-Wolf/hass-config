@@ -1,0 +1,14 @@
+###########################################
+# Movie Sensors
+###########################################
+  - platform: radarr
+    api_key: !secret radarr_api
+    host: !secret radarr_host
+    urlbase: !secret radarr_baseurl
+    port: !secret radarr_port
+    days: 1
+    monitored_conditions:
+      - upcoming
+      - movies
+      - diskspace
+    unit: TB

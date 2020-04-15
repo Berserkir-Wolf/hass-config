@@ -1,0 +1,14 @@
+# NZBGet Sensor
+#- platform: nzbget
+  name: NZBGet
+  host: !secret nzbget_host
+  port: !secret nzbget_port
+  username: !secret nzbget_username
+  password: !secret nzbget_password
+
+# NZBGet Template
+#- platform: template
+#  sensors:
+#    nzbget_uptime_hours:
+#        value_template:  >-
+#          {{  (states.sensor.nzbget_uptime.state.split(" ")[0] | int *60 ) | timestamp_custom("%H:%M hours") }}

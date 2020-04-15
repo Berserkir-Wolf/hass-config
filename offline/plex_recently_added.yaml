@@ -1,0 +1,27 @@
+## For Plex recently added
+  - platform: plex_recently_added
+    name: Recently Added to Plex
+    token: !secret plex_token
+    host: !secret plex_host
+    port: 32400
+    ssl: true
+
+## Recently added TV
+  - platform: plex_recently_added
+    name: Recently Added TV
+    token: !secret plex_token
+    host: !secret plex_host
+    port: 32400
+    ssl: true
+    section_types:
+    - show
+
+## Recently added Movies
+  - platform: plex_recently_added
+    name: Recently Added movies
+    token: !secret plex_token
+    host: !secret plex_host
+    port: 32400
+    ssl: true
+    section_types:
+    - movie

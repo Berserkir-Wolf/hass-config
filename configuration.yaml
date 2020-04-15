@@ -1,0 +1,54 @@
+
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+# Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+  http:
+    base_url: !secret base_url
+    use_x_forwarded_for: true
+
+## Simple Components
+map:
+sun:
+met:
+wake_on_lan:
+
+## Complex Components
+# Text to speech
+tts:
+  - platform: google_translate
+    service_name: google_say
+# HTTP
+http:
+  base_url: !secret base_url
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - !secret trusted_proxy1
+    - !secret trusted_proxy2
+## Frontend
+frontend:
+  themes: !include_dir_merge_named themes
+
+## Includes
+# All Files in Folder
+device_tracker: !include_dir_merge_list device_trackers
+group: !include_dir_merge_list groups
+notify: !include_dir_merge_list notify
+pi_hole: !include_dir_merge_list pihole
+sensor: !include_dir_merge_list sensors
+switch: !include_dir_merge_list switches
+zone: !include_dir_merge_list zones
+# Single Files
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+# Specific Integration types (save all under sensors/%name%.yaml)
+#influxdb: !include individuals/influxdb.yaml
+nzbget: !include individuals/nzbget.yaml
+ombi: !include individuals/ombi.yaml
+spotify: !include individuals/spotify.yaml
+
+#################################################################
+## Testing functions
+#template: !include_dir_merge_named templates
+#template: !include_dir_merge_list templates
+#camera: !include individuals/unifi_video.yaml

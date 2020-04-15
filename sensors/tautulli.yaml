@@ -1,0 +1,26 @@
+###########################################
+# Tautulli
+###########################################
+  - platform: tautulli
+    api_key: !secret tautulli_api
+    host: !secret tautulli_host
+    port: !secret tautulli_port
+    path: !secret tautulli_baseurl
+
+  - platform: template
+    sensors:
+      plexlanbandwidth:
+        value_template: '{{ states.sensor.tautulli.attributes.lan_bandwidth / 1024 }}'
+      plexwanbandwidth:
+        value_template: '{{ states.sensor.tautulli.attributes.wan_bandwidth / 1024 }}'
+      plextotalbandwidth:
+        value_template: '{{ states.sensor.tautulli.attributes.total_bandwidth / 1024 }}'
+      plexlanbandwidthrounded:
+        value_template: "{{ states('sensor.plexlanbandwidth') | round(2) }}"
+        unit_of_measurement: 'Mbps'
+      plexwanbandwidthrounded:
+        value_template: "{{ states('sensor.plexwanbandwidth') | round(2)  }}"
+        unit_of_measurement: 'Mbps'
+      plextotalbandwidthrounded:
+        value_template: "{{ states('sensor.plextotalbandwidth') | round(2)  }}"
+        unit_of_measurement: 'Mbps'

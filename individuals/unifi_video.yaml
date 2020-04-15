@@ -1,0 +1,6 @@
+###########################################
+# Unifi Video
+###########################################
+  - platform: uvc
+    nvr: !secret uvc_host
+    key: !secret uvc_api

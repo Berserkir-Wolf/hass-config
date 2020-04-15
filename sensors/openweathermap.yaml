@@ -1,0 +1,20 @@
+## Test URL
+# https://api.openweathermap.org/data/2.5/weather?q=gisborne,nz&appid=b41528f594f683a95312879e2df9836a&units=metric&mode=xml
+
+## For OpenWeatherMap
+  - platform: openweathermap
+    name: OWM
+    api_key: !secret owm_apikey
+    forecast: true
+    monitored_conditions:
+      - weather
+      - temperature
+      - wind_speed
+      - wind_bearing
+      - humidity
+      - rain
+      - snow
+      - pressure
+      - clouds
+      - weather_code
+

@@ -1,0 +1,17 @@
+- id: '1584476995764'
+  alias: Notify me if Kirstyn arrives when I am not at home
+  description: ''
+  trigger:
+  - entity_id: person.kirstyn_rolfe
+    event: enter
+    platform: zone
+    zone: zone.home
+  condition: []
+  action:
+  - data:
+      data:
+        priority: medium
+        ttl: 10
+      message: Kirstyn just arrived
+      title: Kirstyn's Home
+    service: notify.html5_notifications_workpc
