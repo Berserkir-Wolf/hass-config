@@ -1,10 +1,10 @@
 # https://home-assistant.io/components/switch.wake_on_lan/
   - platform: wake_on_lan
-    mac: "FC:AA:14:56:F2:85"
     name: WOL_workstation
-    host: 192.168.10.61
+    mac: !secret workstation_mac
+    host: !secret workstation_ip
     turn_off:
       service: hassio.addon_stdin
       data:
         addon: core_rpc_shutdown
-        input: workstation
+        input: !secret workstation_host

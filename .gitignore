@@ -10,9 +10,12 @@ __pycache__
 # Directory (contents) ignores
 .cloud
 .storage
-deps
 custom_components
+development
 device_trackers
+deps
+tts
+zones
 
 # Specific file ignores
 .config_entries.json
