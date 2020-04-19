@@ -1,5 +1,5 @@
 # Influx
-  host: !secret influx_host
+  host: !secret server_2_ip
   port: !secret influx_port
   database: !secret influxdb
   username: !secret influx_username

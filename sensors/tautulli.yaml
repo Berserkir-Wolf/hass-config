@@ -3,7 +3,7 @@
 ###########################################
   - platform: tautulli
     api_key: !secret tautulli_api
-    host: !secret tautulli_host
+    host: !secret server_1_ip
     port: !secret tautulli_port
     path: !secret tautulli_baseurl
 

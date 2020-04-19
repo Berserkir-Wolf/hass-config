@@ -3,7 +3,7 @@
 ###########################################
   - platform: radarr
     api_key: !secret radarr_api
-    host: !secret radarr_host
+    host: !secret server_1_ip
     urlbase: !secret radarr_baseurl
     port: !secret radarr_port
     days: 1

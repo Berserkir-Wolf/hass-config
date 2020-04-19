@@ -1,7 +1,7 @@
 # NZBGet Sensor
 #- platform: nzbget
   name: NZBGet
-  host: !secret nzbget_host
+  host: !secret server_1_ip
   port: !secret nzbget_port
   username: !secret nzbget_username
   password: !secret nzbget_password
