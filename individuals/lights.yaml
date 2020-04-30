@@ -1,0 +1,6 @@
+  - platform: group
+    name: All Lights
+    entities:
+      - light.bedroom
+      - light.lounge
+      - light.office

@@ -44,6 +44,7 @@ script: !include scripts.yaml
 scene: !include scenes.yaml
 # Specific Integration types (save all under individuals/%name%.yaml)
 #influxdb: !include individuals/influxdb.yaml #disabled for system load
+light: !include individuals/lights.yaml
 nzbget: !include individuals/nzbget.yaml
 ombi: !include individuals/ombi.yaml
 spotify: !include individuals/spotify.yaml
