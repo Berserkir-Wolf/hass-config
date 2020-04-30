@@ -1,9 +1,6 @@
-title: Home
+title: BNet
 views:
-  - icon: 'mdi:home'
-    path: home
-    title: Home
-    badges: []
+  - badges: []
     cards:
       - card:
           show_header_toggle: true
@@ -30,7 +27,7 @@ views:
             name: Lounge Light
           - entity: switch.wol_lounge
             name: Lounge PC
-          - entity: media_player.lounge_ps4
+          - entity: media_player.living_room_ps4
           - entity: device_tracker.loungeap
             icon: 'mdi:access-point-network'
             name: UniFi AP-AC-In Wall
@@ -46,6 +43,9 @@ views:
           - entity: switch.wol_workstation
             icon: 'mdi:desktop-classic'
             name: Gaming Rig
+          - entity: switch.wol_shif
+            icon: 'mdi:desktop-classic'
+            name: Shif (NUC)
         show_header_toggle: false
         title: Office
         type: entities
@@ -57,7 +57,9 @@ views:
             icon: 'mdi:desktop-tower'
             name: Primary Server
           - entity: sensor.mikrotik_router_kib_sec_received
+            name: Routerboard Traffic (RX)
           - entity: sensor.mikrotik_router_kib_sec_sent
+            name: Routerboard Traffic (TX)
         show_header_toggle: false
         title: Server Rack
         type: entities
@@ -70,6 +72,9 @@ views:
         show_header_toggle: false
         title: Yard
         type: entities
+    icon: 'mdi:home'
+    path: home
+    title: Home
   - badges:
       - entity: sensor.plex_berserkirnet
         name: Plex Streams
@@ -316,16 +321,17 @@ views:
     path: location
     title: Location
   - badges:
-      - entity: switch.wol_workstation
       - entity: switch.wol_duplica
       - entity: switch.wol_lounge
+      - entity: switch.wol_shif
+      - entity: switch.wol_workstation
     cards:
       - cards:
-          - entity: switch.wol_workstation
+          - entity: switch.wol_duplica
             hold_action:
               action: more-info
-            icon: 'mdi:desktop-classic'
-            name: Workstation
+            icon: 'mdi:desktop-tower'
+            name: Duplica
             show_icon: true
             show_name: true
             tap_action:
@@ -335,17 +341,27 @@ views:
             hold_action:
               action: more-info
             icon: 'mdi:desktop-mac'
-            name: Duplica
+            name: HTPC
             show_icon: true
             show_name: true
             tap_action:
               action: toggle
             type: entity-button
-          - entity: switch.wol_duplica
+          - entity: switch.wol_shif
             hold_action:
               action: more-info
-            icon: 'mdi:desktop-tower'
-            name: Duplica
+            icon: 'mdi:desktop-mac'
+            name: Shif
+            show_icon: true
+            show_name: true
+            tap_action:
+              action: toggle
+            type: entity-button
+          - entity: switch.wol_workstation
+            hold_action:
+              action: more-info
+            icon: 'mdi:desktop-classic'
+            name: Workstation
             show_icon: true
             show_name: true
             tap_action:
@@ -505,13 +521,22 @@ views:
                 type: picture-entity
             type: horizontal-stack
         type: vertical-stack
+      - type: entities
+        entities:
+          - entities:
+              - light.bedroom
+              - light.lounge
+              - light.office
+            head: light.all_lights
+            type: 'custom:fold-entity-row'
     icon: 'mdi:dev-to'
     panel: false
     path: testing
     title: Testing
-  - icon: 'mdi:cctv'
+  - badges: []
+    cards: []
+    icon: 'mdi:cctv'
     panel: false
     path: video
     title: Video
-    badges: []
-    cards: []
+ 
