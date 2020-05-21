@@ -56,9 +56,9 @@ views:
           - entity: switch.wol_duplica
             icon: 'mdi:desktop-tower'
             name: Primary Server
-          - entity: sensor.mikrotik_router_kib_sec_received
+          - entity: sensor.mikrotik_router_kib_s_received
             name: Routerboard Traffic (RX)
-          - entity: sensor.mikrotik_router_kib_sec_sent
+          - entity: sensor.mikrotik_router_kib_s_sent
             name: Routerboard Traffic (TX)
         show_header_toggle: false
         title: Server Rack
@@ -138,15 +138,18 @@ views:
     path: media
     theme: Backend-selected
     title: Media
-  - badges:
-      - entity: sensor.mikrotik_router_kib_sec_received
-      - entity: sensor.mikrotik_router_kib_sec_sent
+  - icon: 'mdi:network'
+    path: network
+    title: Network
+    badges:
+      - entity: sensor.mikrotik_router_kib_s_received
+      - entity: sensor.mikrotik_router_kib_s_sent
       - entity: sensor.pi_hole_dns_queries_today
       - entity: sensor.pi_hole_ads_blocked_today
     cards:
       - cards:
           - cards:
-              - entity: sensor.mikrotik_router_kib_sec_sent
+              - entity: sensor.mikrotik_router_kib_s_sent
                 max: 40000
                 min: 0
                 name: WAN TX
@@ -155,7 +158,7 @@ views:
                   red: 35000
                   yellow: 25000
                 type: gauge
-              - entity: sensor.mikrotik_router_kib_sec_received
+              - entity: sensor.mikrotik_router_kib_s_received
                 max: 40000
                 min: 0
                 name: WAN RX
@@ -286,9 +289,6 @@ views:
             type: entities
         title: UniFi Access Point Status
         type: vertical-stack
-    icon: 'mdi:network'
-    path: network
-    title: Network
   - badges: []
     cards:
       - dark_mode: false
@@ -521,14 +521,14 @@ views:
                 type: picture-entity
             type: horizontal-stack
         type: vertical-stack
-      - type: entities
-        entities:
+      - entities:
           - entities:
               - light.bedroom
               - light.lounge
               - light.office
             head: light.all_lights
             type: 'custom:fold-entity-row'
+        type: entities
     icon: 'mdi:dev-to'
     panel: false
     path: testing
@@ -539,4 +539,4 @@ views:
     panel: false
     path: video
     title: Video
- 
+
