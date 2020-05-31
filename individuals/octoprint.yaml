@@ -1,0 +1,2 @@
+host: !secret rpi_3b_ip
+api_key: !secret octoprint_api
