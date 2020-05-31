@@ -1,0 +1,2 @@
+shell_command:
+  llconvert: python /config/tools/lovelace_convert.py

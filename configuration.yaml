@@ -12,6 +12,11 @@ met:
 wake_on_lan:
 
 ## Complex Components
+#Custom config directives
+homeassistant:
+  whitelist_external_dirs:
+    - /config/.storage
+
 # Text to speech
 tts:
   - platform: google_translate
@@ -29,6 +34,7 @@ frontend:
 ## Includes
 # All Files in Folder (save each type in the relevant directory)
 device_tracker: !include_dir_merge_list device_trackers
+folder_watcher: !include_dir_merge_list folder_watchers
 group: !include_dir_merge_list groups
 notify: !include_dir_merge_list notify
 pi_hole: !include_dir_merge_list pihole
