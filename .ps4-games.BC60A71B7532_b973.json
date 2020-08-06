@@ -4,5 +4,11 @@
         "media_content_type": "game",
         "media_image_url": "https://store.playstation.com/store/api/chihiro/00_09_000/container/NZ/en/19/EP1018-CUSA00135_00-BAKPREORDER00001/1595033698000/image",
         "media_title": "Batman: Arkham Knight"
+    },
+    "CUSA13323": {
+        "locked": false,
+        "media_content_type": "game",
+        "media_image_url": "https://store.playstation.com/store/api/chihiro/00_09_000/container/NZ/en/19/EP9000-CUSA13323_00-GHOSTSHIP0000000/1596330416000/image",
+        "media_title": "Ghost of Tsushima"
     }
 }

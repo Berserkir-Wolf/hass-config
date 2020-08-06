@@ -9,12 +9,14 @@
   condition: []
   action:
   - data:
-      data:
-        priority: medium
-        ttl: 10
       message: Kirstyn just arrived
       title: Kirstyn's Home
     service: notify.html5_notifications_workpc
+  - data:
+      message: Kirstyn just arrived
+      title: Kirstyn's Home
+    service: notify.mobile_app_g8142
+  mode: single
 - id: '1590888183776'
   alias: Convert Lovelace configuration to yaml
   description: ''
@@ -25,4 +27,4 @@
     platform: event
   condition: []
   action:
-    - service: shell_command.llconvert
+  - service: shell_command.llconvert
