@@ -45,7 +45,7 @@ automation: !include automations.yaml
 # Single Files
 script: !include scripts.yaml
 scene: !include scenes.yaml
-shell_commands: !include individuals/shell_commands.yaml
+shell_command: !include individuals/shell_commands.yaml
 # Specific Integration types (save all under individuals/%name%.yaml)
 #influxdb: !include individuals/influxdb.yaml #disabled for system load
 light: !include individuals/lights.yaml
