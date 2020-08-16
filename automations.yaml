@@ -28,3 +28,13 @@
   condition: []
   action:
   - service: shell_command.llconvert
+- id: '1597613199016'
+  alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
+  initial_state: "on"
+  description: Convert lovelace.json to lovelace-ui.yaml
+  trigger:
+  - entity_id: sensor.lovelace
+    platform: state
+  action:
+  - service: shell_command.convert_lovelace
+  mode: single

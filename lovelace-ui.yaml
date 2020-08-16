@@ -1,542 +1,545 @@
 title: BNet
 views:
-  - badges: []
-    cards:
-      - card:
-          show_header_toggle: true
-          title: Lights
-          type: entities
-        filter:
-          include:
-            - domain: light
-        show_empty: true
-        sort: name
-        type: 'custom:auto-entities'
-        unique: false
-      - entities:
-          - entity: light.bedroom
-            name: Bedroom Light
-          - entity: media_player.bedroom_ps4
-          - entity: device_tracker.lifx_a19_250df0
-            icon: 'mdi:lightbulb'
-        show_header_toggle: false
-        title: Bedroom
-        type: entities
-      - entities:
-          - entity: light.lounge
-            name: Lounge Light
-          - entity: switch.wol_lounge
-            name: Lounge PC
-          - entity: media_player.living_room_ps4
-          - entity: device_tracker.loungeap
-            icon: 'mdi:access-point-network'
-            name: UniFi AP-AC-In Wall
-          - entity: device_tracker.lifx_a19_250e30
-            icon: 'mdi:lightbulb'
-        show_header_toggle: false
-        title: Living Room
-        type: entities
-      - entities:
-          - entity: device_tracker.officeap
-            icon: 'mdi:access-point-network'
-            name: Unifi AP-AC-LR
-          - entity: switch.wol_workstation
-            icon: 'mdi:desktop-classic'
-            name: Gaming Rig
-          - entity: switch.wol_shif
-            icon: 'mdi:desktop-classic'
-            name: Shif (NUC)
-        show_header_toggle: false
-        title: Office
-        type: entities
-      - entities:
-          - entity: switch.wol_duplica
-            icon: 'mdi:desktop-tower'
-            name: Replica Server
-          - entity: switch.wol_duplica
-            icon: 'mdi:desktop-tower'
-            name: Primary Server
-          - entity: sensor.mikrotik_router_kib_s_received
-            name: Routerboard Traffic (RX)
-          - entity: sensor.mikrotik_router_kib_s_sent
-            name: Routerboard Traffic (TX)
-        show_header_toggle: false
-        title: Server Rack
-        type: entities
-      - entity: weather.home
-        type: weather-forecast
-      - entities:
-          - entity: device_tracker.outdoorap
-            icon: 'mdi:access-point-network'
-            name: Unifi AP-Outdoor+
-        show_header_toggle: false
-        title: Yard
-        type: entities
-    icon: 'mdi:home'
-    path: home
-    title: Home
-  - badges:
-      - entity: sensor.plex_berserkirnet
-        name: Plex Streams
-      - entity: sensor.plextotalbandwidthrounded
-        name: Plex Bandwidth
-      - entity: sensor.radarr_movies
-      - entity: sensor.sonarr_series
-      - entity: sensor.nzbget_speed
-      - entity: sensor.ombi_pending_requests
-        name: Pending Requests
-    cards:
-      - cards:
-          - entity: sensor.plex_berserkirnet
-            name: Current Plex Streams
-            type: sensor
-          - entity: sensor.plexwanbandwidthrounded
-            name: Plex WAN Bandwith
-            type: sensor
-          - entity: sensor.plexlanbandwidthrounded
-            name: Plex LAN Bandwith
-            type: sensor
-          - entity: sensor.plextotalbandwidthrounded
-            name: Plex Total Bandwidth
-            type: sensor
-        type: vertical-stack
-      - entities:
-          - entity: sensor.sonarr_series
-          - entity: sensor.sonarr_upcoming
-          - entity: sensor.sonarr_wanted
-          - entity: sensor.sonarr_queue
-        show_header_toggle: false
-        title: Sonarr Status
-        type: entities
-      - entities:
-          - entity: sensor.radarr_movies
-          - entity: sensor.radarr_upcoming
-        show_header_toggle: false
-        title: Radarr Status
-        type: entities
-      - entities:
-          - entity: sensor.nzbget_uptime_hours
-        type: entities
-      - card:
-          show_header_toggle: false
-          title: Now Streaming
-          type: entities
-        filter:
-          exclude:
-            - state: unavailable
-            - state: idle
-          include:
-            - entity_id: media_player.plex_*
-        show_empty: true
-        sort: none
-        type: 'custom:auto-entities'
-        unique: false
-      - entity: media_player.spotify_sky_girl14
-        type: media-control
-    icon: 'mdi:film'
-    panel: false
-    path: media
-    theme: Backend-selected
-    title: Media
-  - icon: 'mdi:network'
-    path: network
-    title: Network
-    badges:
-      - entity: sensor.mikrotik_router_kib_s_received
+- badges: []
+  cards:
+  - card:
+      show_header_toggle: true
+      title: Lights
+      type: entities
+    filter:
+      include:
+      - domain: light
+    show_empty: true
+    sort: name
+    type: custom:auto-entities
+    unique: false
+  - entities:
+    - entity: light.bedroom
+      name: Bedroom Light
+    - entity: media_player.bedroom_ps4
+    - entity: device_tracker.lifx_a19_250df0
+      icon: mdi:lightbulb
+    show_header_toggle: false
+    title: Bedroom
+    type: entities
+  - entities:
+    - entity: light.lounge
+      name: Lounge Light
+    - entity: switch.wol_lounge
+      name: Lounge PC
+    - entity: media_player.living_room_ps4
+    - entity: device_tracker.loungeap
+      icon: mdi:access-point-network
+      name: UniFi AP-AC-In Wall
+    - entity: device_tracker.lifx_a19_250e30
+      icon: mdi:lightbulb
+    show_header_toggle: false
+    title: Living Room
+    type: entities
+  - entities:
+    - entity: device_tracker.officeap
+      icon: mdi:access-point-network
+      name: Unifi AP-AC-LR
+    - entity: light.office
+    - entity: switch.wol_workstation
+      icon: mdi:desktop-classic
+      name: Gaming Rig
+    - entity: switch.wol_shif
+      icon: mdi:desktop-classic
+      name: Shif (NUC)
+    show_header_toggle: false
+    title: Office
+    type: entities
+  - entities:
+    - entity: switch.wol_duplica
+      icon: mdi:desktop-tower
+      name: Replica Server
+    - entity: switch.wol_duplica
+      icon: mdi:desktop-tower
+      name: Primary Server
+    - entity: sensor.mikrotik_router_kib_s_received
+      name: Routerboard Traffic (RX)
+    - entity: sensor.mikrotik_router_kib_s_sent
+      name: Routerboard Traffic (TX)
+    show_header_toggle: false
+    title: Server Rack
+    type: entities
+  - entity: weather.home
+    type: weather-forecast
+  - entities:
+    - entity: device_tracker.outdoorap
+      icon: mdi:access-point-network
+      name: Unifi AP-Outdoor+
+    show_header_toggle: false
+    title: Yard
+    type: entities
+  icon: mdi:home
+  path: home
+  title: Home
+- badges:
+  - entity: sensor.plex_berserkirnet
+    name: Plex Streams
+  - entity: sensor.plextotalbandwidthrounded
+    name: Plex Bandwidth
+  - entity: sensor.nzbget_speed
+  - entity: sensor.ombi_pending_requests
+    name: Pending Requests
+  cards:
+  - cards:
+    - entity: sensor.plex_berserkirnet
+      name: Current Plex Streams
+      type: sensor
+    - entity: sensor.plexwanbandwidthrounded
+      name: Plex WAN Bandwith
+      type: sensor
+    - entity: sensor.plexlanbandwidthrounded
+      name: Plex LAN Bandwith
+      type: sensor
+    - entity: sensor.plextotalbandwidthrounded
+      name: Plex Total Bandwidth
+      type: sensor
+    type: vertical-stack
+  - entities:
+    - entity: sensor.sonarr_upcoming
+    show_header_toggle: false
+    title: Sonarr Status
+    type: entities
+  - entities:
+    - entity: sensor.radarr_movies
+    - entity: sensor.radarr_upcoming
+    show_header_toggle: false
+    title: Radarr Status
+    type: entities
+  - entities:
+    - entity: sensor.nzbget_uptime_hours
+    type: entities
+  - card:
+      show_header_toggle: false
+      title: Now Streaming
+      type: entities
+    filter:
+      exclude:
+      - state: unavailable
+      - state: idle
+      include:
+      - entity_id: media_player.plex_*
+    show_empty: true
+    sort: none
+    type: custom:auto-entities
+    unique: false
+  - entity: media_player.spotify_sky_girl14
+    type: media-control
+  icon: mdi:film
+  panel: false
+  path: media
+  theme: Backend-selected
+  title: Media
+- badges:
+  - entity: sensor.mikrotik_router_kib_s_received
+  - entity: sensor.mikrotik_router_kib_s_sent
+  - entity: sensor.pi_hole_dns_queries_today
+  - entity: sensor.pi_hole_ads_blocked_today
+  cards:
+  - cards:
+    - cards:
       - entity: sensor.mikrotik_router_kib_s_sent
-      - entity: sensor.pi_hole_dns_queries_today
-      - entity: sensor.pi_hole_ads_blocked_today
-    cards:
-      - cards:
-          - cards:
-              - entity: sensor.mikrotik_router_kib_s_sent
-                max: 40000
-                min: 0
-                name: WAN TX
-                severity:
-                  green: 0
-                  red: 35000
-                  yellow: 25000
-                type: gauge
-              - entity: sensor.mikrotik_router_kib_s_received
-                max: 40000
-                min: 0
-                name: WAN RX
-                severity:
-                  green: 0
-                  red: 35000
-                  yellow: 25000
-                type: gauge
-            type: horizontal-stack
-          - columns: 2
-            entities:
-              - entity: binary_sensor.rb3011_firmware_update
-                name: Firmware Update?
-              - entity: sensor.rb3011_cpu_load
-                name: CPU Load
-              - entity: sensor.rb3011_hdd_usage
-                name: HDD Usage
-              - entity: sensor.rb3011_memory_usage
-                name: RAM Usage
-              - entity: sensor.rb3011_ether1_gateway_rx
-                name: LAN1 RX
-              - entity: sensor.rb3011_ether1_gateway_tx
-                name: LAN1 TX
-              - entity: sensor.rb3011_ether2_local_rx
-                name: LAN2 RX
-              - entity: sensor.rb3011_ether2_local_tx
-                name: LAN2 TX
-              - entity: sensor.rb3011_ether3_local_rx
-                name: LAN3 RX
-              - entity: sensor.rb3011_ether3_local_tx
-                name: LAN3 TX
-              - entity: sensor.rb3011_ether4_local_rx
-                name: LAN4 RX
-              - entity: sensor.rb3011_ether4_local_tx
-                name: LAN4 TX
-              - entity: sensor.rb3011_ether5_local_rx
-                name: LAN5 RX
-              - entity: sensor.rb3011_ether5_local_tx
-                name: LAN5 TX
-              - entity: sensor.rb3011_ether6_local_rx
-                name: LAN6 RX
-              - entity: sensor.rb3011_ether6_local_tx
-                name: LAN6 TX
-              - entity: sensor.rb3011_ether7_local_rx
-                name: LAN7 RX
-              - entity: sensor.rb3011_ether7_local_tx
-                name: LAN7 TX
-              - entity: sensor.rb3011_ether8_local_rx
-                name: LAN8 RX
-              - entity: sensor.rb3011_ether8_local_tx
-                name: LAN8 TX
-              - entity: sensor.rb3011_ether9_local_rx
-                name: LAN9 RX
-              - entity: sensor.rb3011_ether9_local_tx
-                name: LAN9 RX
-              - entity: sensor.rb3011_ether10_local_rx
-                name: LAN10 RX
-              - entity: sensor.rb3011_ether10_local_tx
-                name: LAN10 TX
-              - entity: sensor.rb3011_sfp1_rx
-                name: SFP RX
-              - entity: sensor.rb3011_sfp1_tx
-                name: SFP TX
-            show_icon: true
-            show_name: true
-            show_state: true
-            type: glance
-        title: Routerboard Stats
-        type: vertical-stack
-      - cards:
-          - entity: sensor.pi_hole_ads_percentage_blocked_today
-            max: 100
-            min: 0
-            name: Blocked Ad Percentage
-            severity:
-              green: 0
-              red: 50
-              yellow: 25
-            theme: default
-            type: gauge
-          - card:
-              show_header_toggle: false
-              type: entities
-            filter:
-              include:
-                - entity_id: sensor.pi*
-            show_empty: true
-            sort:
-              ignore_case: true
-              method: name
-            type: 'custom:auto-entities'
-            unique: false
-        title: Pi-Hole
-        type: vertical-stack
-      - cards:
-          - entity: sensor.unifi_clients
-            max: 50
-            min: 0
-            name: Devices
-            severity:
-              green: 10
-              red: 25
-              yellow: 15
-            theme: default
-            type: gauge
-            unit: ' '
-          - entities:
-              - entity: sensor.unifi_clients
-                icon: 'mdi:wifi'
-                name: ' '
-                secondary_info: >-
-                  Berserkir-Net : [[
-                  if(sensor.unifi_clients.attributes.Berserkir-Net == undefined,
-                  "0", sensor.unifi_clients.attributes.Berserkir-Net) ]]
-                  <br>GuestNet : [[ if(sensor.unifi_clients.attributes.GuestNet
-                  == undefined, "0", sensor.unifi_clients.attributes.GuestNet)
-                  ]]
-                type: 'custom:secondaryinfo-entity-row'
-            type: entities
-          - entities:
-              - entity: device_tracker.loungeap
-                icon: 'mdi:access-point-network'
-              - entity: device_tracker.officeap
-                icon: 'mdi:access-point-network'
-              - entity: device_tracker.outdoorap
-                icon: 'mdi:access-point-network'
-            show_header_toggle: false
-            type: entities
-        title: UniFi Access Point Status
-        type: vertical-stack
-  - badges: []
-    cards:
-      - dark_mode: false
-        entities:
-          - entity: device_tracker.g8142
-          - entity: zone.work
-          - entity: zone.home
-        type: map
-      - card:
-          show_header_toggle: false
-          title: Who's Home?
-          type: entities
-        filter:
-          exclude:
-            - state: not_home
-          include:
-            - entity_id: person.*
-        show_empty: true
-        sort: none
-        type: 'custom:auto-entities'
-        unique: false
-      - columns: 1
-        entities:
-          - entity: sensor.g8142_geocoded_location
-        show_icon: true
-        show_state: true
-        title: Phone Location
-        type: glance
-    icon: 'mdi:crosshairs-gps'
-    path: location
-    title: Location
-  - badges:
-      - entity: switch.wol_duplica
-      - entity: switch.wol_lounge
-      - entity: switch.wol_shif
-      - entity: switch.wol_workstation
-    cards:
-      - cards:
-          - entity: switch.wol_duplica
-            hold_action:
-              action: more-info
-            icon: 'mdi:desktop-tower'
-            name: Duplica
-            show_icon: true
-            show_name: true
-            tap_action:
-              action: toggle
-            type: entity-button
-          - entity: switch.wol_lounge
-            hold_action:
-              action: more-info
-            icon: 'mdi:desktop-mac'
-            name: HTPC
-            show_icon: true
-            show_name: true
-            tap_action:
-              action: toggle
-            type: entity-button
-          - entity: switch.wol_shif
-            hold_action:
-              action: more-info
-            icon: 'mdi:desktop-mac'
-            name: Shif
-            show_icon: true
-            show_name: true
-            tap_action:
-              action: toggle
-            type: entity-button
-          - entity: switch.wol_workstation
-            hold_action:
-              action: more-info
-            icon: 'mdi:desktop-classic'
-            name: Workstation
-            show_icon: true
-            show_name: true
-            tap_action:
-              action: toggle
-            type: entity-button
-        type: vertical-stack
-      - card:
-          show_header_toggle: false
-          title: Wake-on-LAN
-          type: glance
-        filter:
-          include:
-            - entity_id: switch.wol_*
-        show_empty: true
-        sort: name
-        type: 'custom:auto-entities'
-        unique: false
-    icon: 'mdi:dip-switch'
-    panel: false
-    path: wakeonlan
-    title: WakeOnLan
-  - badges: []
-    cards:
-      - card:
-          show_header_toggle: false
-          title: OWM
-          type: entities
-        filter:
-          include:
-            - entity_id: sensor.owm*
-        show_empty: true
-        sort: name
-        type: 'custom:auto-entities'
-        unique: false
-      - entities:
-          - entity: sensor.new_zealand_coronavirus_confirmed
-            name: Confirmed
-          - entity: sensor.new_zealand_coronavirus_current
-            name: Current
-          - entity: sensor.new_zealand_coronavirus_deaths
-            name: Deaths
-          - entity: sensor.new_zealand_coronavirus_recovered
-            name: Recovered
-        title: COVID-19
-        type: glance
-      - entity: weather.home
-        type: weather-forecast
-    icon: 'mdi:weather-partly-cloudy'
-    path: weather
-    title: Weather
-  - badges: []
-    cards:
-      - card:
-          secondary_info: game
-          show_header_toggle: false
-          title: Steam Friends
-          type: entities
-        filter:
-          include:
-            - entity_id: sensor.steam*
-        show_empty: true
-        sort:
-          ignore_case: true
-          method: name
-        type: 'custom:auto-entities'
-        unique: false
-      - entities:
-          - entity: sensor.berserkir_wolf
-        show_state: true
-        title: Xbox Live
-        type: glance
-      - cards:
-          - entity: media_player.bedroom_ps4
-            type: media-control
-          - entity: media_player.lounge_ps4
-            type: media-control
-        type: vertical-stack
-      - card:
-          secondary_info: game
-          show_header_toggle: false
-          title: Steam Friends
-          type: 'custom:multiple-entity-row'
-        filter:
-          include:
-            - entity_id: sensor.steam*
-        show_empty: true
-        sort:
-          ignore_case: true
-          method: name
-        type: 'custom:auto-entities'
-        unique: false
-      - entities:
-          - entity: sensor.steam_76561198056470571
-            secondary_info:
-              '[object Object]': null
-          - entity: sensor.steam_76561198151879355
-          - entity: sensor.steam_76561198120534583
-          - entity: sensor.steam_76561197992785642
+        max: 40000
+        min: 0
+        name: WAN TX
+        severity:
+          green: 0
+          red: 35000
+          yellow: 25000
+        type: gauge
+      - entity: sensor.mikrotik_router_kib_s_received
+        max: 40000
+        min: 0
+        name: WAN RX
+        severity:
+          green: 0
+          red: 35000
+          yellow: 25000
+        type: gauge
+      type: horizontal-stack
+    - columns: 2
+      entities:
+      - entity: binary_sensor.rb3011_firmware_update
+        name: Firmware Update?
+      - entity: sensor.rb3011_cpu_load
+        name: CPU Load
+      - entity: sensor.rb3011_hdd_usage
+        name: HDD Usage
+      - entity: sensor.rb3011_memory_usage
+        name: RAM Usage
+      - entity: sensor.rb3011_ether1_gateway_rx
+        name: LAN1 RX
+      - entity: sensor.rb3011_ether1_gateway_tx
+        name: LAN1 TX
+      - entity: sensor.rb3011_ether2_local_rx
+        name: LAN2 RX
+      - entity: sensor.rb3011_ether2_local_tx
+        name: LAN2 TX
+      - entity: sensor.rb3011_ether3_local_rx
+        name: LAN3 RX
+      - entity: sensor.rb3011_ether3_local_tx
+        name: LAN3 TX
+      - entity: sensor.rb3011_ether4_local_rx
+        name: LAN4 RX
+      - entity: sensor.rb3011_ether4_local_tx
+        name: LAN4 TX
+      - entity: sensor.rb3011_ether5_local_rx
+        name: LAN5 RX
+      - entity: sensor.rb3011_ether5_local_tx
+        name: LAN5 TX
+      - entity: sensor.rb3011_ether6_local_rx
+        name: LAN6 RX
+      - entity: sensor.rb3011_ether6_local_tx
+        name: LAN6 TX
+      - entity: sensor.rb3011_ether7_local_rx
+        name: LAN7 RX
+      - entity: sensor.rb3011_ether7_local_tx
+        name: LAN7 TX
+      - entity: sensor.rb3011_ether8_local_rx
+        name: LAN8 RX
+      - entity: sensor.rb3011_ether8_local_tx
+        name: LAN8 TX
+      - entity: sensor.rb3011_ether9_local_rx
+        name: LAN9 RX
+      - entity: sensor.rb3011_ether9_local_tx
+        name: LAN9 RX
+      - entity: sensor.rb3011_ether10_local_rx
+        name: LAN10 RX
+      - entity: sensor.rb3011_ether10_local_tx
+        name: LAN10 TX
+      - entity: sensor.rb3011_sfp1_rx
+        name: SFP RX
+      - entity: sensor.rb3011_sfp1_tx
+        name: SFP TX
+      show_icon: true
+      show_name: true
+      show_state: true
+      type: glance
+    title: Routerboard Stats
+    type: vertical-stack
+  - cards:
+    - entity: sensor.pi_hole_ads_percentage_blocked_today
+      max: 100
+      min: 0
+      name: Blocked Ad Percentage
+      severity:
+        green: 0
+        red: 50
+        yellow: 25
+      theme: default
+      type: gauge
+    - card:
         show_header_toggle: false
-        title: Steamers
         type: entities
-    icon: 'mdi:gamepad-variant'
-    path: gaming
-    title: Gaming
-  - badges: []
-    cards:
-      - aspect_ratio: 100%
-        type: iframe
-        url: 'https://media.berserkir.net/recentlyadded/'
-    icon: 'mdi:filmstrip'
-    panel: true
-    path: recently-added
-    title: Recently Added
-  - badges: []
-    cards:
-      - cards:
-          - columns: 12
-            entities:
-              - entity: person.dyson_parkes
-              - entity: person.kirstyn_rolfe
-              - entity: person.liam_cottle
-              - entity: person.nieshar_pink
-              - entity: switch.wol_lounge
-              - entity: switch.wol_workstation
-              - entity: switch.wol_testbed
-            type: glance
-          - cards:
-              - aspect_ratio: 57%
-                camera_view: live
-                entity: camera.uvc_office
-                name: Office
-                show_name: false
-                show_state: false
-                type: picture-entity
-              - aspect_ratio: 57%
-                camera_view: live
-                entity: camera.uvc_office
-                name: Office2
-                show_name: false
-                show_state: false
-                type: picture-entity
-            type: horizontal-stack
-          - cards:
-              - aspect_ratio: 57%
-                camera_view: live
-                entity: camera.uvc_office
-                name: Office3
-                show_name: false
-                show_state: false
-                type: picture-entity
-              - aspect_ratio: 57%
-                camera_view: live
-                entity: camera.uvc_office
-                name: Office4
-                show_name: false
-                show_state: false
-                type: picture-entity
-            type: horizontal-stack
-        type: vertical-stack
-      - entities:
-          - entities:
-              - light.bedroom
-              - light.lounge
-              - light.office
-            head: light.all_lights
-            type: 'custom:fold-entity-row'
-        type: entities
-    icon: 'mdi:dev-to'
-    panel: false
-    path: testing
-    title: Testing
-  - badges: []
-    cards: []
-    icon: 'mdi:cctv'
-    panel: false
-    path: video
-    title: Video
-
+      filter:
+        include:
+        - entity_id: sensor.pi*
+      show_empty: true
+      sort:
+        ignore_case: true
+        method: name
+      type: custom:auto-entities
+      unique: false
+    title: Pi-Hole
+    type: vertical-stack
+  - cards:
+    - entity: sensor.unifi_clients
+      max: 50
+      min: 0
+      name: Devices
+      severity:
+        green: 10
+        red: 25
+        yellow: 15
+      theme: default
+      type: gauge
+      unit: ' '
+    - entities:
+      - entity: sensor.unifi_clients
+        icon: mdi:wifi
+        name: ' '
+        secondary_info: 'Berserkir-Net : [[ if(sensor.unifi_clients.attributes.Berserkir-Net
+          == undefined, "0", sensor.unifi_clients.attributes.Berserkir-Net) ]] <br>GuestNet
+          : [[ if(sensor.unifi_clients.attributes.GuestNet == undefined, "0", sensor.unifi_clients.attributes.GuestNet)
+          ]]'
+        type: custom:secondaryinfo-entity-row
+      type: entities
+    - entities:
+      - entity: device_tracker.loungeap
+        icon: mdi:access-point-network
+      - entity: device_tracker.officeap
+        icon: mdi:access-point-network
+      - entity: device_tracker.outdoorap
+        icon: mdi:access-point-network
+      show_header_toggle: false
+      type: entities
+    title: UniFi Access Point Status
+    type: vertical-stack
+  icon: mdi:network
+  path: network
+  title: Network
+- badges: []
+  cards:
+  - dark_mode: false
+    entities:
+    - entity: device_tracker.g8142
+    - entity: zone.work
+    - entity: zone.home
+    type: map
+  - card:
+      show_header_toggle: false
+      title: Who's Home?
+      type: entities
+    filter:
+      exclude:
+      - state: not_home
+      include:
+      - entity_id: person.*
+    show_empty: false
+    sort: none
+    type: custom:auto-entities
+    unique: false
+  - columns: 1
+    entities:
+    - entity: sensor.g8142_geocoded_location
+    show_icon: true
+    show_state: true
+    title: Phone Location
+    type: glance
+  icon: mdi:crosshairs-gps
+  path: location
+  title: Location
+- badges:
+  - entity: switch.wol_duplica
+  - entity: switch.wol_lounge
+  - entity: switch.wol_shif
+  - entity: switch.wol_workstation
+  cards:
+  - cards:
+    - entity: switch.wol_duplica
+      hold_action:
+        action: more-info
+      icon: mdi:desktop-tower
+      name: Duplica
+      show_icon: true
+      show_name: true
+      tap_action:
+        action: toggle
+      type: entity-button
+    - entity: switch.wol_lounge
+      hold_action:
+        action: more-info
+      icon: mdi:desktop-mac
+      name: HTPC
+      show_icon: true
+      show_name: true
+      tap_action:
+        action: toggle
+      type: entity-button
+    - entity: switch.wol_shif
+      hold_action:
+        action: more-info
+      icon: mdi:desktop-mac
+      name: Shif
+      show_icon: true
+      show_name: true
+      tap_action:
+        action: toggle
+      type: entity-button
+    - entity: switch.wol_workstation
+      hold_action:
+        action: more-info
+      icon: mdi:desktop-classic
+      name: Workstation
+      show_icon: true
+      show_name: true
+      tap_action:
+        action: toggle
+      type: entity-button
+    type: vertical-stack
+  - card:
+      show_header_toggle: false
+      title: Wake-on-LAN
+      type: glance
+    filter:
+      include:
+      - entity_id: switch.wol_*
+    show_empty: true
+    sort: name
+    type: custom:auto-entities
+    unique: false
+  icon: mdi:dip-switch
+  panel: false
+  path: wakeonlan
+  title: WakeOnLan
+- badges: []
+  cards:
+  - card:
+      show_header_toggle: false
+      title: OWM
+      type: entities
+    filter:
+      include:
+      - entity_id: sensor.owm*
+    show_empty: true
+    sort: name
+    type: custom:auto-entities
+    unique: false
+  - entities:
+    - entity: sensor.new_zealand_coronavirus_confirmed
+      name: Confirmed
+    - entity: sensor.new_zealand_coronavirus_current
+      name: Current
+    - entity: sensor.new_zealand_coronavirus_deaths
+      name: Deaths
+    - entity: sensor.new_zealand_coronavirus_recovered
+      name: Recovered
+    title: COVID-19
+    type: glance
+  - entity: weather.home
+    type: weather-forecast
+  icon: mdi:weather-partly-cloudy
+  path: weather
+  title: Weather
+- badges: []
+  cards:
+  - card:
+      secondary_info: game
+      show_header_toggle: false
+      title: Steam Friends
+      type: entities
+    filter:
+      include:
+      - entity_id: sensor.steam*
+    show_empty: true
+    sort:
+      ignore_case: true
+      method: name
+    type: custom:auto-entities
+    unique: false
+  - entities:
+    - entity: sensor.berserkir_wolf
+    show_state: true
+    title: Xbox Live
+    type: glance
+  - cards:
+    - entity: media_player.bedroom_ps4
+      type: media-control
+    - entity: media_player.lounge_ps4
+      type: media-control
+    type: vertical-stack
+  - card:
+      secondary_info: game
+      show_header_toggle: false
+      title: Steam Friends
+      type: custom:multiple-entity-row
+    filter:
+      include:
+      - entity_id: sensor.steam*
+    show_empty: true
+    sort:
+      ignore_case: true
+      method: name
+    type: custom:auto-entities
+    unique: false
+  - entities:
+    - entity: sensor.steam_76561198056470571
+      secondary_info:
+        '[object Object]': null
+    - entity: sensor.steam_76561198151879355
+    - entity: sensor.steam_76561198120534583
+    - entity: sensor.steam_76561197992785642
+    show_header_toggle: false
+    title: Steamers
+    type: entities
+  icon: mdi:gamepad-variant
+  path: gaming
+  title: Gaming
+- badges: []
+  cards:
+  - aspect_ratio: 100%
+    type: iframe
+    url: https://media.berserkir.net/recentlyadded/
+  icon: mdi:filmstrip
+  panel: true
+  path: recently-added
+  title: Recently Added
+- badges: []
+  cards:
+  - cards:
+    - columns: 12
+      entities:
+      - entity: person.dyson_parkes
+      - entity: person.kirstyn_rolfe
+      - entity: person.liam_cottle
+      - entity: person.nieshar_pink
+      - entity: switch.wol_lounge
+      - entity: switch.wol_workstation
+      - entity: switch.wol_testbed
+      type: glance
+    - cards:
+      - aspect_ratio: 57%
+        camera_view: live
+        entity: camera.uvc_office
+        name: Office
+        show_name: false
+        show_state: false
+        type: picture-entity
+      - aspect_ratio: 57%
+        camera_view: live
+        entity: camera.uvc_office
+        name: Office2
+        show_name: false
+        show_state: false
+        type: picture-entity
+      type: horizontal-stack
+    - cards:
+      - aspect_ratio: 57%
+        camera_view: live
+        entity: camera.uvc_office
+        name: Office3
+        show_name: false
+        show_state: false
+        type: picture-entity
+      - aspect_ratio: 57%
+        camera_view: live
+        entity: camera.uvc_office
+        name: Office4
+        show_name: false
+        show_state: false
+        type: picture-entity
+      type: horizontal-stack
+    type: vertical-stack
+  - entities:
+    - entities:
+      - light.bedroom
+      - light.lounge
+      - light.office
+      head: light.all_lights
+      type: custom:fold-entity-row
+    type: entities
+  - card:
+      show_header_toggle: false
+      title: 3D Printer
+      type: entities
+    filter:
+      include:
+      - entity_id: sensor.octopr*
+    show_empty: true
+    sort: name
+    type: custom:auto-entities
+    unique: false
+  icon: mdi:dev-to
+  panel: false
+  path: testing
+  title: Testing
+- badges: []
+  cards: []
+  icon: mdi:cctv
+  panel: false
+  path: video
+  title: Video
