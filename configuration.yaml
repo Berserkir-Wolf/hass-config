@@ -40,10 +40,9 @@ notify: !include_dir_merge_list notify
 pi_hole: !include_dir_merge_list pihole
 sensor: !include_dir_merge_list sensors
 switch: !include_dir_merge_list switches
-#shell_command: !include_dir_merge_list shell_commands
 zone: !include_dir_merge_list zones
-# Single Files
 automation: !include automations.yaml
+# Single Files
 script: !include scripts.yaml
 scene: !include scenes.yaml
 shell_commands: !include individuals/shell_commands.yaml
