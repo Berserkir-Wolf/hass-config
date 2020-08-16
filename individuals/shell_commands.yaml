@@ -1,0 +1,4 @@
+# To add shell commands, place in utils folder and reference them here.
+# The container path to /usr/share/hassio/homeassistant/ is /config/
+
+convert_lovelace: "python /config/utils/json2yaml.py /config/.storage/lovelace /config/lovelace-ui.yaml"

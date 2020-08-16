@@ -40,12 +40,13 @@ notify: !include_dir_merge_list notify
 pi_hole: !include_dir_merge_list pihole
 sensor: !include_dir_merge_list sensors
 switch: !include_dir_merge_list switches
-shell_command: !include_dir_merge_list shell_commands
+#shell_command: !include_dir_merge_list shell_commands
 zone: !include_dir_merge_list zones
 # Single Files
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+shell_commands: !include individuals/shell_commands.yaml
 # Specific Integration types (save all under individuals/%name%.yaml)
 #influxdb: !include individuals/influxdb.yaml #disabled for system load
 light: !include individuals/lights.yaml
