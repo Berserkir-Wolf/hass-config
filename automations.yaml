@@ -30,7 +30,7 @@
   - service: shell_command.llconvert
 - id: '1597613199016'
   alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
-  initial_state: "on"
+  initial_state: 'on'
   description: Convert lovelace.json to lovelace-ui.yaml
   trigger:
   - entity_id: sensor.lovelace
