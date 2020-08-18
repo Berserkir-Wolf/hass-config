@@ -20,7 +20,7 @@ zones
 # Specific file ignores
 .config_entries.json
 .uuid
-.ps4-games*
+.ps4-games.*
 html5_push_registrations.conf
 ip_bans.yaml
 known_devices.yaml
