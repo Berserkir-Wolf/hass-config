@@ -37,7 +37,6 @@ device_tracker: !include_dir_merge_list device_trackers
 folder_watcher: !include_dir_merge_list folder_watchers
 group: !include_dir_merge_list groups
 notify: !include_dir_merge_list notify
-pi_hole: !include_dir_merge_list pihole
 sensor: !include_dir_merge_list sensors
 switch: !include_dir_merge_list switches
 zone: !include_dir_merge_list zones
@@ -45,17 +44,18 @@ automation: !include automations.yaml
 # Single Files
 script: !include scripts.yaml
 scene: !include scenes.yaml
-shell_command: !include individuals/shell_commands.yaml
+shell_command: !include includes/shell_commands.yaml
 # Specific Integration types (save all under individuals/%name%.yaml)
-#influxdb: !include individuals/influxdb.yaml #disabled for system load
-light: !include individuals/lights.yaml
-nzbget: !include individuals/nzbget.yaml
-ombi: !include individuals/ombi.yaml
-spotify: !include individuals/spotify.yaml
+light: !include includes/lights.yaml
+nzbget: !include includes/nzbget.yaml
+ombi: !include includes/ombi.yaml
+pi_hole: !include includes/communica_pihole.yaml
+spotify: !include includes/spotify.yaml
 
 #################################################################
 ## Testing functions
 #template: !include_dir_merge_named templates
 #template: !include_dir_merge_list templates
 #camera: !include individuals/unifi_video.yaml
-octoprint: !include individuals/octoprint.yaml
+#influxdb: !include individuals/influxdb.yaml #disabled for system load
+#octoprint: !include individuals/octoprint.yaml
