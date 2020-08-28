@@ -1,7 +1,8 @@
 
 # Configure a default setup of Home Assistant (frontend, api, etc)
+# This is used for a recovery boot
 default_config:
-# Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+# Uncomment this if you are using a reverse proxy
   http:
     use_x_forwarded_for: true
 
@@ -21,7 +22,7 @@ homeassistant:
 tts:
   - platform: google_translate
     service_name: google_say
-# HTTP
+# HTTP (sets allowed proxies, reverse proxy options)
 http:
   use_x_forwarded_for: true
   trusted_proxies:
@@ -55,7 +56,6 @@ spotify: !include includes/spotify.yaml
 #################################################################
 ## Testing functions
 #template: !include_dir_merge_named templates
-#template: !include_dir_merge_list templates
 #camera: !include individuals/unifi_video.yaml
 #influxdb: !include individuals/influxdb.yaml #disabled for system load
 #octoprint: !include individuals/octoprint.yaml
