@@ -3,15 +3,15 @@
   description: ''
   trigger:
   - entity_id: person.kirstyn_rolfe
-    event: enter
-    platform: zone
-    zone: zone.home
+    from: not_home
+    platform: state
+    to: home
   condition: []
   action:
   - data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
-    service: notify.html5_notifications_workpc
+    service: notify.html5_notifications
   - data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
