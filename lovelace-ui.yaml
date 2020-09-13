@@ -470,50 +470,6 @@ views:
   title: Recently Added
 - badges: []
   cards:
-  - cards:
-    - columns: 12
-      entities:
-      - entity: person.dyson_parkes
-      - entity: person.kirstyn_rolfe
-      - entity: person.liam_cottle
-      - entity: person.nieshar_pink
-      - entity: switch.wol_lounge
-      - entity: switch.wol_workstation
-      - entity: switch.wol_testbed
-      type: glance
-    - cards:
-      - aspect_ratio: 57%
-        camera_view: live
-        entity: camera.uvc_office
-        name: Office
-        show_name: false
-        show_state: false
-        type: picture-entity
-      - aspect_ratio: 57%
-        camera_view: live
-        entity: camera.uvc_office
-        name: Office2
-        show_name: false
-        show_state: false
-        type: picture-entity
-      type: horizontal-stack
-    - cards:
-      - aspect_ratio: 57%
-        camera_view: live
-        entity: camera.uvc_office
-        name: Office3
-        show_name: false
-        show_state: false
-        type: picture-entity
-      - aspect_ratio: 57%
-        camera_view: live
-        entity: camera.uvc_office
-        name: Office4
-        show_name: false
-        show_state: false
-        type: picture-entity
-      type: horizontal-stack
-    type: vertical-stack
   - entities:
     - entities:
       - light.bedroom
@@ -537,9 +493,3 @@ views:
   panel: false
   path: testing
   title: Testing
-- badges: []
-  cards: []
-  icon: mdi:cctv
-  panel: false
-  path: video
-  title: Video
