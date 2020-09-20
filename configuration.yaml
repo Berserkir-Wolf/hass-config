@@ -15,7 +15,7 @@ wake_on_lan:
 ## Complex Components
 #Custom config directives
 homeassistant:
-  whitelist_external_dirs:
+  allowlist_external_dirs:
     - /config/.storage
 
 # Text to speech
