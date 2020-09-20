@@ -5,6 +5,9 @@ default_config:
 # Uncomment this if you are using a reverse proxy
   http:
     use_x_forwarded_for: true
+    trusted_proxies:
+      - !secret trusted_proxy1
+      - !secret trusted_proxy2
 
 ## Simple Components
 map:
