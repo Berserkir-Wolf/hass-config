@@ -26,31 +26,25 @@ views:
     - entity: light.lounge
       name: Lounge Light
     - entity: switch.wol_lounge
+      icon: mdi:desktop-classic
       name: Lounge PC
-    - entity: media_player.living_room_ps4
-    - entity: device_tracker.loungeap
-      icon: mdi:access-point-network
-      name: UniFi AP-AC-In Wall
-    - entity: device_tracker.lifx_a19_250e30
-      icon: mdi:lightbulb
+    - entity: switch.wol_shif
+      icon: mdi:desktop-classic
+      name: Shif (NUC)
+    - entity: media_player.lounge_ps4
     show_header_toggle: false
     title: Living Room
     type: entities
   - entities:
-    - entity: device_tracker.officeap
-      icon: mdi:access-point-network
-      name: Unifi AP-AC-LR
     - entity: light.office
     - entity: switch.wol_workstation
       icon: mdi:desktop-classic
       name: Gaming Rig
-    - entity: switch.wol_shif
-      icon: mdi:desktop-classic
-      name: Shif (NUC)
     show_header_toggle: false
     title: Office
     type: entities
   - entities:
+    - entity: switch.pi_hole
     - entity: switch.wol_duplica
       icon: mdi:desktop-tower
       name: Replica Server
@@ -66,13 +60,6 @@ views:
     type: entities
   - entity: weather.home
     type: weather-forecast
-  - entities:
-    - entity: device_tracker.outdoorap
-      icon: mdi:access-point-network
-      name: Unifi AP-Outdoor+
-    show_header_toggle: false
-    title: Yard
-    type: entities
   icon: mdi:home
   path: home
   title: Home
@@ -407,6 +394,37 @@ views:
   title: Weather
 - badges: []
   cards:
+  - cards:
+    - dark_mode: false
+      entities:
+      - entity: device_tracker.g8142
+      hours_to_show: 2
+      title: Phone Location
+      type: map
+    - entities:
+      - entity: binary_sensor.g8142_interactive
+      - entity: binary_sensor.g8142_is_charging
+      - entity: binary_sensor.g8142_music_active
+      type: glance
+    - card:
+        show_header_toggle: false
+        title: Phone Sensors
+        type: entities
+      filter:
+        exclude:
+        - entity_id: sensor.g8142_geo*
+        include:
+        - entity_id: sensor.g8142*
+      show_empty: false
+      type: custom:auto-entities
+      unique: false
+    type: vertical-stack
+  icon: mdi:phone
+  panel: false
+  path: phones
+  title: Phones
+- badges: []
+  cards:
   - card:
       secondary_info: game
       show_header_toggle: false
@@ -470,50 +488,6 @@ views:
   title: Recently Added
 - badges: []
   cards:
-  - cards:
-    - columns: 12
-      entities:
-      - entity: person.dyson_parkes
-      - entity: person.kirstyn_rolfe
-      - entity: person.liam_cottle
-      - entity: person.nieshar_pink
-      - entity: switch.wol_lounge
-      - entity: switch.wol_workstation
-      - entity: switch.wol_testbed
-      type: glance
-    - cards:
-      - aspect_ratio: 57%
-        camera_view: live
-        entity: camera.uvc_office
-        name: Office
-        show_name: false
-        show_state: false
-        type: picture-entity
-      - aspect_ratio: 57%
-        camera_view: live
-        entity: camera.uvc_office
-        name: Office2
-        show_name: false
-        show_state: false
-        type: picture-entity
-      type: horizontal-stack
-    - cards:
-      - aspect_ratio: 57%
-        camera_view: live
-        entity: camera.uvc_office
-        name: Office3
-        show_name: false
-        show_state: false
-        type: picture-entity
-      - aspect_ratio: 57%
-        camera_view: live
-        entity: camera.uvc_office
-        name: Office4
-        show_name: false
-        show_state: false
-        type: picture-entity
-      type: horizontal-stack
-    type: vertical-stack
   - entities:
     - entities:
       - light.bedroom
@@ -533,13 +507,16 @@ views:
     sort: name
     type: custom:auto-entities
     unique: false
+  - card:
+      game_background: true
+      type: custom:kb-steam-card
+    filter:
+      include:
+      - entity_id: sensor.steam_*
+    title: Steam Friends
+    type: custom:auto-entities
+    unique: false
   icon: mdi:dev-to
   panel: false
   path: testing
   title: Testing
-- badges: []
-  cards: []
-  icon: mdi:cctv
-  panel: false
-  path: video
-  title: Video
