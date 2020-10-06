@@ -18,17 +18,6 @@
       title: Kirstyn's Home
     service: notify.mobile_app_g8142
   mode: single
-- id: '1590888183776'
-  alias: Convert Lovelace configuration to yaml
-  description: ''
-  trigger:
-  - event_data:
-      event_type: modified
-    event_type: folder_watcher
-    platform: event
-  condition: []
-  action:
-  - service: shell_command.llconvert
 - id: '1597613199016'
   alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
   description: Convert lovelace.json to lovelace-ui.yaml
