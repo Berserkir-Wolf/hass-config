@@ -1,0 +1,19 @@
+  alias: Notify me if SWMBO arrives when I am not at home
+  description: ''
+  trigger:
+  - entity_id: person.swmbo
+    from: not_home
+    platform: state
+    to: home
+  condition: []
+  action:
+  - data:
+      message: SWMBO just arrived
+      title: They're Home
+      ttl: 10
+    service: notify.html5_notifications
+  - data:
+      message: SWMBO just arrived
+      title: They're Home
+    service: notify.mobile_app_g8142
+  mode: single
