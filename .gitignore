@@ -14,6 +14,7 @@ __pycache__
 development
 device_trackers
 deps
+excluded_files
 tts
 zones
 
