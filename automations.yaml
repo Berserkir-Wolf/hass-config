@@ -11,7 +11,6 @@
   - data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
-      ttl: 10
     service: notify.html5_notifications
   - data:
       message: Kirstyn just arrived
@@ -28,4 +27,19 @@
   action:
   - service: shell_command.convert_lovelace
   initial_state: 'on'
+  mode: single
+- id: '1602904795038'
+  alias: Notify me on update availability
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.updater
+    from: 'Off'
+    to: 'On'
+  condition: []
+  action:
+  - service: notify.notify
+    data:
+      message: Home Assistant {{ state_attr('binary_sensor.updater', 'newest_version')
+        }} is available.
   mode: single
