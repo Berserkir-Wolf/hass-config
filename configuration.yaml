@@ -6,8 +6,8 @@ default_config:
   http:
     use_x_forwarded_for: true
     trusted_proxies:
-      - !secret trusted_proxy1
-      - !secret trusted_proxy2
+      - !secret server_1_ip
+      - !secret server_2_ip
 
 ## Simple Components
 map:
@@ -30,8 +30,8 @@ tts:
 http:
   use_x_forwarded_for: true
   trusted_proxies:
-    - !secret trusted_proxy1
-    - !secret trusted_proxy2
+    - !secret server_1_ip
+    - !secret server_2_ip
 ## Frontend
 frontend:
   themes: !include_dir_merge_named themes

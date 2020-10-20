@@ -12,7 +12,6 @@ __pycache__
 .storage
 #custom_components
 development
-device_trackers
 deps
 excluded_files
 tts
