@@ -11,24 +11,12 @@
   - data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
-      ttl: 10
     service: notify.html5_notifications
   - data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
     service: notify.mobile_app_g8142
   mode: single
-- id: '1590888183776'
-  alias: Convert Lovelace configuration to yaml
-  description: ''
-  trigger:
-  - event_data:
-      event_type: modified
-    event_type: folder_watcher
-    platform: event
-  condition: []
-  action:
-  - service: shell_command.llconvert
 - id: '1597613199016'
   alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
   description: Convert lovelace.json to lovelace-ui.yaml
@@ -39,4 +27,19 @@
   action:
   - service: shell_command.convert_lovelace
   initial_state: 'on'
+  mode: single
+- id: '1602904795038'
+  alias: Notify me on update availability
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.updater
+    from: 'Off'
+    to: 'On'
+  condition: []
+  action:
+  - service: notify.notify
+    data:
+      message: Home Assistant {{ state_attr('binary_sensor.updater', 'newest_version')
+        }} is available.
   mode: single

@@ -1,0 +1,13 @@
+  alias: Notify me on update availability
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.updater
+    from: 'Off'
+    to: 'On'
+  condition: []
+  action:
+  - service: notify.notify
+    data:
+      message: Home Assistant {{ state_attr('binary_sensor.updater', 'newest_version') }} is available.
+  mode: single

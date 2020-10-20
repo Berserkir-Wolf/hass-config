@@ -1,5 +1,5 @@
 # Ombi
-  host: !secret server_1_ip
+  host: !secret server_2_ip
   username: !secret ombi_username
-  password: !secret ombi_password
+  api_key: !secret ombi_api_key
   urlbase: !secret ombi_baseurl

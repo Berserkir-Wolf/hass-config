@@ -11,8 +11,9 @@ default_config:
 
 ## Simple Components
 map:
-sun:
 met:
+sun:
+updater:
 wake_on_lan:
 
 ## Complex Components
