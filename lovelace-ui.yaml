@@ -516,6 +516,23 @@ views:
       method: name
     type: custom:auto-entities
     unique: false
+  - cards:
+    - color_type: label-card
+      entity: light.all_lights
+      icon_height: 30px
+      name: Lights
+      type: custom:button-card
+    - cards:
+      - color_type: card
+        entity: light.bedroom
+        type: custom:button-card
+      - color_type: card
+        entity: light.lounge
+        type: custom:button-card
+      - entity: light.office
+        type: custom:button-card
+      type: horizontal-stack
+    type: vertical-stack
   icon: mdi:dev-to
   panel: false
   path: testing
