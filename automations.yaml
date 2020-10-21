@@ -26,9 +26,6 @@
     event_data: {}
   action:
   - service: shell_command.convert_lovelace
-  - delay: '5'
-  - service: shell_command.commit_lovelace
-    data: {}
   initial_state: 'on'
   mode: single
 - id: '1602904795038'
@@ -65,4 +62,19 @@
   - service: input_boolean.turn_off
     data: {}
     entity_id: input_boolean.git_commit
+  mode: single
+- id: '1603311446063'
+  alias: 'Lovelace: convert json to yaml and commit'
+  description: ''
+  trigger:
+  - platform: event
+    event_type: lovelace_updated
+    event_data: {}
+  condition: []
+  action:
+  - service: shell_command.convert_lovelace
+  - delay: '5'
+  - service: shell_command.commit_lovelace
+    data: {}
+  initial_state: 'on'
   mode: single
