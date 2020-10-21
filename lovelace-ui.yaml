@@ -488,14 +488,6 @@ views:
   title: Recently Added
 - badges: []
   cards:
-  - entities:
-    - entities:
-      - light.bedroom
-      - light.lounge
-      - light.office
-      head: light.all_lights
-      type: custom:fold-entity-row
-    type: entities
   - card:
       game_background: true
       type: custom:kb-steam-card
