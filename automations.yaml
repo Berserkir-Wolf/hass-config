@@ -59,14 +59,10 @@
     entity_id: input_datetime.time_now
   - service: shell_command.commit_changes
     data: {}
-  - delay: 5s
   - service: input_text.set_value
     data:
       value: Enter commit message
     entity_id: input_text.git_message
-  - service: input_datetime.set_datetime
-    data:
-      datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
   - service: input_boolean.turn_off
     data: {}
     entity_id: input_boolean.git_commit
