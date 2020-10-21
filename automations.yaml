@@ -43,3 +43,38 @@
       message: Home Assistant {{ state_attr('binary_sensor.updater', 'newest_version')
         }} is available.
   mode: single
+- id: '1603249243832'
+  alias: Commit changes to Github
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: input_boolean.git_commit
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: shell_command.commit_changes
+    data: {}
+  - service: input_text.set_value
+    data:
+      value: Committed from UI without a message
+    entity_id: input_text.git_message
+  - service: input_boolean.turn_off
+    data: {}
+    entity_id: input_boolean.git_commit
+  mode: single
+- id: '1603311446063'
+  alias: 'Lovelace: convert json to yaml and commit'
+  description: ''
+  trigger:
+  - platform: event
+    event_type: lovelace_updated
+    event_data: {}
+  condition: []
+  action:
+  - service: shell_command.convert_lovelace
+  - delay: '5'
+  - service: shell_command.commit_lovelace
+    data: {}
+  initial_state: 'on'
+  mode: single

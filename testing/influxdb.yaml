@@ -1,7 +1,7 @@
 # Influx
   host: !secret server_2_ip
   port: !secret influx_port
-  database: !secret influxdb
+  database: !secret influx_db
   username: !secret influx_username
   password: !secret influx_password
   max_retries: 3

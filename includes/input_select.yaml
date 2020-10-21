@@ -1,0 +1,13 @@
+#################################################################
+## Input_Select
+#################################################################
+
+light_colour:
+  name: Light Colour
+  options:
+    - red
+    - green
+    - blue
+    - white
+  initial: white
+  icon: mdi:light

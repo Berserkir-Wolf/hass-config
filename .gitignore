@@ -12,7 +12,6 @@ __pycache__
 .storage
 #custom_components
 development
-device_trackers
 deps
 excluded_files
 tts
@@ -39,3 +38,4 @@ zones/work.yaml
 !.gitkeep
 !automations.yaml
 !configuration.yaml
+#!lovelace-ui.yaml

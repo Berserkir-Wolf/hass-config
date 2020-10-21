@@ -439,31 +439,12 @@ views:
       method: name
     type: custom:auto-entities
     unique: false
-  - entities:
-    - entity: sensor.berserkir_wolf
-    show_state: true
-    title: Xbox Live
-    type: glance
   - cards:
     - entity: media_player.bedroom_ps4
       type: media-control
     - entity: media_player.lounge_ps4
       type: media-control
     type: vertical-stack
-  - card:
-      secondary_info: game
-      show_header_toggle: false
-      title: Steam Friends
-      type: custom:multiple-entity-row
-    filter:
-      include:
-      - entity_id: sensor.steam*
-    show_empty: true
-    sort:
-      ignore_case: true
-      method: name
-    type: custom:auto-entities
-    unique: false
   - entities:
     - entity: sensor.steam_76561198056470571
       secondary_info:
@@ -488,25 +469,30 @@ views:
   title: Recently Added
 - badges: []
   cards:
-  - entities:
+  - cards:
     - entities:
-      - light.bedroom
-      - light.lounge
-      - light.office
-      head: light.all_lights
-      type: custom:fold-entity-row
-    type: entities
-  - card:
-      show_header_toggle: false
-      title: 3D Printer
+      - entity: input_text.git_message
+        name: Message
       type: entities
-    filter:
-      include:
-      - entity_id: sensor.octopr*
-    show_empty: true
-    sort: name
-    type: custom:auto-entities
-    unique: false
+    - card:
+        entity: input_boolean.git_commit
+        hold_action:
+          action: none
+        icon: mdi:github
+        icon_height: 45px
+        show_state: false
+        tap_action:
+          action: call-service
+          service: automation.trigger
+          service_data:
+            entity_id: automation.commit_message
+        type: button
+      conditions:
+      - entity: input_text.git_message
+        state_not: Committed from UI without a message
+      type: conditional
+    title: Git Commands
+    type: vertical-stack
   - card:
       game_background: true
       type: custom:kb-steam-card
@@ -514,6 +500,20 @@ views:
       include:
       - entity_id: sensor.steam_*
     title: Steam Friends
+    type: custom:auto-entities
+    unique: false
+  - card:
+      secondary_info: game
+      show_header_toggle: false
+      title: Steam Friends
+      type: custom:multiple-entity-row
+    filter:
+      include:
+      - entity_id: sensor.steam*
+    show_empty: true
+    sort:
+      ignore_case: true
+      method: name
     type: custom:auto-entities
     unique: false
   icon: mdi:dev-to

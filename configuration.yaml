@@ -6,8 +6,8 @@ default_config:
   http:
     use_x_forwarded_for: true
     trusted_proxies:
-      - !secret trusted_proxy1
-      - !secret trusted_proxy2
+      - !secret server_1_ip
+      - !secret server_2_ip
 
 ## Simple Components
 map:
@@ -30,8 +30,8 @@ tts:
 http:
   use_x_forwarded_for: true
   trusted_proxies:
-    - !secret trusted_proxy1
-    - !secret trusted_proxy2
+    - !secret server_1_ip
+    - !secret server_2_ip
 ## Frontend
 frontend:
   themes: !include_dir_merge_named themes
@@ -47,6 +47,11 @@ switch: !include_dir_merge_list switches
 zone: !include_dir_merge_list zones
 automation: !include automations.yaml
 # Single Files
+input_select: !include includes/input_select.yaml
+input_boolean: !include includes/input_boolean.yaml
+input_number: !include includes/input_number.yaml
+input_text: !include includes/input_text.yaml
+input_datetime: !include includes/input_datetime.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 shell_command: !include includes/shell_commands.yaml

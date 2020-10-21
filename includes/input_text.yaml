@@ -1,0 +1,7 @@
+#################################################################
+## Input_text
+#################################################################
+
+git_message:
+  name: Git Commit Message
+  initial: 'Committed from UI without a message'

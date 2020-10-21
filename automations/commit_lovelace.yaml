@@ -1,0 +1,14 @@
+  alias: 'Lovelace: convert json to yaml and commit'
+  description: ''
+  trigger:
+  - platform: event
+    event_type: lovelace_updated
+    event_data: {}
+  condition: []
+  action:
+  - service: shell_command.convert_lovelace
+  - delay: '5'
+  - service: shell_command.commit_lovelace
+    data: {}
+  initial_state: 'on'
+  mode: single
