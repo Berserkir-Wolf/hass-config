@@ -483,7 +483,9 @@ views:
         show_state: false
         tap_action:
           action: call-service
-          service: shell_command.commit_changes
+          service: automation.trigger
+          service_data:
+            entity_id: automation.commit_changes_to_github
         type: button
       conditions:
       - entity: input_text.git_message
