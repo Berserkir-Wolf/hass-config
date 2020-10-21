@@ -26,6 +26,9 @@
     event_data: {}
   action:
   - service: shell_command.convert_lovelace
+  - delay: '5'
+  - service: shell_command.commit_lovelace
+    data: {}
   initial_state: 'on'
   mode: single
 - id: '1602904795038'

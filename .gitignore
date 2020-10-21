@@ -38,3 +38,4 @@ zones/work.yaml
 !.gitkeep
 !automations.yaml
 !configuration.yaml
+!lovelace-ui.yaml
