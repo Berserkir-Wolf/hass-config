@@ -485,7 +485,7 @@ views:
           action: call-service
           service: automation.trigger
           service_data:
-            entity_id: automation.commit_changes_to_github
+            entity_id: automation.commit-message
         type: button
       conditions:
       - entity: input_text.git_message
