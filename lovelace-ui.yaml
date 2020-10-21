@@ -506,8 +506,9 @@ views:
     type: custom:auto-entities
     unique: false
   - entities:
-    - input_text.git_message
-    - input_boolean.git_commit
+    - entity: input_datetime.time_now
+    - entity: input_text.git_message
+    - entity: input_boolean.git_commit
     type: entities
   icon: mdi:dev-to
   panel: false
