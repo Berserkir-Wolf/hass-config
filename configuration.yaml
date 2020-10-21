@@ -63,3 +63,4 @@ spotify: !include includes/spotify.yaml
 #camera: !include individuals/unifi_video.yaml
 #influxdb: !include individuals/influxdb.yaml #disabled for system load
 #octoprint: !include individuals/octoprint.yaml
+

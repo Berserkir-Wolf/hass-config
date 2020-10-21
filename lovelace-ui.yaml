@@ -505,6 +505,10 @@ views:
     title: Steam Friends
     type: custom:auto-entities
     unique: false
+  - entities:
+    - input_text.git_message
+    - input_boolean.git_commit
+    type: entities
   icon: mdi:dev-to
   panel: false
   path: testing
