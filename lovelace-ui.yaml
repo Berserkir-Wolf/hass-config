@@ -497,17 +497,6 @@ views:
       type: custom:fold-entity-row
     type: entities
   - card:
-      show_header_toggle: false
-      title: 3D Printer
-      type: entities
-    filter:
-      include:
-      - entity_id: sensor.octopr*
-    show_empty: true
-    sort: name
-    type: custom:auto-entities
-    unique: false
-  - card:
       game_background: true
       type: custom:kb-steam-card
     filter:
