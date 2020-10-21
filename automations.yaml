@@ -53,10 +53,6 @@
     to: 'on'
   condition: []
   action:
-  - service: input_datetime.set_datetime
-    data:
-      datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
-    entity_id: input_datetime.time_now
   - service: shell_command.commit_changes
     data: {}
   - service: input_text.set_value
