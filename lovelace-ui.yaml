@@ -502,6 +502,27 @@ views:
     title: Steam Friends
     type: custom:auto-entities
     unique: false
+  - cards:
+    - card:
+        entity: input_boolean.git_commit
+        hold_action:
+          action: none
+        icon: mdi:github
+        icon_height: 45px
+        show_state: true
+        tap_action:
+          action: toggle
+        type: button
+      conditions:
+      - entity: input_text.git_message
+        state_not: Enter commit message
+      type: conditional
+    - entities:
+      - entity: input_text.git_message
+        name: Message
+      type: entities
+    title: Git Commands
+    type: vertical-stack
   icon: mdi:dev-to
   panel: false
   path: testing
