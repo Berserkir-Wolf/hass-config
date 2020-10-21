@@ -2,5 +2,5 @@
 # The container path to /usr/share/hassio/homeassistant/ is /config/
 
 convert_lovelace: "python /config/utils/json2yaml.py /config/.storage/lovelace /config/lovelace-ui.yaml"
-commit_changes: '/bin/bash /config/utils/commit_updates.sh "{{ states.input_text.git_message.state }}"'
+commit_changes: '/bin/bash /config/utils/commit_updates.sh {{ states("input_text.git_message") }}'
 commit_to_github: "python /config/utils/commit_updates.yaml"
