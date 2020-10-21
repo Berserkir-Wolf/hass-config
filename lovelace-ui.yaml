@@ -513,6 +513,10 @@ views:
       method: name
     type: custom:auto-entities
     unique: false
+  - entity: light.all_lights
+    tap_action:
+      action: toggle
+    type: button
   icon: mdi:dev-to
   panel: false
   path: testing
