@@ -44,7 +44,7 @@
         }} is available.
   mode: single
 - id: '1603249243832'
-  alias: Commit Message
+  alias: Commit changes to Github
   description: ''
   trigger:
   - platform: state
