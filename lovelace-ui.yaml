@@ -488,21 +488,11 @@ views:
   title: Recently Added
 - badges: []
   cards:
-  - entities:
-    - entity: input_datetime.time_now
-    - entity: input_text.git_message
-    - entity: input_boolean.git_commit
-    type: entities
-  - card:
-      game_background: true
-      type: custom:kb-steam-card
-    filter:
-      include:
-      - entity_id: sensor.steam_*
-    title: Steam Friends
-    type: custom:auto-entities
-    unique: false
   - cards:
+    - entities:
+      - entity: input_text.git_message
+        name: Message
+      type: entities
     - card:
         entity: input_boolean.git_commit
         hold_action:
@@ -515,14 +505,19 @@ views:
         type: button
       conditions:
       - entity: input_text.git_message
-        state_not: Enter commit message
+        state_not: Committed from UI without a message
       type: conditional
-    - entities:
-      - entity: input_text.git_message
-        name: Message
-      type: entities
     title: Git Commands
     type: vertical-stack
+  - card:
+      game_background: true
+      type: custom:kb-steam-card
+    filter:
+      include:
+      - entity_id: sensor.steam_*
+    title: Steam Friends
+    type: custom:auto-entities
+    unique: false
   icon: mdi:dev-to
   panel: false
   path: testing

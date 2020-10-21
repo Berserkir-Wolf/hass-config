@@ -4,4 +4,4 @@
 
 git_message:
   name: Git Commit Message
-  initial: 'Enter commit message'
+  initial: 'Committed from UI without a message'
