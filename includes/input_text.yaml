@@ -4,4 +4,4 @@
 
 git_message:
   name: Git Commit Message
-  initial: 'Forgot a message, huh?'
+  initial: 'Enter commit message'

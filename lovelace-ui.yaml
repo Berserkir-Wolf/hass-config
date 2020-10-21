@@ -488,6 +488,11 @@ views:
   title: Recently Added
 - badges: []
   cards:
+  - entities:
+    - entity: input_datetime.time_now
+    - entity: input_text.git_message
+    - entity: input_boolean.git_commit
+    type: entities
   - card:
       game_background: true
       type: custom:kb-steam-card
@@ -497,11 +502,6 @@ views:
     title: Steam Friends
     type: custom:auto-entities
     unique: false
-  - entities:
-    - entity: input_datetime.time_now
-    - entity: input_text.git_message
-    - entity: input_boolean.git_commit
-    type: entities
   icon: mdi:dev-to
   panel: false
   path: testing
