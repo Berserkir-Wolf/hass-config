@@ -329,58 +329,39 @@ views:
   - entity: switch.wol_workstation
   cards:
   - cards:
-    - entity: switch.wol_duplica
-      hold_action:
-        action: more-info
-      icon: mdi:desktop-tower
-      name: Duplica
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: toggle
-      type: entity-button
-    - entity: switch.wol_lounge
-      hold_action:
-        action: more-info
-      icon: mdi:desktop-mac
-      name: HTPC
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: toggle
-      type: entity-button
-    - entity: switch.wol_shif
-      hold_action:
-        action: more-info
-      icon: mdi:desktop-mac
-      name: Shif
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: toggle
-      type: entity-button
-    - entity: switch.wol_workstation
-      hold_action:
-        action: more-info
-      icon: mdi:desktop-classic
-      name: Workstation
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: toggle
-      type: entity-button
+    - cards:
+      - color_type: card
+        entity: switch.wol_lounge
+        name: Lounge HTPC
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      - color_type: card
+        entity: switch.wol_shif
+        name: Lounge NUC
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      type: horizontal-stack
+    - cards:
+      - color_type: card
+        entity: switch.wol_workstation
+        name: Workstation
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      - color_type: card
+        entity: switch.wol_duplica
+        name: Testbed
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      type: horizontal-stack
     type: vertical-stack
-  - card:
-      show_header_toggle: false
-      title: Wake-on-LAN
-      type: glance
-    filter:
-      include:
-      - entity_id: switch.wol_*
-    show_empty: true
-    sort: name
-    type: custom:auto-entities
-    unique: false
   icon: mdi:dip-switch
   panel: false
   path: wakeonlan
