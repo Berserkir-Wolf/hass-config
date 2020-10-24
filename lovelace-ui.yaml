@@ -496,29 +496,6 @@ views:
       type: conditional
     title: Git Commands
     type: vertical-stack
-  - card:
-      game_background: true
-      type: custom:kb-steam-card
-    filter:
-      include:
-      - entity_id: sensor.steam_*
-    title: Steam Friends
-    type: custom:auto-entities
-    unique: false
-  - card:
-      secondary_info: game
-      show_header_toggle: false
-      title: Steam Friends
-      type: custom:multiple-entity-row
-    filter:
-      include:
-      - entity_id: sensor.steam*
-    show_empty: true
-    sort:
-      ignore_case: true
-      method: name
-    type: custom:auto-entities
-    unique: false
   icon: mdi:dev-to
   panel: false
   path: testing
