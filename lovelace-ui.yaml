@@ -308,6 +308,35 @@ views:
   panel: false
   path: wakeonlan
   title: WakeOnLan
+- badges: []
+  cards:
+  - card:
+      show_header_toggle: false
+      title: OWM
+      type: entities
+    filter:
+      include:
+      - entity_id: sensor.owm*
+    show_empty: true
+    sort: name
+    type: custom:auto-entities
+    unique: false
+  - entities:
+    - entity: sensor.new_zealand_coronavirus_confirmed
+      name: Confirmed
+    - entity: sensor.new_zealand_coronavirus_current
+      name: Current
+    - entity: sensor.new_zealand_coronavirus_deaths
+      name: Deaths
+    - entity: sensor.new_zealand_coronavirus_recovered
+      name: Recovered
+    title: COVID-19
+    type: glance
+  - entity: weather.home
+    type: weather-forecast
+  icon: mdi:weather-partly-cloudy
+  path: weather
+  title: Weather
 - badges:
   - entity: sensor.plex_berserkirnet
     name: Plex Streams
@@ -366,35 +395,6 @@ views:
   path: media
   theme: Backend-selected
   title: Media
-- badges: []
-  cards:
-  - card:
-      show_header_toggle: false
-      title: OWM
-      type: entities
-    filter:
-      include:
-      - entity_id: sensor.owm*
-    show_empty: true
-    sort: name
-    type: custom:auto-entities
-    unique: false
-  - entities:
-    - entity: sensor.new_zealand_coronavirus_confirmed
-      name: Confirmed
-    - entity: sensor.new_zealand_coronavirus_current
-      name: Current
-    - entity: sensor.new_zealand_coronavirus_deaths
-      name: Deaths
-    - entity: sensor.new_zealand_coronavirus_recovered
-      name: Recovered
-    title: COVID-19
-    type: glance
-  - entity: weather.home
-    type: weather-forecast
-  icon: mdi:weather-partly-cloudy
-  path: weather
-  title: Weather
 - badges: []
   cards:
   - cards:
