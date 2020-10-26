@@ -500,3 +500,8 @@ views:
   panel: false
   path: testing
   title: Testing
+- badges: []
+  cards: []
+  icon: mdi:console
+  path: shell
+  title: commands
