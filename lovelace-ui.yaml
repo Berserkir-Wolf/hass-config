@@ -87,33 +87,35 @@ views:
   title: Home
 - badges: []
   cards:
-  - card:
-      show_header_toggle: false
-      title: OWM
-      type: entities
-    filter:
-      include:
-      - entity_id: sensor.owm*
-    show_empty: true
-    sort: name
-    type: custom:auto-entities
-    unique: false
-  - entities:
-    - entity: sensor.new_zealand_coronavirus_confirmed
-      name: Confirmed
-    - entity: sensor.new_zealand_coronavirus_current
-      name: Current
-    - entity: sensor.new_zealand_coronavirus_deaths
-      name: Deaths
-    - entity: sensor.new_zealand_coronavirus_recovered
-      name: Recovered
-    title: COVID-19
-    type: glance
-  - entity: weather.home
-    type: weather-forecast
-  icon: mdi:weather-partly-cloudy
-  path: weather
-  title: Weather
+  - cards:
+    - dark_mode: false
+      entities:
+      - entity: device_tracker.g8142
+      hours_to_show: 2
+      title: Phone Location
+      type: map
+    - entities:
+      - entity: binary_sensor.g8142_interactive
+      - entity: binary_sensor.g8142_is_charging
+      - entity: binary_sensor.g8142_music_active
+      type: glance
+    - card:
+        show_header_toggle: false
+        title: Phone Sensors
+        type: entities
+      filter:
+        exclude:
+        - entity_id: sensor.g8142_geo*
+        include:
+        - entity_id: sensor.g8142*
+      show_empty: false
+      type: custom:auto-entities
+      unique: false
+    type: vertical-stack
+  icon: mdi:phone
+  panel: false
+  path: phones
+  title: Phones
 - badges:
   - entity: sensor.mikrotik_router_kib_s_received
   - entity: sensor.mikrotik_router_kib_s_sent
@@ -264,6 +266,35 @@ views:
   title: Network
 - badges: []
   cards:
+  - card:
+      show_header_toggle: false
+      title: OWM
+      type: entities
+    filter:
+      include:
+      - entity_id: sensor.owm*
+    show_empty: true
+    sort: name
+    type: custom:auto-entities
+    unique: false
+  - entities:
+    - entity: sensor.new_zealand_coronavirus_confirmed
+      name: Confirmed
+    - entity: sensor.new_zealand_coronavirus_current
+      name: Current
+    - entity: sensor.new_zealand_coronavirus_deaths
+      name: Deaths
+    - entity: sensor.new_zealand_coronavirus_recovered
+      name: Recovered
+    title: COVID-19
+    type: glance
+  - entity: weather.home
+    type: weather-forecast
+  icon: mdi:weather-partly-cloudy
+  path: weather
+  title: Weather
+- badges: []
+  cards:
   - dark_mode: false
     entities:
     - entity: device_tracker.g8142
@@ -293,37 +324,6 @@ views:
   icon: mdi:crosshairs-gps
   path: location
   title: Location
-- badges: []
-  cards:
-  - cards:
-    - dark_mode: false
-      entities:
-      - entity: device_tracker.g8142
-      hours_to_show: 2
-      title: Phone Location
-      type: map
-    - entities:
-      - entity: binary_sensor.g8142_interactive
-      - entity: binary_sensor.g8142_is_charging
-      - entity: binary_sensor.g8142_music_active
-      type: glance
-    - card:
-        show_header_toggle: false
-        title: Phone Sensors
-        type: entities
-      filter:
-        exclude:
-        - entity_id: sensor.g8142_geo*
-        include:
-        - entity_id: sensor.g8142*
-      show_empty: false
-      type: custom:auto-entities
-      unique: false
-    type: vertical-stack
-  icon: mdi:phone
-  panel: false
-  path: phones
-  title: Phones
 - badges:
   - entity: switch.wol_duplica
   - entity: switch.wol_lounge
