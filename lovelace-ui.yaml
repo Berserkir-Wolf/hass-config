@@ -501,6 +501,11 @@ views:
       type: conditional
     title: Git Commands
     type: vertical-stack
+  icon: mdi:git
+  path: git
+  title: git
+- badges: []
+  cards: []
   icon: mdi:dev-to
   panel: false
   path: testing
