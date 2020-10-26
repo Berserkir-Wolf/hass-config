@@ -86,64 +86,6 @@ views:
   path: home
   title: Home
 - badges:
-  - entity: sensor.plex_berserkirnet
-    name: Plex Streams
-  - entity: sensor.plextotalbandwidthrounded
-    name: Plex Bandwidth
-  - entity: sensor.nzbget_speed
-  - entity: sensor.ombi_pending_requests
-    name: Pending Requests
-  cards:
-  - cards:
-    - entity: sensor.plex_berserkirnet
-      name: Current Plex Streams
-      type: sensor
-    - entity: sensor.plexwanbandwidthrounded
-      name: Plex WAN Bandwith
-      type: sensor
-    - entity: sensor.plexlanbandwidthrounded
-      name: Plex LAN Bandwith
-      type: sensor
-    - entity: sensor.plextotalbandwidthrounded
-      name: Plex Total Bandwidth
-      type: sensor
-    type: vertical-stack
-  - entities:
-    - entity: sensor.sonarr_upcoming
-    show_header_toggle: false
-    title: Sonarr Status
-    type: entities
-  - entities:
-    - entity: sensor.radarr_movies
-    - entity: sensor.radarr_upcoming
-    show_header_toggle: false
-    title: Radarr Status
-    type: entities
-  - entities:
-    - entity: sensor.nzbget_uptime_hours
-    type: entities
-  - card:
-      show_header_toggle: false
-      title: Now Streaming
-      type: entities
-    filter:
-      exclude:
-      - state: unavailable
-      - state: idle
-      include:
-      - entity_id: media_player.plex_*
-    show_empty: true
-    sort: none
-    type: custom:auto-entities
-    unique: false
-  - entity: media_player.spotify_sky_girl14
-    type: media-control
-  icon: mdi:film
-  panel: false
-  path: media
-  theme: Backend-selected
-  title: Media
-- badges:
   - entity: sensor.mikrotik_router_kib_s_received
   - entity: sensor.mikrotik_router_kib_s_sent
   - entity: sensor.pi_hole_dns_queries_today
@@ -366,6 +308,64 @@ views:
   panel: false
   path: wakeonlan
   title: WakeOnLan
+- badges:
+  - entity: sensor.plex_berserkirnet
+    name: Plex Streams
+  - entity: sensor.plextotalbandwidthrounded
+    name: Plex Bandwidth
+  - entity: sensor.nzbget_speed
+  - entity: sensor.ombi_pending_requests
+    name: Pending Requests
+  cards:
+  - cards:
+    - entity: sensor.plex_berserkirnet
+      name: Current Plex Streams
+      type: sensor
+    - entity: sensor.plexwanbandwidthrounded
+      name: Plex WAN Bandwith
+      type: sensor
+    - entity: sensor.plexlanbandwidthrounded
+      name: Plex LAN Bandwith
+      type: sensor
+    - entity: sensor.plextotalbandwidthrounded
+      name: Plex Total Bandwidth
+      type: sensor
+    type: vertical-stack
+  - entities:
+    - entity: sensor.sonarr_upcoming
+    show_header_toggle: false
+    title: Sonarr Status
+    type: entities
+  - entities:
+    - entity: sensor.radarr_movies
+    - entity: sensor.radarr_upcoming
+    show_header_toggle: false
+    title: Radarr Status
+    type: entities
+  - entities:
+    - entity: sensor.nzbget_uptime_hours
+    type: entities
+  - card:
+      show_header_toggle: false
+      title: Now Streaming
+      type: entities
+    filter:
+      exclude:
+      - state: unavailable
+      - state: idle
+      include:
+      - entity_id: media_player.plex_*
+    show_empty: true
+    sort: none
+    type: custom:auto-entities
+    unique: false
+  - entity: media_player.spotify_sky_girl14
+    type: media-control
+  icon: mdi:film
+  panel: false
+  path: media
+  theme: Backend-selected
+  title: Media
 - badges: []
   cards:
   - card:
