@@ -471,6 +471,11 @@ views:
   path: gaming
   title: Gaming
 - badges: []
+  cards: []
+  icon: mdi:console
+  path: shell
+  title: commands
+- badges: []
   cards:
   - cards:
     - entities:
@@ -500,8 +505,3 @@ views:
   panel: false
   path: testing
   title: Testing
-- badges: []
-  cards: []
-  icon: mdi:console
-  path: shell
-  title: commands
