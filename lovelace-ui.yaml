@@ -397,6 +397,15 @@ views:
   title: Media
 - badges: []
   cards:
+  - aspect_ratio: 100%
+    type: iframe
+    url: https://media.berserkir.net/recentlyadded/
+  icon: mdi:filmstrip
+  panel: true
+  path: recently-added
+  title: Recently Added
+- badges: []
+  cards:
   - card:
       secondary_info: game
       show_header_toggle: false
@@ -430,15 +439,6 @@ views:
   icon: mdi:gamepad-variant
   path: gaming
   title: Gaming
-- badges: []
-  cards:
-  - aspect_ratio: 100%
-    type: iframe
-    url: https://media.berserkir.net/recentlyadded/
-  icon: mdi:filmstrip
-  panel: true
-  path: recently-added
-  title: Recently Added
 - badges: []
   cards:
   - cards:
