@@ -397,37 +397,6 @@ views:
   title: Media
 - badges: []
   cards:
-  - cards:
-    - dark_mode: false
-      entities:
-      - entity: device_tracker.g8142
-      hours_to_show: 2
-      title: Phone Location
-      type: map
-    - entities:
-      - entity: binary_sensor.g8142_interactive
-      - entity: binary_sensor.g8142_is_charging
-      - entity: binary_sensor.g8142_music_active
-      type: glance
-    - card:
-        show_header_toggle: false
-        title: Phone Sensors
-        type: entities
-      filter:
-        exclude:
-        - entity_id: sensor.g8142_geo*
-        include:
-        - entity_id: sensor.g8142*
-      show_empty: false
-      type: custom:auto-entities
-      unique: false
-    type: vertical-stack
-  icon: mdi:phone
-  panel: false
-  path: phones
-  title: Phones
-- badges: []
-  cards:
   - card:
       secondary_info: game
       show_header_toggle: false
@@ -470,6 +439,37 @@ views:
   panel: true
   path: recently-added
   title: Recently Added
+- badges: []
+  cards:
+  - cards:
+    - dark_mode: false
+      entities:
+      - entity: device_tracker.g8142
+      hours_to_show: 2
+      title: Phone Location
+      type: map
+    - entities:
+      - entity: binary_sensor.g8142_interactive
+      - entity: binary_sensor.g8142_is_charging
+      - entity: binary_sensor.g8142_music_active
+      type: glance
+    - card:
+        show_header_toggle: false
+        title: Phone Sensors
+        type: entities
+      filter:
+        exclude:
+        - entity_id: sensor.g8142_geo*
+        include:
+        - entity_id: sensor.g8142*
+      show_empty: false
+      type: custom:auto-entities
+      unique: false
+    type: vertical-stack
+  icon: mdi:phone
+  panel: false
+  path: phones
+  title: Phones
 - badges: []
   cards:
   - cards:
