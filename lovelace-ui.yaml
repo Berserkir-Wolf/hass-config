@@ -116,6 +116,37 @@ views:
   panel: false
   path: phones
   title: Phones
+- badges: []
+  cards:
+  - dark_mode: false
+    entities:
+    - entity: device_tracker.g8142
+    - entity: zone.work
+    - entity: zone.home
+    type: map
+  - card:
+      show_header_toggle: false
+      title: Who's Home?
+      type: entities
+    filter:
+      exclude:
+      - state: not_home
+      include:
+      - entity_id: person.*
+    show_empty: false
+    sort: none
+    type: custom:auto-entities
+    unique: false
+  - columns: 1
+    entities:
+    - entity: sensor.g8142_geocoded_location
+    show_icon: true
+    show_state: true
+    title: Phone Location
+    type: glance
+  icon: mdi:crosshairs-gps
+  path: location
+  title: Location
 - badges:
   - entity: sensor.mikrotik_router_kib_s_received
   - entity: sensor.mikrotik_router_kib_s_sent
@@ -293,37 +324,6 @@ views:
   icon: mdi:weather-partly-cloudy
   path: weather
   title: Weather
-- badges: []
-  cards:
-  - dark_mode: false
-    entities:
-    - entity: device_tracker.g8142
-    - entity: zone.work
-    - entity: zone.home
-    type: map
-  - card:
-      show_header_toggle: false
-      title: Who's Home?
-      type: entities
-    filter:
-      exclude:
-      - state: not_home
-      include:
-      - entity_id: person.*
-    show_empty: false
-    sort: none
-    type: custom:auto-entities
-    unique: false
-  - columns: 1
-    entities:
-    - entity: sensor.g8142_geocoded_location
-    show_icon: true
-    show_state: true
-    title: Phone Location
-    type: glance
-  icon: mdi:crosshairs-gps
-  path: location
-  title: Location
 - badges:
   - entity: switch.wol_duplica
   - entity: switch.wol_lounge
