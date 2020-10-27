@@ -303,8 +303,8 @@ views:
       type: entities
     filter:
       include:
-      - entity_id: sensor.owm*
-    show_empty: false
+      - entity_id: sensor.owm*_2
+    show_empty: true
     sort: name
     type: custom:auto-entities
     unique: false
