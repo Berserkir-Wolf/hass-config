@@ -1,5 +1,5 @@
 ## For OpenWeatherMap
-  - platform: openweathermap
-    name: OWM
-    api_key: !secret owm_apikey
-    forecast: true
+#  - platform: openweathermap
+#    name: OWM
+#    api_key: !secret owm_apikey
+#    forecast: true
