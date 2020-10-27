@@ -470,7 +470,16 @@ views:
   path: gaming
   title: Gaming
 - badges: []
-  cards: []
+  cards:
+  - hold_action:
+      action: none
+    icon: mdi:monitor-screenshot
+    icon_height: 45px
+    name: Convert Lovelace to Yaml
+    tap_action:
+      action: call-service
+      service: shell_command.convert_lovelace
+    type: button
   icon: mdi:console
   path: shell
   title: commands
