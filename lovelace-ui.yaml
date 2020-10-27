@@ -304,7 +304,7 @@ views:
     filter:
       include:
       - entity_id: sensor.owm*
-    show_empty: true
+    show_empty: false
     sort: name
     type: custom:auto-entities
     unique: false
