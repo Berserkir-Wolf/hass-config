@@ -4,7 +4,7 @@ My Home Assistant configuration
 ### Warning
 Not quite everything will be uploaded here, because some things should be kept private.<br>
 If you are going to put your config into a git repo, _please_ bear this in mind.<br>
-As an example of what can happen, I've included an API key in one of my files - Openweathermap.<br>
+As an example of what can happen, I've included an API key in one of my files - [Openweathermap](https://github.com/Berserkir-Wolf/hass-config/blob/master/sensors/openweathermap.yaml).<br>
 It took a couple days to be seen, and then my API key was being used in multiple places.<br>
 _I have since invalidated this key._
 

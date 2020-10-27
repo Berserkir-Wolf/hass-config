@@ -1,5 +1,5 @@
-## For OpenWeatherMap
-#  - platform: openweathermap
-#    name: OWM
-#    api_key: !secret owm_apikey
-#    forecast: true
+# This used to house the openweathermap sensor config.
+# It has now migrated to being configured by the UI, and this file remains to show the dangers of exposing API keys in a git repo.
+# Look at the file history on this file, and you'll see an example URL with an API key embedded in it.
+# It took mere days for this file to be found and the key to begin being used by others, despite the service being free anyway.
+# The old key has been invalidated.
