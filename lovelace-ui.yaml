@@ -303,7 +303,7 @@ views:
       type: entities
     filter:
       include:
-      - entity_id: sensor.owm*_2
+      - entity_id: sensor.open*
     show_empty: true
     sort: name
     type: custom:auto-entities
