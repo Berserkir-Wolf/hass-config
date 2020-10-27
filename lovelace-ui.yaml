@@ -2,17 +2,39 @@ title: BNet
 views:
 - badges: []
   cards:
-  - card:
-      show_header_toggle: true
-      title: Lights
-      type: entities
-    filter:
-      include:
-      - domain: light
-    show_empty: true
-    sort: name
-    type: custom:auto-entities
-    unique: false
+  - cards:
+    - color_type: label-card
+      entity: light.all_lights
+      name: Lights
+      size: 30px
+      type: custom:button-card
+    - cards:
+      - color_type: card
+        entity: light.bedroom
+        hold_action:
+          action: more-info
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      - color_type: card
+        entity: light.lounge
+        hold_action:
+          action: more-info
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      - color_type: card
+        entity: light.office
+        hold_action:
+          action: more-info
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      type: horizontal-stack
+    type: vertical-stack
   - entities:
     - entity: light.bedroom
       name: Bedroom Light
@@ -63,64 +85,68 @@ views:
   icon: mdi:home
   path: home
   title: Home
-- badges:
-  - entity: sensor.plex_berserkirnet
-    name: Plex Streams
-  - entity: sensor.plextotalbandwidthrounded
-    name: Plex Bandwidth
-  - entity: sensor.nzbget_speed
-  - entity: sensor.ombi_pending_requests
-    name: Pending Requests
+- badges: []
   cards:
   - cards:
-    - entity: sensor.plex_berserkirnet
-      name: Current Plex Streams
-      type: sensor
-    - entity: sensor.plexwanbandwidthrounded
-      name: Plex WAN Bandwith
-      type: sensor
-    - entity: sensor.plexlanbandwidthrounded
-      name: Plex LAN Bandwith
-      type: sensor
-    - entity: sensor.plextotalbandwidthrounded
-      name: Plex Total Bandwidth
-      type: sensor
+    - dark_mode: false
+      entities:
+      - entity: device_tracker.g8142
+      hours_to_show: 2
+      title: Phone Location
+      type: map
+    - entities:
+      - entity: binary_sensor.g8142_interactive
+      - entity: binary_sensor.g8142_is_charging
+      - entity: binary_sensor.g8142_music_active
+      type: glance
+    - card:
+        show_header_toggle: false
+        title: Phone Sensors
+        type: entities
+      filter:
+        exclude:
+        - entity_id: sensor.g8142_geo*
+        include:
+        - entity_id: sensor.g8142*
+      show_empty: false
+      type: custom:auto-entities
+      unique: false
     type: vertical-stack
-  - entities:
-    - entity: sensor.sonarr_upcoming
-    show_header_toggle: false
-    title: Sonarr Status
-    type: entities
-  - entities:
-    - entity: sensor.radarr_movies
-    - entity: sensor.radarr_upcoming
-    show_header_toggle: false
-    title: Radarr Status
-    type: entities
-  - entities:
-    - entity: sensor.nzbget_uptime_hours
-    type: entities
+  icon: mdi:phone
+  panel: false
+  path: phones
+  title: Phones
+- badges: []
+  cards:
+  - dark_mode: false
+    entities:
+    - entity: device_tracker.g8142
+    - entity: zone.work
+    - entity: zone.home
+    type: map
   - card:
       show_header_toggle: false
-      title: Now Streaming
+      title: Who's Home?
       type: entities
     filter:
       exclude:
-      - state: unavailable
-      - state: idle
+      - state: not_home
       include:
-      - entity_id: media_player.plex_*
-    show_empty: true
+      - entity_id: person.*
+    show_empty: false
     sort: none
     type: custom:auto-entities
     unique: false
-  - entity: media_player.spotify_sky_girl14
-    type: media-control
-  icon: mdi:film
-  panel: false
-  path: media
-  theme: Backend-selected
-  title: Media
+  - columns: 1
+    entities:
+    - entity: sensor.g8142_geocoded_location
+    show_icon: true
+    show_state: true
+    title: Phone Location
+    type: glance
+  icon: mdi:crosshairs-gps
+  path: location
+  title: Location
 - badges:
   - entity: sensor.mikrotik_router_kib_s_received
   - entity: sensor.mikrotik_router_kib_s_sent
@@ -271,108 +297,13 @@ views:
   title: Network
 - badges: []
   cards:
-  - dark_mode: false
-    entities:
-    - entity: device_tracker.g8142
-    - entity: zone.work
-    - entity: zone.home
-    type: map
-  - card:
-      show_header_toggle: false
-      title: Who's Home?
-      type: entities
-    filter:
-      exclude:
-      - state: not_home
-      include:
-      - entity_id: person.*
-    show_empty: false
-    sort: none
-    type: custom:auto-entities
-    unique: false
-  - columns: 1
-    entities:
-    - entity: sensor.g8142_geocoded_location
-    show_icon: true
-    show_state: true
-    title: Phone Location
-    type: glance
-  icon: mdi:crosshairs-gps
-  path: location
-  title: Location
-- badges:
-  - entity: switch.wol_duplica
-  - entity: switch.wol_lounge
-  - entity: switch.wol_shif
-  - entity: switch.wol_workstation
-  cards:
-  - cards:
-    - entity: switch.wol_duplica
-      hold_action:
-        action: more-info
-      icon: mdi:desktop-tower
-      name: Duplica
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: toggle
-      type: entity-button
-    - entity: switch.wol_lounge
-      hold_action:
-        action: more-info
-      icon: mdi:desktop-mac
-      name: HTPC
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: toggle
-      type: entity-button
-    - entity: switch.wol_shif
-      hold_action:
-        action: more-info
-      icon: mdi:desktop-mac
-      name: Shif
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: toggle
-      type: entity-button
-    - entity: switch.wol_workstation
-      hold_action:
-        action: more-info
-      icon: mdi:desktop-classic
-      name: Workstation
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: toggle
-      type: entity-button
-    type: vertical-stack
-  - card:
-      show_header_toggle: false
-      title: Wake-on-LAN
-      type: glance
-    filter:
-      include:
-      - entity_id: switch.wol_*
-    show_empty: true
-    sort: name
-    type: custom:auto-entities
-    unique: false
-  icon: mdi:dip-switch
-  panel: false
-  path: wakeonlan
-  title: WakeOnLan
-- badges: []
-  cards:
   - card:
       show_header_toggle: false
       title: OWM
       type: entities
     filter:
       include:
-      - entity_id: sensor.owm*
-    show_empty: true
+      - entity_id: sensor.openweathermap*
     sort: name
     type: custom:auto-entities
     unique: false
@@ -392,37 +323,117 @@ views:
   icon: mdi:weather-partly-cloudy
   path: weather
   title: Weather
-- badges: []
+- badges:
+  - entity: switch.wol_duplica
+  - entity: switch.wol_lounge
+  - entity: switch.wol_shif
+  - entity: switch.wol_workstation
   cards:
   - cards:
-    - dark_mode: false
-      entities:
-      - entity: device_tracker.g8142
-      hours_to_show: 2
-      title: Phone Location
-      type: map
-    - entities:
-      - entity: binary_sensor.g8142_interactive
-      - entity: binary_sensor.g8142_is_charging
-      - entity: binary_sensor.g8142_music_active
-      type: glance
-    - card:
-        show_header_toggle: false
-        title: Phone Sensors
-        type: entities
-      filter:
-        exclude:
-        - entity_id: sensor.g8142_geo*
-        include:
-        - entity_id: sensor.g8142*
-      show_empty: false
-      type: custom:auto-entities
-      unique: false
+    - cards:
+      - color_type: card
+        entity: switch.wol_lounge
+        name: Lounge HTPC
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      - color_type: card
+        entity: switch.wol_shif
+        name: Lounge NUC
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      type: horizontal-stack
+    - cards:
+      - color_type: card
+        entity: switch.wol_workstation
+        name: Workstation
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      - color_type: card
+        entity: switch.wol_duplica
+        name: Testbed
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      type: horizontal-stack
     type: vertical-stack
-  icon: mdi:phone
+  icon: mdi:dip-switch
   panel: false
-  path: phones
-  title: Phones
+  path: wakeonlan
+  title: WakeOnLan
+- badges:
+  - entity: sensor.plex_berserkirnet
+    name: Plex Streams
+  - entity: sensor.plextotalbandwidthrounded
+    name: Plex Bandwidth
+  - entity: sensor.nzbget_speed
+  - entity: sensor.ombi_pending_requests
+    name: Pending Requests
+  cards:
+  - cards:
+    - entity: sensor.plex_berserkirnet
+      name: Current Plex Streams
+      type: sensor
+    - entity: sensor.plexwanbandwidthrounded
+      name: Plex WAN Bandwith
+      type: sensor
+    - entity: sensor.plexlanbandwidthrounded
+      name: Plex LAN Bandwith
+      type: sensor
+    - entity: sensor.plextotalbandwidthrounded
+      name: Plex Total Bandwidth
+      type: sensor
+    type: vertical-stack
+  - entities:
+    - entity: sensor.sonarr_upcoming
+    show_header_toggle: false
+    title: Sonarr Status
+    type: entities
+  - entities:
+    - entity: sensor.radarr_movies
+    - entity: sensor.radarr_upcoming
+    show_header_toggle: false
+    title: Radarr Status
+    type: entities
+  - entities:
+    - entity: sensor.nzbget_uptime_hours
+    type: entities
+  - card:
+      show_header_toggle: false
+      title: Now Streaming
+      type: entities
+    filter:
+      exclude:
+      - state: unavailable
+      - state: idle
+      include:
+      - entity_id: media_player.plex_*
+    show_empty: true
+    sort: none
+    type: custom:auto-entities
+    unique: false
+  - entity: media_player.spotify_sky_girl14
+    type: media-control
+  icon: mdi:film
+  panel: false
+  path: media
+  theme: Backend-selected
+  title: Media
+- badges: []
+  cards:
+  - aspect_ratio: 100%
+    type: iframe
+    url: https://media.berserkir.net/recentlyadded/
+  icon: mdi:filmstrip
+  panel: true
+  path: recently-added
+  title: Recently Added
 - badges: []
   cards:
   - card:
@@ -459,14 +470,10 @@ views:
   path: gaming
   title: Gaming
 - badges: []
-  cards:
-  - aspect_ratio: 100%
-    type: iframe
-    url: https://media.berserkir.net/recentlyadded/
-  icon: mdi:filmstrip
-  panel: true
-  path: recently-added
-  title: Recently Added
+  cards: []
+  icon: mdi:console
+  path: shell
+  title: commands
 - badges: []
   cards:
   - cards:
@@ -493,29 +500,11 @@ views:
       type: conditional
     title: Git Commands
     type: vertical-stack
-  - card:
-      game_background: true
-      type: custom:kb-steam-card
-    filter:
-      include:
-      - entity_id: sensor.steam_*
-    title: Steam Friends
-    type: custom:auto-entities
-    unique: false
-  - card:
-      secondary_info: game
-      show_header_toggle: false
-      title: Steam Friends
-      type: custom:multiple-entity-row
-    filter:
-      include:
-      - entity_id: sensor.steam*
-    show_empty: true
-    sort:
-      ignore_case: true
-      method: name
-    type: custom:auto-entities
-    unique: false
+  icon: mdi:git
+  path: git
+  title: git
+- badges: []
+  cards: []
   icon: mdi:dev-to
   panel: false
   path: testing
