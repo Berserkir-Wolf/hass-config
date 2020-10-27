@@ -303,8 +303,7 @@ views:
       type: entities
     filter:
       include:
-      - entity_id: sensor.open*
-    show_empty: true
+      - entity_id: sensor.openweathermap*
     sort: name
     type: custom:auto-entities
     unique: false
