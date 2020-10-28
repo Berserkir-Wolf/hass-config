@@ -91,7 +91,7 @@ views:
     - dark_mode: false
       entities:
       - entity: device_tracker.g8142
-      hours_to_show: 2
+      hours_to_show: 0
       title: Phone Location
       type: map
     - entities:
