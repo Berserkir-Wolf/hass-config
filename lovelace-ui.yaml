@@ -174,9 +174,18 @@ views:
           yellow: 25000
         type: gauge
       type: horizontal-stack
-    - entities:
-      - entity: sensor.mikrotik_router_packets_sent
-      type: entities
+    - card:
+        show_header_toggle: false
+        type: entities
+      filter:
+        include:
+        - entity_id: sensor.mikrotik_router_*
+      show_empty: true
+      sort:
+        ignore_case: true
+        method: name
+      type: custom:auto-entities
+      unique: false
     title: Routerboard Stats
     type: vertical-stack
   - cards:
