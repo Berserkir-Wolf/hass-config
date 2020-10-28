@@ -470,10 +470,43 @@ views:
   path: gaming
   title: Gaming
 - badges: []
-  cards: []
+  cards:
+  - hold_action:
+      action: none
+    icon: mdi:monitor-screenshot
+    icon_height: 45px
+    name: Convert Lovelace to Yaml
+    tap_action:
+      action: call-service
+      service: shell_command.convert_lovelace
+    type: button
+  - cards:
+    - entities:
+      - entity: input_text.git_message
+        name: Message
+      type: entities
+    - card:
+        entity: input_boolean.git_commit
+        hold_action:
+          action: none
+        icon: mdi:github
+        icon_height: 45px
+        show_state: false
+        tap_action:
+          action: call-service
+          service: automation.trigger
+          service_data:
+            entity_id: automation.commit_message
+        type: button
+      conditions:
+      - entity: input_text.git_message
+        state_not: Committed from UI without a message
+      type: conditional
+    title: Git Commands
+    type: vertical-stack
   icon: mdi:console
   path: shell
-  title: commands
+  title: Commands
 - badges: []
   cards:
   - cards:
@@ -502,7 +535,7 @@ views:
     type: vertical-stack
   icon: mdi:git
   path: git
-  title: git
+  title: Git
 - badges: []
   cards: []
   icon: mdi:dev-to
