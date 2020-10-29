@@ -1,0 +1,20 @@
+- id: '1603249243832'
+  alias: Commit changes to Github
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: input_boolean.git_commit
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: shell_command.commit_changes
+    data: {}
+  - service: input_text.set_value
+    data:
+      value: Committed from UI without a message
+    entity_id: input_text.git_message
+  - service: input_boolean.turn_off
+    data: {}
+    entity_id: input_boolean.git_commit
+  mode: single

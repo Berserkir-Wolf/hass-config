@@ -1,3 +1,4 @@
+- id: '1603311446063'
   alias: 'Lovelace: convert json to yaml and commit'
   description: ''
   trigger:
@@ -10,5 +11,5 @@
   - delay: '5'
   - service: shell_command.commit_lovelace
     data: {}
-  initial_state: 'on'
+  initial_state: 'off'
   mode: single

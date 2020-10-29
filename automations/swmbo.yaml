@@ -1,19 +1,19 @@
-  alias: Notify me if SWMBO arrives when I am not at home
+- id: '1584476995764'
+  alias: Notify me if Kirstyn arrives when I am not at home
   description: ''
   trigger:
-  - entity_id: person.swmbo
+  - entity_id: person.kirstyn_rolfe
     from: not_home
     platform: state
     to: home
   condition: []
   action:
   - data:
-      message: SWMBO just arrived
-      title: They're Home
-      ttl: 10
+      message: Kirstyn just arrived
+      title: Kirstyn's Home
     service: notify.html5_notifications
   - data:
-      message: SWMBO just arrived
-      title: They're Home
+      message: Kirstyn just arrived
+      title: Kirstyn's Home
     service: notify.mobile_app_g8142
   mode: single
