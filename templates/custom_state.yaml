@@ -1,11 +1,10 @@
-  - platform: template
     sensors:
-      state_loungeAP:
+      state_loungeap:
         friendly_name: 'Lounge AP'
         value_template: '{% if is_state("device_tracker.loungeap", "home") %}Online{% else %}Offline{% endif %}'
-      state_OfficeAP:
+      state_officeap:
         friendly_name: 'Office AP'
         value_template: '{% if is_state("device_tracker.officeap", "home") %}Online{% else %}Offline{% endif %}'
-      state_OutdoorAP:
+      state_outdoorap:
         friendly_name: 'Outdoor AP'
         value_template: '{% if is_state("device_tracker.outdoorap", "home") %}Online{% else %}Offline{% endif %}'
