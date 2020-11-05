@@ -42,7 +42,7 @@ group: !include_dir_merge_list groups
 notify: !include_dir_merge_list notify
 sensor: !include_dir_merge_list sensors
 switch: !include_dir_merge_list switches
-template: !include_dir_merge_named templates
+#template: !include_dir_merge_list templates
 zone: !include_dir_merge_list zones
 # Single Files
 automation: !include automations.yaml

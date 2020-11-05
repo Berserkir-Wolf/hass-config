@@ -236,11 +236,10 @@ views:
         type: custom:secondaryinfo-entity-row
       type: entities
     - entities:
-      - entity: device_tracker.loungeap
+      - entity: sensor.state_loungeap
+      - entity: sensor.state_officeap
         icon: mdi:access-point-network
-      - entity: device_tracker.officeap
-        icon: mdi:access-point-network
-      - entity: device_tracker.outdoorap
+      - entity: sensor.state_outdoorap
         icon: mdi:access-point-network
       show_header_toggle: false
       type: entities
