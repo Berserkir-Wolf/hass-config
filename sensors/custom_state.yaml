@@ -3,7 +3,6 @@
       state_loungeap:
         friendly_name: 'Lounge AP'
         value_template: '{% if is_state("device_tracker.loungeap", "home") %}Online{% else %}Offline{% endif %}'
-        icon_template: mdi:access-point-network
         icon_template: >-
           '{% if is_state("device_tracker.loungeap", "home") %}
              mdi:access-point-network
