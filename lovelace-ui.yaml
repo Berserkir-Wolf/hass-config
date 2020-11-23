@@ -490,7 +490,40 @@ views:
   path: git
   title: Git
 - badges: []
-  cards: []
+  cards:
+  - cards:
+    - color_type: label-card
+      entity: light.all_lights
+      name: Lights
+      size: 30px
+      type: custom:button-card
+    - cards:
+      - color_type: card
+        entity: light.bedroom
+        hold_action:
+          action: more-info
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      - color_type: card
+        entity: light.lounge
+        hold_action:
+          action: more-info
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      - color_type: card
+        entity: light.office
+        hold_action:
+          action: more-info
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      type: horizontal-stack
+    type: vertical-stack
   icon: mdi:dev-to
   panel: false
   path: testing
