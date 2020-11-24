@@ -1,0 +1,21 @@
+- id: '1605335470308'
+  alias: SWMBO home and away
+  description: Is she home or isn't she?
+  trigger:
+  - platform: state
+    entity_id: person.kirstyn_rolfe
+    from: home
+    to: not_home
+  - platform: state
+    entity_id: person.kirstyn_rolfe
+    from: not_home
+    to: home
+  condition: []
+  action:
+  - service: persistent_notification.create
+    data:
+      notification_id: Kirstyn
+      title: Kirstyn is {{ trigger.to_state.state }}
+      message: Kirstyn went from {{ trigger.from_state.state }} to {{ trigger.to_state.state
+        }} at {{ now().strftime('%H:%M %d/%m/%Y') }}
+  mode: single
