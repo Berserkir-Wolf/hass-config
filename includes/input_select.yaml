@@ -11,3 +11,7 @@ light_colour:
     - white
   initial: white
   icon: mdi:light
+all_shell_commands:
+  name: Shell Commands
+  options:
+    
