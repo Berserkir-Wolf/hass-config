@@ -424,15 +424,6 @@ views:
   title: Gaming
 - badges: []
   cards:
-  - hold_action:
-      action: none
-    icon: mdi:monitor-screenshot
-    icon_height: 45px
-    name: Convert Lovelace to Yaml
-    tap_action:
-      action: call-service
-      service: shell_command.convert_lovelace
-    type: button
   - cards:
     - entities:
       - entity: input_text.git_message
@@ -457,6 +448,25 @@ views:
       type: conditional
     title: Git Commands
     type: vertical-stack
+  - cards:
+    - hold_action:
+        action: none
+      icon: mdi:monitor-screenshot
+      icon_height: 45px
+      name: Convert Lovelace to Yaml
+      tap_action:
+        action: call-service
+        service: shell_command.convert_lovelace
+      type: button
+    - hold_action:
+        action: none
+      icon: mdi:github
+      name: Commit Update
+      tap_action:
+        action: call-service
+        service: shell_command.commit_new_version
+      type: button
+    type: grid
   icon: mdi:console
   path: shell
   title: Commands
