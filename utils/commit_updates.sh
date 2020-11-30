@@ -3,6 +3,7 @@
 ## Uses arguments to write the message.
 
 cd /config
+foo=$(<.HA_VERSION)
 git add .
-git commit -m $1
+git commit -m $foo
 git push
