@@ -95,9 +95,15 @@ views:
       title: Phone Location
       type: map
     - entities:
-      - entity: binary_sensor.g8142_interactive
+      - entity: sensor.battery_level
+        name: Battery
       - entity: binary_sensor.g8142_is_charging
+        name: Charging?
       - entity: binary_sensor.g8142_music_active
+        name: Media?
+      - entity: binary_sensor.g8142_interactive
+        name: In Use?
+      title: Phone State
       type: glance
     - card:
         show_header_toggle: false
