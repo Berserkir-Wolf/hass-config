@@ -42,24 +42,24 @@ group: !include_dir_merge_list groups
 notify: !include_dir_merge_list notify
 sensor: !include_dir_merge_list sensors
 switch: !include_dir_merge_list switches
-#template: !include_dir_merge_list templates
 zone: !include_dir_merge_list zones
-# Single Files
-automation: !include automations.yaml
+# Single Files / Direct includes (All saved in the includes directory)
+anniversaries: !include includes/anniversaries.yaml
 input_select: !include includes/input_select.yaml
 input_boolean: !include includes/input_boolean.yaml
 input_number: !include includes/input_number.yaml
 input_text: !include includes/input_text.yaml
 input_datetime: !include includes/input_datetime.yaml
-script: !include scripts.yaml
-scene: !include scenes.yaml
-shell_command: !include includes/shell_commands.yaml
-# Specific Integration types (save all under individuals/%name%.yaml)
 light: !include includes/lights.yaml
 nzbget: !include includes/nzbget.yaml
 ombi: !include includes/ombi.yaml
 pi_hole: !include includes/communica_pihole.yaml
+shell_command: !include includes/shell_commands.yaml
 spotify: !include includes/spotify.yaml
+# Root includes (these files do not handle being moved at all - some are edited by the system itself)
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
 
 #################################################################
 ## Testing functions

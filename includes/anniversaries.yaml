@@ -1,0 +1,29 @@
+# This uses the "anniversaries" integration from HACS.
+# Without that installed, this particular file just raises errors.
+# We !include this file in configuration.yaml, then tell it that the integration is to give us a sensor type.
+# Each anniversary you can give a name, and could be something like a birthday reminder or an anniversary.
+# If it's a one-time anniversary, I'd suggest configuring it via the web UI instead of through a YAML file - that's just easier.
+
+sensors: 
+  - name: Anniversary with SWMBO
+    date: "2013-08-13"
+    one_time: no
+    show_half_anniversary: false
+# This icon shows if it's a while away
+    icon_normal: mdi:calendar-blank
+# This icon shows if it's today
+    icon_today: mdi:calendar-star
+# This icon shows if it's soon (TM)
+    icon_soon: mdi:calendar
+  - name: SWMBO Birthday
+    date: "1990-12-16"
+# This defines that the entity should be "birthday_name" instead of the default "anniversary_name"
+    id_prefix: birthday_
+    one_time: no
+    show_half_anniversary: false
+# This icon shows if it's a while away
+    icon_normal: mdi:calendar-blank
+# This icon shows if it's today
+    icon_today: mdi:calendar-star
+# This icon shows if it's soon (TM)
+    icon_soon: mdi:calendar
