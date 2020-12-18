@@ -1,6 +1,8 @@
 ###########################################
 # TV Sensors
 ###########################################
+#This integration has been moved from being configurable via YAML to being done via the web UI.
+# Settings are much the same, but rather than being done here it gets amended in HAss itself.
   - platform: sonarr
     host: !secret server_1_ip
     api_key: !secret sonarr_api
