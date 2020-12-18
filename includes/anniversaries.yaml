@@ -5,25 +5,30 @@
 # If it's a one-time anniversary, I'd suggest configuring it via the web UI instead of through a YAML file - that's just easier.
 
 sensors: 
-  - name: Anniversary with SWMBO
+#Anniversaries
+  - name: SWMBO
     date: "2013-08-13"
     one_time: no
     show_half_anniversary: false
-# This icon shows if it's a while away
     icon_normal: mdi:calendar-blank
-# This icon shows if it's today
     icon_today: mdi:calendar-star
-# This icon shows if it's soon (TM)
     icon_soon: mdi:calendar
-  - name: SWMBO Birthday
+
+# Birthdays
+# Use the "id_prefix: birthday_" to have these identify as birthdays instead of anniversaries in the entity list.
+  - name: SWMBO
     date: "1990-12-16"
-# This defines that the entity should be "birthday_name" instead of the default "anniversary_name"
     id_prefix: birthday_
     one_time: no
     show_half_anniversary: false
-# This icon shows if it's a while away
     icon_normal: mdi:calendar-blank
-# This icon shows if it's today
     icon_today: mdi:calendar-star
-# This icon shows if it's soon (TM)
+    icon_soon: mdi:calendar
+  - name: Me
+    date: "1994-01-04"
+    id_prefix: birthday_
+    one_time: no
+    show_half_anniversary: false
+    icon_normal: mdi:calendar-blank
+    icon_today: mdi:calendar-star
     icon_soon: mdi:calendar
