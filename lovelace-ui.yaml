@@ -87,6 +87,27 @@ views:
   title: Home
 - badges: []
   cards:
+  - entities:
+    - entity: sensor.anniversary_swmbo
+      name: Our Anniversary
+    - entity: sensor.birthday_me
+      name: My Birthday
+    - entity: sensor.birthday_swmbo
+      name: Her Birthday
+    header:
+      hold_action:
+        action: none
+      image: https://www.home-assistant.io/images/lovelace/header-footer/balloons-header.png
+      tap_action:
+        action: none
+      type: picture
+    show_header_toggle: false
+    type: entities
+  icon: mdi:calendar
+  path: events
+  title: Events
+- badges: []
+  cards:
   - cards:
     - dark_mode: false
       entities:
