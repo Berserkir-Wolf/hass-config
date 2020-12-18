@@ -1,0 +1,30 @@
+- id: '1608262512161'
+  alias: Happy Birthday Sir
+  description: A silly little automation to have HAss wish me happy birthday
+  trigger:
+  - platform: state
+    entity_id: sensor.birthday_me
+    to: '0'
+    for: '"07:00:00"'
+  condition: []
+  action:
+  - service: notify.notify
+    data:
+      message: Happy Birthday Sir!
+      title: Bappy Hirthday
+  mode: single
+- id: '1608262874242'
+  alias: Birthday Reminders
+  description: Remind me of upcoming birthdays
+  trigger:
+  - platform: state
+    entity_id: sensor.birthday_swmbo,sensor.birthday_me
+    to: '1'
+  condition: []
+  action:
+  - service: persistent_notification.create
+    data:
+      notification_id: Birthday
+      title: Upcoming birthday!
+      message: '''{{trigger.to_state.attributes.friendly_name}} is tomorrow!'''
+  mode: single
