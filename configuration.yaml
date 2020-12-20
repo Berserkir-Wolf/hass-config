@@ -52,6 +52,7 @@ input_text: !include includes/input_text.yaml
 input_datetime: !include includes/input_datetime.yaml
 light: !include includes/lights.yaml
 nzbget: !include includes/nzbget.yaml
+#octoprint: !include includes/octoprint.yaml
 ombi: !include includes/ombi.yaml
 pi_hole: !include includes/communica_pihole.yaml
 shell_command: !include includes/shell_commands.yaml
@@ -65,4 +66,3 @@ scene: !include scenes.yaml
 ## Testing functions
 #camera: !include individuals/unifi_video.yaml
 #influxdb: !include individuals/influxdb.yaml #disabled for system load
-#octoprint: !include individuals/octoprint.yaml
