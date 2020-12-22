@@ -1,5 +1,5 @@
 - id: '1584476995764'
-  alias: Notify me if Kirstyn arrives when I am not at home
+  alias: Notify me if Kirstyn arrives
   description: ''
   trigger:
   - entity_id: person.kirstyn_rolfe
