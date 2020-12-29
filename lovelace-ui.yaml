@@ -38,42 +38,49 @@ views:
   - entities:
     - entity: light.bedroom
       name: Bedroom Light
+      tap_action:
+        action: toggle
     - entity: media_player.bedroom_ps4
-    - entity: device_tracker.lifx_a19_250df0
-      icon: mdi:lightbulb
-    show_header_toggle: false
     title: Bedroom
-    type: entities
+    type: glance
   - entities:
     - entity: light.lounge
       name: Lounge Light
+      tap_action:
+        action: toggle
     - entity: switch.wol_lounge
       icon: mdi:desktop-classic
       name: Lounge PC
+      tap_action:
+        action: toggle
     - entity: switch.wol_shif
       icon: mdi:desktop-classic
       name: Shif (NUC)
+      tap_action:
+        action: toggle
     - entity: media_player.lounge_ps4
-    show_header_toggle: false
     title: Living Room
-    type: entities
+    type: glance
   - entities:
     - entity: light.office
+      name: Office Light
+      tap_action:
+        action: toggle
     - entity: switch.wol_workstation
       icon: mdi:desktop-classic
       name: Gaming Rig
-    show_header_toggle: false
+      tap_action:
+        action: toggle
     title: Office
-    type: entities
+    type: glance
   - entities:
     - entity: switch.pi_hole
     - entity: sensor.mikrotik_router_kib_s_received
-      name: Routerboard Traffic (RX)
+      name: WAN (RX)
     - entity: sensor.mikrotik_router_kib_s_sent
-      name: Routerboard Traffic (TX)
-    show_header_toggle: false
+      name: WAN (TX)
     title: Server Rack
-    type: entities
+    type: glance
   - entity: weather.home
     type: weather-forecast
   icon: mdi:home
