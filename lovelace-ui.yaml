@@ -67,12 +67,6 @@ views:
     type: entities
   - entities:
     - entity: switch.pi_hole
-    - entity: switch.wol_duplica
-      icon: mdi:desktop-tower
-      name: Replica Server
-    - entity: switch.wol_duplica
-      icon: mdi:desktop-tower
-      name: Primary Server
     - entity: sensor.mikrotik_router_kib_s_received
       name: Routerboard Traffic (RX)
     - entity: sensor.mikrotik_router_kib_s_sent
