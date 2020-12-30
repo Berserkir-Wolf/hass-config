@@ -18,6 +18,12 @@ views:
           action: toggle
         type: custom:button-card
       - color_type: card
+        double_tap_action:
+          action:
+          - data:
+              brightness_pct: 50
+              entity_id: light.lounge
+            service: light.toggle
         entity: light.lounge
         hold_action:
           action: more-info
