@@ -311,7 +311,6 @@ views:
   path: weather
   title: Weather
 - badges:
-  - entity: switch.wol_duplica
   - entity: switch.wol_lounge
   - entity: switch.wol_shif
   - entity: switch.wol_workstation
@@ -337,13 +336,6 @@ views:
       - color_type: card
         entity: switch.wol_workstation
         name: Workstation
-        size: 30px
-        tap_action:
-          action: toggle
-        type: custom:button-card
-      - color_type: card
-        entity: switch.wol_duplica
-        name: Testbed
         size: 30px
         tap_action:
           action: toggle
