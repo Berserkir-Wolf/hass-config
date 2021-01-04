@@ -1,0 +1,5 @@
+  - name: Mitre10
+    latitude: -38.65354089445728
+    longitude: 178.01615420680727
+    radius: 60
+    icon: mdi:store
