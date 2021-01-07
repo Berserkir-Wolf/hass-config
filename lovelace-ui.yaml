@@ -522,6 +522,12 @@ views:
       type: conditional
     title: Git Commands
     type: vertical-stack
+  - entities:
+    - sensor.hass_repo
+    show_extended: true
+    show_github_icon: true
+    title: Git Repo
+    type: custom:github-card
   icon: mdi:git
   path: git
   title: Git
