@@ -1,0 +1,9 @@
+###########################################
+# Bitcoin
+###########################################
+  - platform: bitcoin
+    currency: NZD
+    display_options:
+      - exchangerate
+      - difficulty
+
