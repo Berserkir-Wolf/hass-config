@@ -6,7 +6,9 @@
     repositories:
       - path: 'Berserkir-Wolf/hass-config'
         name: hass-repo
-      - path: 'Ombi-io/Ombi.News'
+      - path: 'Ombi-app/Ombi.Docs'
+        name: ombi-docs
+      - path: 'Ombi-app/Ombi.News'
         name: ombi-news
-      - path: 'Ombi-io/Ombi.Utilities'
+      - path: 'Ombi-app/Ombi.Utilities'
         name: ombi-utilities
