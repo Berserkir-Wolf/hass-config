@@ -7,3 +7,7 @@
       - exchangerate
       - difficulty
 
+  - platform: template
+    sensors:
+      my_btc_value:
+        value_template: "{{ states('sensor.exchange_rate_1_btc') | float * states('input_number.btc_amount') | float }}" 
