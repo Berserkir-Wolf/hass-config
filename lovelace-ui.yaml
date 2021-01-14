@@ -89,9 +89,12 @@ views:
     type: glance
   - entity: weather.home
     type: weather-forecast
-  - entities:
-    - sensor.exchange_rate_1_btc
-    type: entities
+  - cards:
+    - entity: sensor.exchange_rate_1_btc
+      type: entity
+    - entity: input_number.btc_amount
+      type: entity
+    type: vertical-stack
   icon: mdi:home
   path: home
   title: Home
