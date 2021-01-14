@@ -8,6 +8,7 @@ btc_amount:
   max: 10
   step: 0.001
   mode: box
+
 btc_value:
   name: BTC Value
   min: 0
