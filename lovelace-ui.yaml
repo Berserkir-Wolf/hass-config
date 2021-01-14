@@ -94,6 +94,11 @@ views:
       type: entity
     - entity: input_number.btc_amount
       type: entity
+    - entity: sensor.my_btc_value
+      icon: mdi:dollar
+      name: My BTC
+      type: entity
+      unit: NZD
     type: vertical-stack
   icon: mdi:home
   path: home
