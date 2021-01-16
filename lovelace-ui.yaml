@@ -536,8 +536,6 @@ views:
   - entities:
     - sensor.hass_repo
     - sensor.ombi_docs
-    - sensor.ombi_news
-    - sensor.ombi_utilities
     show_extended: true
     show_github_icon: true
     title: Git Repo
