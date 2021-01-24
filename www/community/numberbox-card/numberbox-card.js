@@ -1,6 +1,6 @@
 ((LitElement) => {
 
-console.info('NUMBERBOX_CARD 1.8');
+console.info('NUMBERBOX_CARD 1.9');
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 class NumberBox extends LitElement {
@@ -32,8 +32,7 @@ static get styles() {
 		box-shadow:none !important;border:none !important}
 	.body{
 		display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
-		place-items:center;padding:0 4px;
-		padding-bottom:2px}
+		place-items:center;padding:0 4px}
 	.main{display:flex;flex-direction:row;align-items:center;justify-content:center}
 	.cur-box{display:flex;align-items:center;justify-content:center;flex-direction:row-reverse}
 	.cur-num-box{display:flex;align-items:center}
@@ -42,7 +41,7 @@ static get styles() {
 		line-height:var(--paper-font-subhead_-_line-height);
 		font-weight:normal;margin:0}
 	.cur-unit{font-size:80%;opacity:0.5}
-	.nopad{padding:0px}
+	.padr,.padl{padding:8px;cursor:pointer}
 	.grid {
 	  display: grid;
 	  grid-template-columns: repeat(2, auto);
@@ -53,7 +52,7 @@ static get styles() {
 	.grid-left {
 	  text-align: left;
 	  font-size: var(--paper-font-body1_-_font-size);
-	  padding: 16px 0 16px 16px;
+	  padding: 8px 0 8px 16px;
 	  cursor: pointer;
 	  overflow: hidden;
 	  text-overflow: ellipsis;
@@ -132,25 +131,25 @@ renderNum(vars){
 	return html`<section class="body">
 			<div class="main">
 				<div class="cur-box">
-				<ha-icon-button class="nopad" icon="${vars.icon_plus}"
+				<ha-icon class="padl" icon="${vars.icon_plus}"
 					@click="${() => this.incVal(this)}"
 					@mousedown="${() => this.onMouseDown(1)}"
 					@mouseup="${() => this.onMouseUp()}"
 					@touchstart="${() => this.onMouseDown(1)}"
 					@touchend="${() => this.onMouseUp()}"
 				>
-				</ha-icon-button>
+				</ha-icon>
 				<div class="cur-num-box" @click="${() => this.moreInfo('hass-more-info')}" >
 					<h3 class="cur-num" > ${this.niceNum(vars)} </h3>
 				</div>
-				<ha-icon-button class="nopad" icon="${vars.icon_minus}"
+				<ha-icon class="padr" icon="${vars.icon_minus}"
 					@click="${() => this.decVal(this)}"
 					@mousedown="${() => this.onMouseDown(0)}"
 					@mouseup="${() => this.onMouseUp()}"
 					@touchstart="${() => this.onMouseDown(0)}"
 					@touchend="${() => this.onMouseUp()}"
 				>
-				</ha-icon-button>
+				</ha-icon>
 				</div>
 			</div>
 			</section>`;
@@ -196,11 +195,22 @@ decVal(dhis){
 	dhis._hass.callService("input_number", 'decrement', { entity_id: dhis.stateObj.entity_id });
 }
 
+zeroFill(number, width){
+	width -= number.toString().length;
+	if ( width > 0 ){
+		return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
+	}
+	return number + "";
+}
+
 niceNum(vars){
 	let fix=0;
 	const stp=Number(this.stateObj.attributes.step);
 	if( Math.round(stp) != stp ){ fix=stp.toString().split(".")[1].length || 1;}
 	fix = Number(this.stateObj.state).toFixed(fix);
+	if( vars.unit=="time" ){
+		return html`${this.zeroFill(Math.floor(fix/3600), 2)}:${this.zeroFill(Math.floor(fix/60), 2)}:${this.zeroFill(fix%60, 2)}`
+	}
 	return vars.unit ? html`${fix}<span class="cur-unit" >${vars.unit}</span>` : fix ;
 }
 
