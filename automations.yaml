@@ -141,3 +141,16 @@
   - service: shell_command.install_extra_packages
     data: {}
   mode: single
+- id: '1611959876984'
+  alias: BTC Alert
+  description: Notify me if BTC goes above a certain value
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.exchange_rate_1_btc
+    above: '51200'
+  action:
+  - service: notify.mobile_app_g8142
+    data:
+      message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
+      title: BTC Value
+  mode: single
