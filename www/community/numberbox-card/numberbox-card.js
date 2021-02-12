@@ -1,6 +1,6 @@
 ((LitElement) => {
 
-console.info('NUMBERBOX_CARD 2.3');
+console.info('NUMBERBOX_CARD 2.4');
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 class NumberBox extends LitElement {
@@ -30,7 +30,11 @@ render() {
 	<ha-card class="${(!this.config.border)?'noborder':''}">
 		${(this.config.icon || this.config.name) ? html`<div class="grid">
 		<div class="grid-content grid-left" @click="${() => this.moreInfo('hass-more-info')}">
-			${this.config.icon ? html`<state-badge .overrideIcon="${this.config.icon}"></state-badge>` : null }
+			${this.config.icon ? html`
+				<state-badge
+				.overrideIcon="${this.config.icon}"
+				.stateObj=${this.stateObj}
+				></state-badge>` : null }
 			<div class="info">
 				${this.config.name?this.config.name:''}
 				${this.secondaryInfo()}
@@ -89,7 +93,7 @@ publishNum(dhis){
 
 niceNum(){
 	let fix=0; let v=this.pending;
-	if( v === false ){ v=Number(this.stateObj.state); }
+	if( v === false ){ v=Number(this.stateObj.state); if(isNaN(v)){return '?';}}
 	const stp=Number(this.stateObj.attributes.step);
 	if( Math.round(stp) != stp ){ fix=stp.toString().split(".")[1].length || 1;}
 	fix = v.toFixed(fix);
