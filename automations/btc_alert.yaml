@@ -4,10 +4,14 @@
   trigger:
   - platform: numeric_state
     entity_id: sensor.exchange_rate_1_btc
-    above: '51200'
+    above: '50500'
   action:
   - service: notify.mobile_app_g8142
     data:
       message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
       title: BTC Value
+  - service: notify.discord
+    data:
+      message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
+      target: '819351502640381952'
   mode: single

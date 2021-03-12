@@ -153,4 +153,8 @@
     data:
       message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
       title: BTC Value
+  - service: notify.discord
+    data:
+      message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
+      target: '819351502640381952'
   mode: single
