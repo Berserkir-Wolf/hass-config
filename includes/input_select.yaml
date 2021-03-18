@@ -11,3 +11,10 @@ light_colour:
     - white
   initial: white
   icon: mdi:light
+all_shell_commands:
+  name: Shell Commands
+  options:
+    - shell_command.commit_changes
+    - shell_command.commit_lovelace
+    - shell_command.commit_to_github
+    - shell_command.convert_lovelace

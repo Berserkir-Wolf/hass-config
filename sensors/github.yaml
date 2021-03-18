@@ -1,0 +1,10 @@
+###########################################
+# Github
+###########################################
+  - platform: github
+    access_token: !secret hacs_token
+    repositories:
+      - path: 'Berserkir-Wolf/hass-config'
+        name: hass-repo
+      - path: 'Ombi-app/Ombi.Docs'
+        name: ombi-docs

@@ -1,5 +1,5 @@
 - id: '1584476995764'
-  alias: Notify me if Kirstyn arrives when I am not at home
+  alias: Notify me if Kirstyn arrives
   description: ''
   trigger:
   - entity_id: person.kirstyn_rolfe
@@ -99,3 +99,62 @@
         }} at {{ now().strftime('%H:%M %d/%m/%Y') }}
   mode: single
   initial_state: 'off'
+- id: '1608262512161'
+  alias: Happy Birthday Sir
+  description: A silly little automation to have HAss wish me happy birthday
+  trigger:
+  - platform: state
+    entity_id: sensor.birthday_me
+    to: '0'
+    for: '"07:00:00"'
+  condition: []
+  action:
+  - service: notify.notify
+    data:
+      message: Happy Birthday Sir!
+      title: Bappy Hirthday
+  mode: single
+- id: '1608262874242'
+  alias: Birthday Reminders
+  description: Remind me of upcoming birthdays
+  trigger:
+  - platform: state
+    entity_id: sensor.birthday_swmbo,sensor.birthday_me
+    to: '1'
+  condition: []
+  action:
+  - service: persistent_notification.create
+    data:
+      notification_id: Birthday
+      title: Upcoming birthday!
+      message: '''{{trigger.to_state.attributes.friendly_name}} is tomorrow!'''
+  mode: single
+- id: '1608606143148'
+  alias: Install additional packages
+  description: Installs packages defined in a shell script
+  trigger:
+  - platform: homeassistant
+    event: start
+  condition: []
+  action:
+  - delay: 00:00:10
+  - service: shell_command.install_extra_packages
+    data: {}
+  mode: single
+- id: '1611959876984'
+  alias: BTC Alert
+  description: Notify me if BTC goes above a certain value
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.exchange_rate_1_btc
+    above: '50500'
+  action:
+  - service: notify.mobile_app_g8142
+    data:
+      message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
+      title: BTC Value
+  - service: notify.discord
+    data:
+      message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
+      target: '819351502640381952'
+  mode: single

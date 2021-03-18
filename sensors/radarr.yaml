@@ -3,9 +3,10 @@
 ###########################################
   - platform: radarr
     api_key: !secret radarr_api
-    host: !secret server_1_ip
+    host: !secret media_server_url
     urlbase: !secret radarr_baseurl
-    port: !secret radarr_port
+    ssl: true
+    port: 443
     days: 1
     monitored_conditions:
       - upcoming

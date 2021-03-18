@@ -18,6 +18,12 @@ views:
           action: toggle
         type: custom:button-card
       - color_type: card
+        double_tap_action:
+          action:
+          - data:
+              brightness_pct: 50
+              entity_id: light.lounge
+            service: light.toggle
         entity: light.lounge
         hold_action:
           action: more-info
@@ -38,53 +44,86 @@ views:
   - entities:
     - entity: light.bedroom
       name: Bedroom Light
+      tap_action:
+        action: toggle
     - entity: media_player.bedroom_ps4
-    - entity: device_tracker.lifx_a19_250df0
-      icon: mdi:lightbulb
-    show_header_toggle: false
     title: Bedroom
-    type: entities
+    type: glance
   - entities:
     - entity: light.lounge
       name: Lounge Light
+      tap_action:
+        action: toggle
     - entity: switch.wol_lounge
       icon: mdi:desktop-classic
       name: Lounge PC
+      tap_action:
+        action: toggle
     - entity: switch.wol_shif
       icon: mdi:desktop-classic
       name: Shif (NUC)
+      tap_action:
+        action: toggle
     - entity: media_player.lounge_ps4
-    show_header_toggle: false
     title: Living Room
-    type: entities
+    type: glance
   - entities:
     - entity: light.office
+      name: Office Light
+      tap_action:
+        action: toggle
     - entity: switch.wol_workstation
       icon: mdi:desktop-classic
       name: Gaming Rig
-    show_header_toggle: false
+      tap_action:
+        action: toggle
     title: Office
-    type: entities
+    type: glance
   - entities:
     - entity: switch.pi_hole
-    - entity: switch.wol_duplica
-      icon: mdi:desktop-tower
-      name: Replica Server
-    - entity: switch.wol_duplica
-      icon: mdi:desktop-tower
-      name: Primary Server
     - entity: sensor.mikrotik_router_kib_s_received
-      name: Routerboard Traffic (RX)
+      name: WAN (RX)
     - entity: sensor.mikrotik_router_kib_s_sent
-      name: Routerboard Traffic (TX)
-    show_header_toggle: false
+      name: WAN (TX)
     title: Server Rack
-    type: entities
+    type: glance
   - entity: weather.home
     type: weather-forecast
+  - cards:
+    - entity: sensor.exchange_rate_1_btc
+      type: entity
+    - entity: input_number.btc_amount
+      type: entity
+    - entity: sensor.my_btc_value
+      icon: mdi:dollar
+      name: My BTC
+      type: entity
+      unit: NZD
+    type: vertical-stack
   icon: mdi:home
   path: home
   title: Home
+- badges: []
+  cards:
+  - entities:
+    - entity: sensor.anniversary_swmbo
+      name: Our Anniversary
+    - entity: sensor.birthday_me
+      name: My Birthday
+    - entity: sensor.birthday_swmbo
+      name: Her Birthday
+    header:
+      hold_action:
+        action: none
+      image: https://www.home-assistant.io/images/lovelace/header-footer/balloons-header.png
+      tap_action:
+        action: none
+      type: picture
+    show_header_toggle: false
+    type: entities
+  icon: mdi:calendar
+  path: events
+  title: Events
 - badges: []
   cards:
   - cards:
@@ -95,9 +134,15 @@ views:
       title: Phone Location
       type: map
     - entities:
-      - entity: binary_sensor.g8142_interactive
+      - entity: sensor.battery_level
+        name: Battery
       - entity: binary_sensor.g8142_is_charging
+        name: Charging?
       - entity: binary_sensor.g8142_music_active
+        name: Media?
+      - entity: binary_sensor.g8142_interactive
+        name: In Use?
+      title: Phone State
       type: glance
     - card:
         show_header_toggle: false
@@ -277,7 +322,6 @@ views:
   path: weather
   title: Weather
 - badges:
-  - entity: switch.wol_duplica
   - entity: switch.wol_lounge
   - entity: switch.wol_shif
   - entity: switch.wol_workstation
@@ -303,13 +347,6 @@ views:
       - color_type: card
         entity: switch.wol_workstation
         name: Workstation
-        size: 30px
-        tap_action:
-          action: toggle
-        type: custom:button-card
-      - color_type: card
-        entity: switch.wol_duplica
-        name: Testbed
         size: 30px
         tap_action:
           action: toggle
@@ -424,15 +461,6 @@ views:
   title: Gaming
 - badges: []
   cards:
-  - hold_action:
-      action: none
-    icon: mdi:monitor-screenshot
-    icon_height: 45px
-    name: Convert Lovelace to Yaml
-    tap_action:
-      action: call-service
-      service: shell_command.convert_lovelace
-    type: button
   - cards:
     - entities:
       - entity: input_text.git_message
@@ -457,6 +485,25 @@ views:
       type: conditional
     title: Git Commands
     type: vertical-stack
+  - cards:
+    - hold_action:
+        action: none
+      icon: mdi:monitor-screenshot
+      icon_height: 45px
+      name: Convert Lovelace to Yaml
+      tap_action:
+        action: call-service
+        service: shell_command.convert_lovelace
+      type: button
+    - hold_action:
+        action: none
+      icon: mdi:github
+      name: Commit Update
+      tap_action:
+        action: call-service
+        service: shell_command.commit_new_version
+      type: button
+    type: grid
   icon: mdi:console
   path: shell
   title: Commands
@@ -486,6 +533,13 @@ views:
       type: conditional
     title: Git Commands
     type: vertical-stack
+  - entities:
+    - sensor.hass_repo
+    - sensor.ombi_docs
+    show_extended: true
+    show_github_icon: true
+    title: Git Repo
+    type: custom:github-card
   icon: mdi:git
   path: git
   title: Git

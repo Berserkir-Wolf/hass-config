@@ -3,7 +3,6 @@
 
 convert_lovelace: "python /config/utils/json2yaml.py /config/.storage/lovelace /config/lovelace-ui.yaml"
 commit_lovelace: "/bin/bash /config/utils/commit_lovelace.sh"
-commit_changes: "/bin/bash /config/utils/commit_updates.sh \"{{ states(input_text.git_message) }}\""
-#commit_changes: '/bin/bash /config/utils/commit_updates.sh "{{ states(input_text.git_message.value) | string }}"'
-#commit_changes: '/bin/bash /config/utils/commit_updates.sh {{ states("input_text.git_message.value") }}'
 commit_to_github: "python /config/utils/commit_updates.yaml"
+commit_new_version: "/bin/bash /config/utils/commit_updates.sh"
+install_extra_packages: "/bin/bash /config/utils/install_packages.sh"
