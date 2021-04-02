@@ -461,54 +461,19 @@ views:
   title: Gaming
 - badges: []
   cards:
-  - cards:
-    - entities:
-      - entity: input_text.git_message
-        name: Message
-      type: entities
-    - card:
-        entity: input_boolean.git_commit
-        hold_action:
-          action: none
-        icon: mdi:github
-        icon_height: 45px
-        show_state: false
-        tap_action:
-          action: call-service
-          service: automation.trigger
-          service_data:
-            entity_id: automation.commit_message
-        type: button
-      conditions:
-      - entity: input_text.git_message
-        state_not: Committed from UI without a message
-      type: conditional
-    title: Git Commands
-    type: vertical-stack
-  - cards:
-    - hold_action:
-        action: none
-      icon: mdi:monitor-screenshot
-      icon_height: 45px
-      name: Convert Lovelace to Yaml
-      tap_action:
-        action: call-service
-        service: shell_command.convert_lovelace
-      type: button
-    - hold_action:
-        action: none
-      icon: mdi:github
-      name: Commit Update
-      tap_action:
-        action: call-service
-        service: shell_command.commit_new_version
-      type: button
-    type: grid
-  icon: mdi:console
-  path: shell
-  title: Commands
-- badges: []
-  cards:
+  - alias:
+      ko: No update for the moment...
+      ok: Update available !
+    color:
+      icon: grey
+    entity: binary_sensor.updater
+    hours_to_show: 168
+    icon: mdi:raspberry-pi
+    name: HA update
+    show:
+      footer: false
+    status_adaptive_color: true
+    type: custom:uptime-card
   - cards:
     - entities:
       - entity: input_text.git_message
@@ -540,6 +505,25 @@ views:
     show_github_icon: true
     title: Git Repo
     type: custom:github-card
+  - cards:
+    - hold_action:
+        action: none
+      icon: mdi:monitor-screenshot
+      icon_height: 45px
+      name: Convert Lovelace to Yaml
+      tap_action:
+        action: call-service
+        service: shell_command.convert_lovelace
+      type: button
+    - hold_action:
+        action: none
+      icon: mdi:github
+      name: Commit Update
+      tap_action:
+        action: call-service
+        service: shell_command.commit_new_version
+      type: button
+    type: grid
   icon: mdi:git
   path: git
   title: Git
