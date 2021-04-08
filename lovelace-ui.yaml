@@ -366,20 +366,19 @@ views:
   - entity: sensor.ombi_pending_requests
     name: Pending Requests
   cards:
-  - cards:
-    - entity: sensor.plex_berserkirnet
-      name: Current Plex Streams
-      type: sensor
-    - entity: sensor.plexwanbandwidthrounded
-      name: Plex WAN Bandwith
-      type: sensor
-    - entity: sensor.plexlanbandwidthrounded
-      name: Plex LAN Bandwith
-      type: sensor
-    - entity: sensor.plextotalbandwidthrounded
-      name: Plex Total Bandwidth
-      type: sensor
-    type: vertical-stack
+  - card:
+      show_header_toggle: false
+      title: Plex Media
+      type: entities
+    filter:
+      include:
+      - entity_id: sensor.berserkirnet_library*
+    sort: name
+    type: custom:auto-entities
+    unique: false
+  - entities:
+    - entity: sensor.nzbget_uptime_hours
+    type: entities
   - entities:
     - entity: sensor.sonarr_upcoming
     show_header_toggle: false
@@ -390,9 +389,6 @@ views:
     - entity: sensor.radarr_upcoming
     show_header_toggle: false
     title: Radarr Status
-    type: entities
-  - entities:
-    - entity: sensor.nzbget_uptime_hours
     type: entities
   - card:
       show_header_toggle: false
@@ -408,8 +404,6 @@ views:
     sort: none
     type: custom:auto-entities
     unique: false
-  - entity: media_player.spotify_sky_girl14
-    type: media-control
   icon: mdi:film
   panel: false
   path: media
@@ -562,6 +556,22 @@ views:
         type: custom:button-card
       type: horizontal-stack
     type: vertical-stack
+  - cards:
+    - entity: sensor.plex_berserkirnet
+      name: Current Plex Streams
+      type: sensor
+    - entity: sensor.plexwanbandwidthrounded
+      name: Plex WAN Bandwith
+      type: sensor
+    - entity: sensor.plexlanbandwidthrounded
+      name: Plex LAN Bandwith
+      type: sensor
+    - entity: sensor.plextotalbandwidthrounded
+      name: Plex Total Bandwidth
+      type: sensor
+    type: vertical-stack
+  - entity: media_player.spotify_sky_girl14
+    type: media-control
   icon: mdi:dev-to
   panel: false
   path: testing
