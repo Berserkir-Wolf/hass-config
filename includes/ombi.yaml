@@ -1,6 +1,5 @@
 # Ombi
   host: !secret server_2_ip
-  host: 192.168.10.22
   port: 5000
   ssl: false
   username: !secret ombi_username
