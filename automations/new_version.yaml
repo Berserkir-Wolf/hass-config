@@ -8,8 +8,15 @@
     to: 'On'
   condition: []
   action:
-  - service: notify.notify
+  - service: notify.html5_notifications
     data:
       message: Home Assistant {{ state_attr('binary_sensor.updater', 'newest_version')
         }} is available.
-  mode: single
+      title: Update Available
+  - service: notify.discord
+    data:
+      message: Home Assistant {{ state_attr('binary_sensor.updater', 'newest_version')
+        }} is available.
+      title: Update Available!
+      target:
+      - '819351502640381952'
