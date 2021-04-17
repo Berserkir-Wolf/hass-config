@@ -404,6 +404,8 @@ views:
     sort: none
     type: custom:auto-entities
     unique: false
+  - entity: media_player.spotify_sky_girl14
+    type: media-control
   icon: mdi:film
   panel: false
   path: media
