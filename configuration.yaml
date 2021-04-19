@@ -21,6 +21,8 @@ wake_on_lan:
 homeassistant:
   allowlist_external_dirs:
     - /config/.storage
+# HACS Browser Mod
+browser_mod: !include includes/browser_mod.yaml
 
 # Text to speech
 tts:
