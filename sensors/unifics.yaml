@@ -1,7 +1,6 @@
 ## Unifi AP Connected Devices
-  - platform: my_unifi
+  - platform: unifics
     name: Unifi_Clients
-    region: default
+    host: !secret server_2_ip
     username: !secret unifi_user
     password: !secret unifi_pass
-    url: !secret unifi_url

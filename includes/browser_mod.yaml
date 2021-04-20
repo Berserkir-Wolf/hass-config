@@ -1,0 +1,3 @@
+prefix: "browser_"
+disable: 
+  - light

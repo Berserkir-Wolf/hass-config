@@ -37,10 +37,18 @@
     to: 'On'
   condition: []
   action:
-  - service: notify.notify
+  - service: notify.html5_notifications
     data:
       message: Home Assistant {{ state_attr('binary_sensor.updater', 'newest_version')
         }} is available.
+      title: Update Available
+  - service: notify.discord
+    data:
+      message: Home Assistant {{ state_attr('binary_sensor.updater', 'newest_version')
+        }} is available.
+      title: Update Available!
+      target:
+      - '819351502640381952'
   mode: single
 - id: '1603249243832'
   alias: Commit changes to Github
@@ -157,4 +165,40 @@
     data:
       message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
       target: '819351502640381952'
+  mode: single
+- id: '1618826864131'
+  alias: Welcome Home Sir
+  description: ''
+  trigger:
+  - platform: homeassistant
+    event: start
+  condition:
+  - condition: state
+    entity_id: media_player.str_dn1080_9ba8db_2
+    state: 'false'
+    attribute: is_volume_muted
+  action:
+  - service: media_player.turn_on
+    target:
+      entity_id: media_player.str_dn1080_9ba8db_2
+  - wait_template: ''
+    continue_on_timeout: true
+    timeout: '3'
+  - service: media_player.play_media
+    data:
+      media_content_id: media-source://media_source/local/sir-im-afraid-hes-insisting.wav
+      media_content_type: music
+    target:
+      entity_id: media_player.str_dn1080_9ba8db
+  - wait_template: ''
+    timeout: '12'
+    continue_on_timeout: true
+  - service: media_player.select_source
+    target:
+      entity_id: media_player.str_dn1080_9ba8db_2
+    data:
+      source: VIDEO 1
+  - service: media_player.turn_off
+    target:
+      entity_id: media_player.str_dn1080_9ba8db_2
   mode: single

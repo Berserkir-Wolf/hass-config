@@ -23,3 +23,7 @@ In configuration.yaml, where it says `!secret trusted_proxy1`, I then have an en
 Where it says `!secret service_api_key` in a sensor configuration file, I then have an entry in secrets.yaml with the API key of the relevant service (`service_api_key: thisisnotanactualkey`)
 
 This allows me to use the configuration files without exposing passwords or access keys. 
+
+### Using github for configs
+In order to allow me to roll back things, I'm using github. It's not a perfect example, nor is my code always clean, but if it helps someone else figure something out then so much the better.
+

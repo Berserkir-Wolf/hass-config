@@ -1,7 +1,7 @@
 # Ombi
-  host: !secret media_server_url
-  port: 443
-  ssl: true
+  host: !secret server_2_ip
+  port: 5000
+  ssl: false
   username: !secret ombi_username
   api_key: !secret ombi_api_key
   urlbase: !secret ombi_baseurl
