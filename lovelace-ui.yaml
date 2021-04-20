@@ -406,6 +406,8 @@ views:
     unique: false
   - entity: media_player.spotify_sky_girl14
     type: media-control
+  - entity: media_player.str_dn1080_9ba8db_2
+    type: media-control
   icon: mdi:film
   panel: false
   path: media
@@ -572,8 +574,6 @@ views:
       name: Plex Total Bandwidth
       type: sensor
     type: vertical-stack
-  - entity: media_player.spotify_sky_girl14
-    type: media-control
   icon: mdi:dev-to
   panel: false
   path: testing
