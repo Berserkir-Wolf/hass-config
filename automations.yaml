@@ -155,7 +155,7 @@
   trigger:
   - platform: numeric_state
     entity_id: sensor.exchange_rate_1_btc
-    above: '50500'
+    above: '85000'
   action:
   - service: notify.mobile_app_g8142
     data:
