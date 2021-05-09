@@ -24,6 +24,9 @@
   - platform: event
     event_type: lovelace_updated
     event_data: {}
+    context:
+      user_id:
+      - 08d29e434e9a4bed98b3a62218eac7a7
   action:
   - service: shell_command.convert_lovelace
   mode: single
