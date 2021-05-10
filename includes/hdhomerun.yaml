@@ -1,2 +1,2 @@
 sensor:
-  - host: 192.168.10.2
+  - host: !secret hdhomerun_ip

@@ -41,7 +41,8 @@ views:
         type: custom:button-card
       type: horizontal-stack
     type: vertical-stack
-  - entities:
+  - columns: 3
+    entities:
     - entity: light.bedroom
       name: Bedroom Light
       tap_action:
@@ -49,7 +50,8 @@ views:
     - entity: media_player.bedroom_ps4
     title: Bedroom
     type: glance
-  - entities:
+  - columns: 3
+    entities:
     - entity: light.lounge
       name: Lounge Light
       tap_action:
@@ -65,9 +67,12 @@ views:
       tap_action:
         action: toggle
     - entity: media_player.lounge_ps4
+    - entity: media_player.str_dn1080_9ba8db_2
+      name: Lounge Amp
     title: Living Room
     type: glance
-  - entities:
+  - columns: 3
+    entities:
     - entity: light.office
       name: Office Light
       tap_action:
@@ -406,6 +411,8 @@ views:
     unique: false
   - entity: media_player.spotify_sky_girl14
     type: media-control
+  - entity: media_player.str_dn1080_9ba8db_2
+    type: media-control
   icon: mdi:film
   panel: false
   path: media
@@ -572,8 +579,6 @@ views:
       name: Plex Total Bandwidth
       type: sensor
     type: vertical-stack
-  - entity: media_player.spotify_sky_girl14
-    type: media-control
   icon: mdi:dev-to
   panel: false
   path: testing
