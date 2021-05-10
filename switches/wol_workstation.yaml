@@ -3,8 +3,3 @@
     name: WOL_workstation
     mac: !secret workstation_mac
     host: !secret workstation_ip
-    turn_off:
-      service: hassio.addon_stdin
-      data:
-        addon: core_rpc_shutdown
-        input: !secret workstation_host

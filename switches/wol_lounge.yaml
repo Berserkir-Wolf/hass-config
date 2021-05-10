@@ -3,8 +3,3 @@
     name: WOL_lounge
     mac: !secret lounge_mac
     host: !secret lounge_host
-    turn_off:
-      service: hassio.addon_stdin
-      data:
-        addon: core_rpc_shutdown
-        input: !secret lounge_host
