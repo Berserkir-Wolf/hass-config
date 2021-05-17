@@ -1,13 +1,13 @@
-
 # Configure a default setup of Home Assistant (frontend, api, etc)
 # This is used for a recovery boot
 default_config:
-# Uncomment this if you are using a reverse proxy
+  # Uncomment this if you are using a reverse proxy
   http:
     use_x_forwarded_for: true
     trusted_proxies:
       - !secret server_1_ip
       - !secret server_2_ip
+      - !secret server_3_ip
 
 ## Simple Components
 map:
@@ -21,6 +21,11 @@ wake_on_lan:
 homeassistant:
   allowlist_external_dirs:
     - /config/.storage
+  auth_providers:
+    - type: trusted_networks
+      trusted_networks:
+        - 192.168.10.0/24
+        - 172.16.0.0/12
 # HACS Browser Mod
 browser_mod: !include includes/browser_mod.yaml
 
@@ -34,6 +39,7 @@ http:
   trusted_proxies:
     - !secret server_1_ip
     - !secret server_2_ip
+    - !secret server_3_ip
 ## Frontend
 frontend:
   themes: !include_dir_merge_named themes
@@ -65,7 +71,6 @@ spotify: !include includes/spotify.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
-
 #################################################################
 ## Testing functions
 #camera: !include individuals/unifi_video.yaml
