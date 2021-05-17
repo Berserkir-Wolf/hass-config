@@ -21,11 +21,10 @@ wake_on_lan:
 homeassistant:
   allowlist_external_dirs:
     - /config/.storage
-  auth_providers:
-    - type: trusted_networks
-      trusted_networks:
-        - 192.168.10.0/24
-        - 172.16.0.0/12
+#  auth_providers:
+#    - type: trusted_networks
+#      trusted_networks:
+#        - !secret trusted_network
 # HACS Browser Mod
 browser_mod: !include includes/browser_mod.yaml
 
