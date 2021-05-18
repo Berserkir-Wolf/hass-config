@@ -39,4 +39,3 @@ zones/work.yaml
 !automations.yaml
 !configuration.yaml
 #!lovelace-ui.yaml
-secrets.yaml
