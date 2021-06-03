@@ -1,13 +1,15 @@
 - id: '1584476995764'
   alias: Notify me if Kirstyn arrives
   description: ''
-  initial_state: 'off'
   trigger:
   - entity_id: person.kirstyn_rolfe
     from: not_home
     platform: state
     to: home
-  condition: []
+  condition:
+  - condition: state
+    entity_id: person.dyson_parkes
+    state: not_home
   action:
   - data:
       message: Kirstyn just arrived
@@ -17,6 +19,7 @@
       message: Kirstyn just arrived
       title: Kirstyn's Home
     service: notify.mobile_app_g8142
+  initial_state: 'off'
   mode: single
 - id: '1597613199016'
   alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
