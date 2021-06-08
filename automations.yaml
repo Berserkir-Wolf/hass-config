@@ -225,3 +225,39 @@
       - ebfb50d4d7f14ca58bb27f3b2694979c
       - 8395b9f7ecad4aca90b4a4841fe57df7
   mode: single
+- id: '1623151855818'
+  alias: Sync sub power with subwoofer
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: media_player.str_dn1080_9ba8db_2
+    from: 'off'
+    to: 'on'
+  - platform: state
+    entity_id: media_player.str_dn1080_9ba8db_2
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - service: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.subwoofer
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: media_player.str_dn1080_9ba8db_2
+        state: 'on'
+      sequence:
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.subwoofer
+    - conditions:
+      - condition: state
+        entity_id: media_player.str_dn1080_9ba8db_2
+        state: 'off'
+      sequence:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.subwoofer
+    default: []
+  mode: single
