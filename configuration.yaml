@@ -1,7 +1,7 @@
 # Configure a default setup of Home Assistant (frontend, api, etc)
 # This is used for a recovery boot
 default_config:
-  # Uncomment this if you are using a reverse proxy
+  # This tells HAss that it should still accept reverse proxy info when it does a recovery boot.
   http:
     use_x_forwarded_for: true
     trusted_proxies:
