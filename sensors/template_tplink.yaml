@@ -1,22 +1,22 @@
 - platform: template
   sensors:
-    subwoofer_switch_amps:
-      friendly_name_template: "{{ state_attr('switch.subwoofer_switch','friendly_name') }} Current"
-      value_template: "{{ state_attr('switch.subwoofer_switch','current_a') }}"
+    subwoofer_amps:
+      friendly_name_template: "{{ state_attr('switch.subwoofer','friendly_name') }} Current"
+      value_template: "{{ state_attr('switch.subwoofer','current_a') }}"
       unit_of_measurement: "A"
-    subwoofer_switch_watts:
-      friendly_name_template: "{{ state_attr('switch.subwoofer_switch','friendly_name') }} Current Consumption"
-      value_template: "{{ state_attr('switch.subwoofer_switch','current_power_w') }}"
+    subwoofer_watts:
+      friendly_name_template: "{{ state_attr('switch.subwoofer','friendly_name') }} Current Consumption"
+      value_template: "{{ state_attr('switch.subwoofer','current_power_w') }}"
       unit_of_measurement: "W"
-    subwoofer_switch_total_kwh:
-      friendly_name_template: "{{ state_attr('switch.subwoofer_switch','friendly_name') }} Total Consumption"
-      value_template: "{{ state_attr('switch.subwoofer_switch','total_energy_kwh') }}"
+    subwoofer_total_kwh:
+      friendly_name_template: "{{ state_attr('switch.subwoofer','friendly_name') }} Total Consumption"
+      value_template: "{{ state_attr('switch.subwoofer','total_energy_kwh') }}"
       unit_of_measurement: "kWh"
-    subwoofer_switch_volts:
-      friendly_name_template: "{{ state_attr('switch.subwoofer_switch','friendly_name') }} Voltage"
-      value_template: "{{ state_attr('switch.subwoofer_switch','voltage') }}"
+    subwoofer_volts:
+      friendly_name_template: "{{ state_attr('switch.subwoofer','friendly_name') }} Voltage"
+      value_template: "{{ state_attr('switch.subwoofer','voltage') }}"
       unit_of_measurement: "V"
-    subwoofer_switch_today_kwh:
-      friendly_name_template: "{{ state_attr('switch.subwoofer_switch','friendly_name') }} Today's Consumption"
-      value_template: "{{ state_attr('switch.subwoofer_switch','today_energy_kwh') }}"
+    subwoofer_today_kwh:
+      friendly_name_template: "{{ state_attr('switch.subwoofer','friendly_name') }} Today's Consumption"
+      value_template: "{{ state_attr('switch.subwoofer','today_energy_kwh') }}"
       unit_of_measurement: "kWh"

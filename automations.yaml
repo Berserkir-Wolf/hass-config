@@ -244,16 +244,16 @@
         entity_id: media_player.str_dn1080_9ba8db_2
         state: 'on'
       sequence:
-      - service: input_boolean.turn_on
+      - service: switch.turn_on
         target:
-          entity_id: input_boolean.subwoofer
+          entity_id: switch.subwoofer
     - conditions:
       - condition: state
         entity_id: media_player.str_dn1080_9ba8db_2
         state: 'off'
       sequence:
-      - service: input_boolean.turn_off
+      - service: switch.turn_off
         target:
-          entity_id: input_boolean.subwoofer
+          entity_id: switch.subwoofer
     default: []
   mode: single
