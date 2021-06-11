@@ -1,0 +1,5 @@
+# TP-Link Smart Switches
+discovery: false
+switch:
+  - host: !secret subwoofer_switch_ip
+  - host: !secret smart_switch_ip

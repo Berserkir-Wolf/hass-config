@@ -8,7 +8,6 @@ default_config:
       - !secret server_1_ip
       - !secret server_2_ip
       - !secret server_3_ip
-
 ## Simple Components
 map:
 met:
@@ -68,6 +67,7 @@ ombi: !include includes/ombi.yaml
 pi_hole: !include includes/communica_pihole.yaml
 shell_command: !include includes/shell_commands.yaml
 spotify: !include includes/spotify.yaml
+tplink: !include includes/tplink.yaml
 # Root includes (these files do not handle being moved at all - some are edited by the system itself)
 automation: !include automations.yaml
 script: !include scripts.yaml
