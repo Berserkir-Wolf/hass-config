@@ -1,0 +1,33 @@
+- id: "1623151855818"
+  alias: Sync sub power with amp
+  description: ""
+  trigger:
+    - platform: state
+      entity_id: media_player.str_dn1080_9ba8db_2
+      from: "off"
+      to: "on"
+    - platform: state
+      entity_id: media_player.str_dn1080_9ba8db_2
+      from: "on"
+      to: "off"
+  condition: []
+  action:
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: media_player.str_dn1080_9ba8db_2
+              state: "on"
+          sequence:
+            - service: switch.turn_on
+              target:
+                entity_id: switch.subwoofer
+        - conditions:
+            - condition: state
+              entity_id: media_player.str_dn1080_9ba8db_2
+              state: "off"
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: switch.subwoofer
+      default: []
+  mode: single
