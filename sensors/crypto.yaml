@@ -6,6 +6,16 @@
   display_options:
     - exchangerate
     - difficulty
+
+    ###########################################
+# Cryptonator
 ###########################################
-# Ethereum
-###########################################
+- platform: cryptostate
+  resource:
+    #Example of the first formula
+    - compare: btc-nzd
+      name: Bitcoin
+    - compare: eth-nzd
+      name: Ethereum
+    - compare: zec-nzd
+      name: ZCash
