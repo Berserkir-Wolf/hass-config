@@ -1,0 +1,45 @@
+blueprint:
+  name: Sync smart plug power state
+  description: Turn a smart switch on/off with another device.
+  domain: automation
+  input:
+    smart_device:
+      name: Control Device
+      description: The device used to trigger on/off state changes
+    target_switch:
+      name: Target Smart Switch
+      description: The smart switch you want matched to the control device.
+      selector:
+        entity:
+          domain: switch
+description: "Synchronise smart power switch with smart device state"
+trigger:
+  - platform: state
+    entity_id: !input smart_device
+    from: "off"
+    to: "on"
+  - platform: state
+    entity_id: !input smart_device
+    from: "on"
+    to: "off"
+condition: []
+action:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input smart_device
+            state: "on"
+        sequence:
+          - service: switch.turn_on
+            target:
+              entity_id: !input target_switch
+      - conditions:
+          - condition: state
+            entity_id: !input smart_device
+            state: "off"
+        sequence:
+          - service: switch.turn_off
+            target:
+              entity_id: !input target_switch
+    default: []
+mode: single
