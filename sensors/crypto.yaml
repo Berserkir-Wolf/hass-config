@@ -11,7 +11,7 @@
 # Cryptonator
 ###########################################
 - platform: cryptostate
-  resource:
+  resources:
     #Example of the first formula
     - compare: btc-nzd
       name: Bitcoin
