@@ -20,6 +20,7 @@ wake_on_lan:
 homeassistant:
   allowlist_external_dirs:
     - /config/.storage
+    - /config
   auth_providers:
     - type: homeassistant
     - type: trusted_networks
