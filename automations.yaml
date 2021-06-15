@@ -6,7 +6,10 @@
     from: not_home
     platform: state
     to: home
-  condition: []
+  condition:
+  - condition: state
+    entity_id: person.dyson_parkes
+    state: not_home
   action:
   - data:
       message: Kirstyn just arrived
@@ -16,6 +19,7 @@
       message: Kirstyn just arrived
       title: Kirstyn's Home
     service: notify.mobile_app_g8142
+  initial_state: 'off'
   mode: single
 - id: '1597613199016'
   alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
@@ -109,7 +113,6 @@
       message: Kirstyn went from {{ trigger.from_state.state }} to {{ trigger.to_state.state
         }} at {{ now().strftime('%H:%M %d/%m/%Y') }}
   mode: single
-  initial_state: 'off'
 - id: '1608262512161'
   alias: Happy Birthday Sir
   description: A silly little automation to have HAss wish me happy birthday
@@ -204,4 +207,53 @@
   - service: media_player.turn_off
     target:
       entity_id: media_player.str_dn1080_9ba8db_2
+  mode: single
+- id: '1621926272836'
+  alias: 'Turn on the lights when I get home '
+  description: ''
+  trigger:
+  - platform: zone
+    entity_id: person.dyson_parkes
+    zone: zone.home
+    event: enter
+  condition: []
+  action:
+  - service: light.turn_on
+    target:
+      area_id:
+      - ebfb50d4d7f14ca58bb27f3b2694979c
+      - 8395b9f7ecad4aca90b4a4841fe57df7
+  mode: single
+- id: '1623151855818'
+  alias: Sync sub power with amp
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: media_player.str_dn1080_9ba8db_2
+    from: 'off'
+    to: 'on'
+  - platform: state
+    entity_id: media_player.str_dn1080_9ba8db_2
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: media_player.str_dn1080_9ba8db_2
+        state: 'on'
+      sequence:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.subwoofer
+    - conditions:
+      - condition: state
+        entity_id: media_player.str_dn1080_9ba8db_2
+        state: 'off'
+      sequence:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.subwoofer
+    default: []
   mode: single

@@ -1,0 +1,5 @@
+# https://home-assistant.io/components/switch.wake_on_lan/
+  - platform: wake_on_lan
+    name: WOL_repea
+    mac: !secret repea_mac
+    host: !secret repea_host

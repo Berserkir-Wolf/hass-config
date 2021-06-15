@@ -1,14 +1,13 @@
-
 # Configure a default setup of Home Assistant (frontend, api, etc)
 # This is used for a recovery boot
 default_config:
-# Uncomment this if you are using a reverse proxy
+  # This tells HAss that it should still accept reverse proxy info when it does a recovery boot.
   http:
     use_x_forwarded_for: true
     trusted_proxies:
       - !secret server_1_ip
       - !secret server_2_ip
-
+      - !secret server_3_ip
 ## Simple Components
 map:
 met:
@@ -21,6 +20,12 @@ wake_on_lan:
 homeassistant:
   allowlist_external_dirs:
     - /config/.storage
+  auth_providers:
+    - type: homeassistant
+    - type: trusted_networks
+      trusted_networks:
+        - !secret trusted_network
+
 # HACS Browser Mod
 browser_mod: !include includes/browser_mod.yaml
 
@@ -34,6 +39,7 @@ http:
   trusted_proxies:
     - !secret server_1_ip
     - !secret server_2_ip
+    - !secret server_3_ip
 ## Frontend
 frontend:
   themes: !include_dir_merge_named themes
@@ -59,13 +65,14 @@ nzbget: !include includes/nzbget.yaml
 #octoprint: !include includes/octoprint.yaml
 ombi: !include includes/ombi.yaml
 pi_hole: !include includes/communica_pihole.yaml
+recorder: !include includes/recorder.yaml
 shell_command: !include includes/shell_commands.yaml
 spotify: !include includes/spotify.yaml
+tplink: !include includes/tplink.yaml
 # Root includes (these files do not handle being moved at all - some are edited by the system itself)
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
-
 #################################################################
 ## Testing functions
 #camera: !include individuals/unifi_video.yaml

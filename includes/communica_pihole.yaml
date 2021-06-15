@@ -1,3 +1,5 @@
 # Internal PiHole
-  - host: !secret server_2_ip
-    api_key: !secret pihole_api
+- host: !secret server_2_ip
+  api_key: !secret pihole_api
+  ssl: false
+  verify_ssl: false

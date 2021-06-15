@@ -1,7 +1,5 @@
 """Support for HDHomeRun devices."""
 import logging
-import hdhr
-import pyhdhomerun
 
 from enum import IntEnum
 
