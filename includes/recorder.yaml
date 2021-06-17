@@ -8,6 +8,7 @@ exclude:
     - sensor.weather_*
     - sensor.openweather_*
     - sensor.nzbget*
+    - sensor.glances_*
   entities:
     - sun.sun # Don't record sun data
     - sensor.last_boot # Comes from 'systemmonitor' sensor platform
