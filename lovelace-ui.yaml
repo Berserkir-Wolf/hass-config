@@ -56,9 +56,9 @@ views:
       name: Lounge Light
       tap_action:
         action: toggle
-    - entity: switch.wol_lounge
+    - entity: switch.wol_spare
       icon: mdi:desktop-classic
-      name: Lounge PC
+      name: temp PC
       tap_action:
         action: toggle
     - entity: switch.wol_shif
@@ -69,6 +69,12 @@ views:
     - entity: media_player.lounge_ps4
     - entity: media_player.str_dn1080_9ba8db_2
       name: Lounge Amp
+    - entity: switch.subwoofer
+    - entity: switch.wol_lounge
+      icon: mdi:desktop-classic
+      name: Lounge PC
+      tap_action:
+        action: toggle
     title: Living Room
     type: glance
   - columns: 3
@@ -82,6 +88,7 @@ views:
       name: Gaming Rig
       tap_action:
         action: toggle
+    - entity: sensor.brother_mfc_9340cdw
     title: Office
     type: glance
   - entities:
@@ -129,43 +136,8 @@ views:
   icon: mdi:calendar
   path: events
   title: Events
-- badges: []
-  cards:
-  - cards:
-    - dark_mode: false
-      entities:
-      - entity: device_tracker.g8142
-      hours_to_show: 0
-      title: Phone Location
-      type: map
-    - entities:
-      - entity: sensor.battery_level
-        name: Battery
-      - entity: binary_sensor.g8142_is_charging
-        name: Charging?
-      - entity: binary_sensor.g8142_music_active
-        name: Media?
-      - entity: binary_sensor.g8142_interactive
-        name: In Use?
-      title: Phone State
-      type: glance
-    - card:
-        show_header_toggle: false
-        title: Phone Sensors
-        type: entities
-      filter:
-        exclude:
-        - entity_id: sensor.g8142_geo*
-        include:
-        - entity_id: sensor.g8142*
-      show_empty: false
-      type: custom:auto-entities
-      unique: false
-    type: vertical-stack
-  icon: mdi:phone
-  panel: false
-  path: phones
-  title: Phones
+  visible:
+  - user: 08d29e434e9a4bed98b3a62218eac7a7
 - badges: []
   cards:
   - dark_mode: false
@@ -197,6 +169,8 @@ views:
   icon: mdi:crosshairs-gps
   path: location
   title: Location
+  visible:
+  - user: 08d29e434e9a4bed98b3a62218eac7a7
 - badges:
   - entity: sensor.mikrotik_router_kib_s_received
   - entity: sensor.mikrotik_router_kib_s_sent
@@ -298,34 +272,6 @@ views:
   icon: mdi:network
   path: network
   title: Network
-- badges: []
-  cards:
-  - card:
-      show_header_toggle: false
-      title: OWM
-      type: entities
-    filter:
-      include:
-      - entity_id: sensor.openweathermap*
-    sort: name
-    type: custom:auto-entities
-    unique: false
-  - entities:
-    - entity: sensor.new_zealand_coronavirus_confirmed
-      name: Confirmed
-    - entity: sensor.new_zealand_coronavirus_current
-      name: Current
-    - entity: sensor.new_zealand_coronavirus_deaths
-      name: Deaths
-    - entity: sensor.new_zealand_coronavirus_recovered
-      name: Recovered
-    title: COVID-19
-    type: glance
-  - entity: weather.home
-    type: weather-forecast
-  icon: mdi:weather-partly-cloudy
-  path: weather
-  title: Weather
 - badges:
   - entity: switch.wol_lounge
   - entity: switch.wol_shif
@@ -362,6 +308,34 @@ views:
   panel: false
   path: wakeonlan
   title: WakeOnLan
+- badges: []
+  cards:
+  - card:
+      show_header_toggle: false
+      title: OWM
+      type: entities
+    filter:
+      include:
+      - entity_id: sensor.openweathermap*
+    sort: name
+    type: custom:auto-entities
+    unique: false
+  - entities:
+    - entity: sensor.new_zealand_coronavirus_confirmed
+      name: Confirmed
+    - entity: sensor.new_zealand_coronavirus_current
+      name: Current
+    - entity: sensor.new_zealand_coronavirus_deaths
+      name: Deaths
+    - entity: sensor.new_zealand_coronavirus_recovered
+      name: Recovered
+    title: COVID-19
+    type: glance
+  - entity: weather.home
+    type: weather-forecast
+  icon: mdi:weather-partly-cloudy
+  path: weather
+  title: Weather
 - badges:
   - entity: sensor.plex_berserkirnet
     name: Plex Streams
@@ -381,20 +355,26 @@ views:
     sort: name
     type: custom:auto-entities
     unique: false
-  - entities:
-    - entity: sensor.nzbget_uptime_hours
-    type: entities
-  - entities:
-    - entity: sensor.sonarr_upcoming
-    show_header_toggle: false
-    title: Sonarr Status
-    type: entities
-  - entities:
-    - entity: sensor.radarr_movies
-    - entity: sensor.radarr_upcoming
-    show_header_toggle: false
-    title: Radarr Status
-    type: entities
+  - cards:
+    - entities:
+      - entity: sensor.sonarr_shows
+      - entity: sensor.sonarr_upcoming
+      show_header_toggle: false
+      title: Sonarr
+      type: entities
+    - entities:
+      - entity: sensor.radarr_movies
+      - entity: sensor.radarr_upcoming
+      show_header_toggle: false
+      title: Radarr
+      type: entities
+    - entities:
+      - entity: switch.nzbget_download
+      - entity: sensor.nzbget_queue_size
+      - entity: sensor.nzbget_speed
+      title: NZBGet
+      type: entities
+    type: vertical-stack
   - card:
       show_header_toggle: false
       title: Now Streaming
@@ -411,6 +391,20 @@ views:
     unique: false
   - entity: media_player.spotify_sky_girl14
     type: media-control
+  - cards:
+    - entity: sensor.plex_berserkirnet
+      name: Current Plex Streams
+      type: sensor
+    - entity: sensor.plexwanbandwidthrounded
+      name: Plex WAN Bandwith
+      type: sensor
+    - entity: sensor.plexlanbandwidthrounded
+      name: Plex LAN Bandwith
+      type: sensor
+    - entity: sensor.plextotalbandwidthrounded
+      name: Plex Total Bandwidth
+      type: sensor
+    type: vertical-stack
   - entity: media_player.str_dn1080_9ba8db_2
     type: media-control
   icon: mdi:film
@@ -462,6 +456,84 @@ views:
   icon: mdi:gamepad-variant
   path: gaming
   title: Gaming
+  visible:
+  - user: 08d29e434e9a4bed98b3a62218eac7a7
+- badges: []
+  cards:
+  - cards:
+    - dark_mode: false
+      entities:
+      - entity: device_tracker.g8142
+      hours_to_show: 0
+      title: Phone Location
+      type: map
+    - entities:
+      - entity: sensor.battery_level
+        name: Battery
+      - entity: binary_sensor.g8142_is_charging
+        name: Charging?
+      - entity: binary_sensor.g8142_music_active
+        name: Media?
+      - entity: binary_sensor.g8142_interactive
+        name: In Use?
+      title: Phone State
+      type: glance
+    - card:
+        show_header_toggle: false
+        title: Phone Sensors
+        type: entities
+      filter:
+        exclude:
+        - entity_id: sensor.g8142_geo*
+        include:
+        - entity_id: sensor.g8142*
+      show_empty: false
+      type: custom:auto-entities
+      unique: false
+    type: vertical-stack
+  icon: mdi:phone
+  panel: false
+  path: phones
+  title: Phones
+  visible:
+  - user: 08d29e434e9a4bed98b3a62218eac7a7
+- badges: []
+  cards:
+  - entities:
+    - sensor.mfc_9340cdw_b_w_counter
+    - sensor.mfc_9340cdw_belt_unit_remaining_life
+    - sensor.mfc_9340cdw_black_drum_remaining_life
+    - sensor.mfc_9340cdw_black_toner_remaining
+    - sensor.mfc_9340cdw_color_counter
+    - sensor.mfc_9340cdw_cyan_drum_remaining_life
+    - sensor.mfc_9340cdw_cyan_toner_remaining
+    - sensor.mfc_9340cdw_fuser_remaining_life
+    - sensor.mfc_9340cdw_magenta_drum_remaining_life
+    - sensor.mfc_9340cdw_magenta_toner_remaining
+    - sensor.mfc_9340cdw_page_counter
+    - sensor.mfc_9340cdw_pf_kit_1_remaining_life
+    - sensor.mfc_9340cdw_status
+    - sensor.mfc_9340cdw_yellow_drum_remaining_life
+    - sensor.mfc_9340cdw_yellow_toner_remaining
+    type: entities
+  icon: mdi:printer
+  path: ''
+  title: printers
+- badges: []
+  cards:
+  - card:
+      show_header_toggle: false
+      title: Repea
+      type: entities
+    filter:
+      include:
+      - entity_id: sensor.repea*
+    sort: name
+    type: custom:auto-entities
+    unique: false
+  icon: mdi:nas
+  path: nas
+  title: NAS
 - badges: []
   cards:
   - alias:
@@ -530,56 +602,22 @@ views:
   icon: mdi:git
   path: git
   title: Git
+  visible:
+  - user: 08d29e434e9a4bed98b3a62218eac7a7
 - badges: []
   cards:
-  - cards:
-    - color_type: label-card
-      entity: light.all_lights
-      name: Lights
-      size: 30px
-      type: custom:button-card
-    - cards:
-      - color_type: card
-        entity: light.bedroom
-        hold_action:
-          action: more-info
-        size: 30px
-        tap_action:
-          action: toggle
-        type: custom:button-card
-      - color_type: card
-        entity: light.lounge
-        hold_action:
-          action: more-info
-        size: 30px
-        tap_action:
-          action: toggle
-        type: custom:button-card
-      - color_type: card
-        entity: light.office
-        hold_action:
-          action: more-info
-        size: 30px
-        tap_action:
-          action: toggle
-        type: custom:button-card
-      type: horizontal-stack
-    type: vertical-stack
-  - cards:
-    - entity: sensor.plex_berserkirnet
-      name: Current Plex Streams
-      type: sensor
-    - entity: sensor.plexwanbandwidthrounded
-      name: Plex WAN Bandwith
-      type: sensor
-    - entity: sensor.plexlanbandwidthrounded
-      name: Plex LAN Bandwith
-      type: sensor
-    - entity: sensor.plextotalbandwidthrounded
-      name: Plex Total Bandwidth
-      type: sensor
-    type: vertical-stack
+  - entities:
+    - switch.subwoofer
+    - sensor.subwoofer_amps
+    - sensor.subwoofer_watts
+    - sensor.subwoofer_today_kwh
+    - sensor.subwoofer_total_kwh
+    - sensor.subwoofer_volts
+    type: entities
   icon: mdi:dev-to
   panel: false
   path: testing
   title: Testing
+  visible:
+  - user: 08d29e434e9a4bed98b3a62218eac7a7
+  - user: b6db76d5cfd24c73b9acc55e08c0ebd5
