@@ -1,3 +1,27 @@
+button_card_templates:
+  inkwell:
+    extra_styles: "[[[ return `\n  @keyframes pulse {\n    5% {\n      background-color:\
+      \ ${variables.color};\n    }\n  }\n`]]]\n"
+    show_name: false
+    show_state: true
+    styles:
+      card:
+      - border: solid 3px gray
+      - border-top: none
+      - background: "[[[\n  var level = entity.state;\n  var color = variables.color;\n\
+          \  return `linear-gradient(to top, ${color}, ${color} ${level}%, rgba(255,255,255,0.12)\
+          \ ${level}%)`\n]]]\n"
+      - animation: "[[[\n  return (0 + entity.state) < 10\n    ? 'pulse ease-in-out\
+          \ 1s infinite'\n    : 'none'\n]]]\n"
+      icon:
+      - opacity: 0.7
+      - color: '[[[ return variables.color ]]]'
+      - filter: drop-shadow( 0 0 2px rgba(0, 0, 0, .7))
+      state:
+      - font-size: 1.5em
+      - font-weight: bold
+      - text-shadow: 0 0 6px black
+      - overflow: visible
 title: BNet
 views:
 - badges: []
@@ -499,26 +523,82 @@ views:
   - user: 08d29e434e9a4bed98b3a62218eac7a7
 - badges: []
   cards:
+  - color: darkgray
+    custom_fields:
+      c:
+        card:
+          entity: sensor.brother_mfc_9340cdw_cyan_toner_cartridge
+          template: inkwell
+          type: custom:button-card
+          variables:
+            color: cyan
+      k:
+        card:
+          entity: sensor.brother_mfc_9340cdw_black_toner_cartridge
+          template: inkwell
+          type: custom:button-card
+          variables:
+            color: black
+      m:
+        card:
+          entity: sensor.brother_mfc_9340cdw_magenta_toner_cartridge
+          template: inkwell
+          type: custom:button-card
+          variables:
+            color: magenta
+      y:
+        card:
+          entity: sensor.brother_mfc_9340cdw_yellow_toner_cartridge
+          template: inkwell
+          type: custom:button-card
+          variables:
+            color: yellow
+    entity: sensor.brother_mfc_9340cdw
+    name: MFC-9340
+    show_state: true
+    styles:
+      card:
+      - padding: 0 0 5px 0
+      custom_fields:
+        c:
+        - width: 80%
+        - margin: auto
+        k:
+        - width: 80%
+        - margin: auto
+        m:
+        - width: 80%
+        - margin: auto
+        y:
+        - width: 80%
+        - margin: auto
+      grid:
+      - grid-template-areas: '"i c m y k" "n s s s s"'
+      - grid-template-columns: 1fr 1fr 1fr 1fr 1fr
+      - grid-template-rows: auto 1em
+      icon:
+      - width: 100%
+      state:
+      - text-align: center
+      - width: 100%
+    type: custom:button-card
   - entities:
-    - sensor.mfc_9340cdw_b_w_counter
-    - sensor.mfc_9340cdw_belt_unit_remaining_life
-    - sensor.mfc_9340cdw_black_drum_remaining_life
-    - sensor.mfc_9340cdw_black_toner_remaining
-    - sensor.mfc_9340cdw_color_counter
-    - sensor.mfc_9340cdw_cyan_drum_remaining_life
-    - sensor.mfc_9340cdw_cyan_toner_remaining
-    - sensor.mfc_9340cdw_fuser_remaining_life
-    - sensor.mfc_9340cdw_magenta_drum_remaining_life
-    - sensor.mfc_9340cdw_magenta_toner_remaining
-    - sensor.mfc_9340cdw_page_counter
-    - sensor.mfc_9340cdw_pf_kit_1_remaining_life
-    - sensor.mfc_9340cdw_status
-    - sensor.mfc_9340cdw_yellow_drum_remaining_life
-    - sensor.mfc_9340cdw_yellow_toner_remaining
+    - entity: sensor.mfc_9340cdw_status
+    - entity: sensor.mfc_9340cdw_page_counter
+    - entity: sensor.mfc_9340cdw_b_w_counter
+    - entity: sensor.mfc_9340cdw_color_counter
+    - entity: sensor.mfc_9340cdw_belt_unit_remaining_life
+    - entity: sensor.mfc_9340cdw_fuser_remaining_life
+    - entity: sensor.mfc_9340cdw_pf_kit_1_remaining_life
+    - entity: sensor.mfc_9340cdw_cyan_drum_remaining_life
+    - entity: sensor.mfc_9340cdw_magenta_drum_remaining_life
+    - entity: sensor.mfc_9340cdw_black_drum_remaining_life
+    - entity: sensor.mfc_9340cdw_yellow_drum_remaining_life
+    state_color: false
     type: entities
   icon: mdi:printer
   path: ''
-  title: printers
+  title: Printers
 - badges: []
   cards:
   - card:
