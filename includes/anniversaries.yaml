@@ -4,18 +4,18 @@
 # Each anniversary you can give a name, and could be something like a birthday reminder or an anniversary.
 # If it's a one-time anniversary, I'd suggest configuring it via the web UI instead of through a YAML file - that's just easier.
 
-sensors: 
-#Anniversaries
+sensors:
+  #Anniversaries
   - name: SWMBO
-    date: "2013-08-13"
+    date: "2013-08-04"
     one_time: no
     show_half_anniversary: false
     icon_normal: mdi:calendar-blank
     icon_today: mdi:calendar-star
     icon_soon: mdi:calendar
 
-# Birthdays
-# Use the "id_prefix: birthday_" to have these identify as birthdays instead of anniversaries in the entity list.
+  # Birthdays
+  # Use the "id_prefix: birthday_" to have these identify as birthdays instead of anniversaries in the entity list.
   - name: SWMBO
     date: "1990-12-16"
     id_prefix: birthday_
