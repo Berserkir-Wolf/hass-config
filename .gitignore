@@ -19,6 +19,7 @@ zones
 
 # Specific file ignores
 .config_entries.json
+.google.token
 .uuid
 .ps4-games.*
 html5_push_registrations.conf
