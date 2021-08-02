@@ -1,0 +1,27 @@
+- cal_id: !secret google_email
+  entities:
+    - device_id: !secret google_device_id
+      ignore_availability: true
+      name: !secret email_user
+      track: true
+
+- cal_id: en.new_zealand#holiday@group.v.calendar.google.com
+  entities:
+    - device_id: holidays_in_new_zealand
+      ignore_availability: true
+      name: Holidays in New Zealand
+      track: true
+
+- cal_id: addressbook#contacts@group.v.calendar.google.com
+  entities:
+    - device_id: birthdays
+      ignore_availability: true
+      name: Birthdays
+      track: true
+
+- cal_id: c_4k4ipvteke594mh04hc0c1nkqk@group.calendar.google.com
+  entities:
+    - device_id: geeky_events
+      ignore_availability: true
+      name: Geeky Events
+      track: true
