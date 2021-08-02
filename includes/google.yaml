@@ -1,0 +1,4 @@
+## Used for google calendar API (for now)
+client_id: !secret google_token_id
+client_secret: google_token_secret
+track_new_calendar: true
