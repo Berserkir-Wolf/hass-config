@@ -18,7 +18,7 @@
   - data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
-    service: notify.mobile_app_g8142
+    service: notify.mobile_app_bnet_a74
   initial_state: 'off'
   mode: single
 - id: '1597613199016'

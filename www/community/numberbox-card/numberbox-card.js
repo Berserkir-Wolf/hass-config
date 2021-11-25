@@ -1,6 +1,6 @@
 ((LitElement) => {
 
-console.info('NUMBERBOX_CARD 2.7');
+console.info('NUMBERBOX_CARD 3.0');
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 class NumberBox extends LitElement {
@@ -9,6 +9,7 @@ constructor() {
 	super();
 	this.bounce = false;
 	this.pending = false;
+	this.state = 0;
 }
 
 render() {
@@ -25,6 +26,14 @@ render() {
 	if(!this.config.icon_plus){this.config.icon_plus='mdi:plus';}
 	if(!this.config.icon_minus){this.config.icon_minus='mdi:minus';}
 	if( this.config.delay === undefined ){ this.config.delay=1000;}
+	this.state=this.stateObj.state;
+	if(this.config.state){this.state=this.stateObj.attributes[this.config.state];}
+	if(this.config.min === undefined){ this.config.min=this.stateObj.attributes.min;}
+	if(this.config.max === undefined){ this.config.max=this.stateObj.attributes.max;}
+	if(this.config.step === undefined){ this.config.step=this.stateObj.attributes.step;}
+	if(!this.config.service){this.config.service="set_value";}
+	if(!this.config.param){this.config.param="value";}
+
 
 	return html`
 	<ha-card class="${(!this.config.border)?'noborder':''}">
@@ -75,17 +84,16 @@ renderNum(){
 
 setNumb(c){
 	let v=this.pending; const a=this.stateObj.attributes;
-	const step=Number(a.step);
-	if( v===false ){ v=Number(this.stateObj.state); v=isNaN(v)?a.min:v;}
-	let adval=c?(v + step):(v - step);
+	if( v===false ){ v=Number(this.state); v=isNaN(v)?this.config.min:v;}
+	let adval=c?(v + Number(this.config.step)):(v - Number(this.config.step));
 	adval=Math.round(adval*1000)/1000
-	if( adval <=  Number(a.max) && adval >= Number(a.min)){
+	if( adval <=  Number(this.config.max) && adval >= Number(this.config.min)){
+		this.pending=(adval);
 		if(this.config.delay){
-			this.pending=(adval);
 			clearTimeout(this.bounce);
 			this.bounce = setTimeout(this.publishNum, this.config.delay, this);
 		}else{
-			this._hass.callService(this.stateObj.entity_id.split('.')[0], "set_value", { entity_id: this.stateObj.entity_id, value: adval });
+			this.publishNum(this);
 		}
 	}
 }
@@ -93,13 +101,22 @@ setNumb(c){
 publishNum(dhis){
 	const v=dhis.pending;
 	dhis.pending=false;
-	dhis._hass.callService(dhis.stateObj.entity_id.split('.')[0], "set_value", { entity_id: dhis.stateObj.entity_id, value: v });
+	let d={entity_id: dhis.stateObj.entity_id};
+	d[dhis.config.param]=v;
+	dhis._hass.callService(dhis.stateObj.entity_id.split('.')[0], dhis.config.service, d);
 }
 
 niceNum(){
 	let fix=0; let v=this.pending;
-	if( v === false ){ v=Number(this.stateObj.state); if(isNaN(v)){return '?';}}
-	const stp=Number(this.stateObj.attributes.step);
+	if( v === false ){
+		v=this.state;
+		if(v=='unavailable' || ( v=='unknown' && this.config.initial === undefined ) ){return '?';}
+		v=Number(v);
+		if(isNaN(v) && this.config.initial !== undefined){
+			v=Number(this.config.initial);
+		}
+	}	
+	const stp=Number(this.config.step) || 1;
 	if( Math.round(stp) != stp ){ fix=stp.toString().split(".")[1].length || 1;}
 	fix = v.toFixed(fix);
 	const u=this.config.unit;
@@ -135,6 +152,7 @@ static get properties() {
 		stateObj: {},
 		bounce: {},
 		pending: {},
+		state: {},
 	}
 }
 
@@ -202,7 +220,7 @@ getCardSize() {
 setConfig(config) {
 	if (!config.entity) throw new Error('Please define an entity.');
 	let c=config.entity.split('.')[0];
-	if (!(c == 'input_number' || c == 'number' )){
+	if (!(config.service || c == 'input_number' || c == 'number')){
 		throw new Error('Please define a number entity.');
 	}
 	this.config = {
@@ -214,7 +232,14 @@ setConfig(config) {
 		icon_plus: config.icon_plus,
 		icon_minus: config.icon_minus,
 		delay: config.delay,
+		initial: config.initial,
 		secondary_info: config.secondary_info,
+		state: config.state,
+		min: config.min,
+		max: config.max,
+		step: config.step,
+		service: config.service,
+		param: config.param,
 	};
 }
 
@@ -226,7 +251,7 @@ set hass(hass) {
 }
 
 shouldUpdate(changedProps) {
-	if( changedProps.has('stateObj') || changedProps.has('pending') ){return true;}
+	if( changedProps.has('config') || changedProps.has('stateObj') || changedProps.has('pending') ){return true;}
 }
 
 static getConfigElement() {
@@ -294,6 +319,13 @@ render() {
 		@change="${this.updVal}"
 		allow-custom-entity
 	></ha-entity-picker>
+	<ha-formfield label="Show border?">
+		<ha-switch
+			.checked=${this._border}
+			.configValue="${'border'}"
+			@change=${this.updVal}
+		></ha-switch>
+	</ha-formfield>
 </div>
 <div class="side">
 	<paper-input
@@ -302,13 +334,12 @@ render() {
 		.configValue="${'secondary_info'}"
 		@value-changed="${this.updVal}"
 	></paper-input>
-	<ha-formfield label="Show border?">
-		<ha-switch
-			.checked=${this._border}
-			.configValue="${'border'}"
-			@change=${this.updVal}
-		></ha-switch>
-	</ha-formfield>
+	<ha-icon-input
+		label="Initial (Default ?)"
+		.value="${this.config.initial}"
+		.configValue=${'initial'}
+		@value-changed=${this.updVal}
+	></ha-icon-input>
 </div>
 <div class="side">
 	<paper-input
