@@ -1,0 +1,12 @@
+- name: facebook_text
+  platform: rest
+  resource: https://api.callmebot.com/facebook/send.php
+  data:
+    apikey: !secret callmebot_api
+    type: text
+- name: facebook_image
+  platform: rest
+  resource: https://api.callmebot.com/facebook/send.php
+  data:
+    apikey: !secret callmebot_api
+    type: image
