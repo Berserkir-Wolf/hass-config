@@ -1,5 +1,5 @@
 - id: '1584476995764'
-  alias: Notify me if Kirstyn arrives
+  alias: Notification - SWMBO Arrives
   description: ''
   trigger:
   - entity_id: person.kirstyn_rolfe
@@ -35,14 +35,17 @@
   - service: shell_command.convert_lovelace
   mode: single
 - id: '1602904795038'
-  alias: Notify me on update availability
+  alias: Notification - HAss Update Available
   description: ''
   trigger:
   - platform: state
     entity_id: binary_sensor.updater
     from: 'Off'
     to: 'On'
-  condition: []
+  condition:
+  - condition: state
+    entity_id: input_boolean.silent_mode
+    state: 'off'
   action:
   - service: notify.html5_notifications
     data:
@@ -78,7 +81,7 @@
     entity_id: input_boolean.git_commit
   mode: single
 - id: '1603311446063'
-  alias: 'Lovelace: convert json to yaml and commit'
+  alias: Github - Convert Lovelace json to yaml and commit
   description: ''
   trigger:
   - platform: event
@@ -93,7 +96,7 @@
   initial_state: 'off'
   mode: single
 - id: '1605335470308'
-  alias: SWMBO home and away
+  alias: Notification - SWMBO home and away
   description: Is she home or isn't she?
   trigger:
   - platform: state
@@ -114,14 +117,17 @@
         }} at {{ now().strftime('%H:%M %d/%m/%Y') }}
   mode: single
 - id: '1608262512161'
-  alias: Happy Birthday Sir
+  alias: Notification - Happy Birthday Sir
   description: A silly little automation to have HAss wish me happy birthday
   trigger:
   - platform: state
     entity_id: sensor.birthday_me
     to: '0'
     for: '"07:00:00"'
-  condition: []
+  condition:
+  - condition: state
+    entity_id: input_boolean.silent_mode
+    state: 'off'
   action:
   - service: notify.notify
     data:
@@ -129,7 +135,7 @@
       title: Bappy Hirthday
   mode: single
 - id: '1608262874242'
-  alias: Birthday Reminders
+  alias: Notification - Birthday Reminders
   description: Remind me of upcoming birthdays
   trigger:
   - platform: state
@@ -144,7 +150,7 @@
       message: '''{{trigger.to_state.attributes.friendly_name}} is tomorrow!'''
   mode: single
 - id: '1608606143148'
-  alias: Install additional packages
+  alias: System - Install additional packages
   description: Installs packages defined in a shell script
   trigger:
   - platform: homeassistant
@@ -162,6 +168,12 @@
   - platform: numeric_state
     entity_id: sensor.exchange_rate_1_btc
     above: '85000'
+  condition:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: input_boolean.silent_mode
+      state: 'on'
   action:
   - service: notify.mobile_app_g8142
     data:
@@ -173,16 +185,15 @@
       target: '819351502640381952'
   mode: single
 - id: '1618826864131'
-  alias: Welcome Home Sir
+  alias: Notification - Welcome Home Sir
   description: ''
   trigger:
   - platform: homeassistant
     event: start
   condition:
   - condition: state
-    entity_id: media_player.str_dn1080_9ba8db_2
-    state: 'false'
-    attribute: is_volume_muted
+    entity_id: input_boolean.silent_mode
+    state: 'off'
   action:
   - service: media_player.turn_on
     target:
@@ -209,7 +220,7 @@
       entity_id: media_player.str_dn1080_9ba8db_2
   mode: single
 - id: '1621926272836'
-  alias: 'Turn on the lights when I get home '
+  alias: Lights - Turn on to greet me
   description: ''
   trigger:
   - platform: zone
@@ -237,7 +248,7 @@
       entity_id: light.bedroom
   mode: single
 - id: '1623151855818'
-  alias: Sync sub power with amp
+  alias: Power - Sync sub with amp
   description: ''
   trigger:
   - platform: state
@@ -270,7 +281,7 @@
     default: []
   mode: single
 - id: '1635829545674'
-  alias: Notify me if Kirstyn leaves
+  alias: Notification - SWMBO Leaves
   description: ''
   trigger:
   - entity_id: person.kirstyn_rolfe
@@ -293,7 +304,7 @@
   mode: single
   initial_state: 'off'
 - id: '1637985620007'
-  alias: Set Xbox Volume
+  alias: Amp Volume - Xbox Input
   description: ''
   trigger:
   - platform: state
@@ -314,7 +325,7 @@
       volume_level: 0.27
   mode: single
 - id: '1637985790721'
-  alias: Set PC Volume
+  alias: Amp Volume - PC Input
   description: ''
   trigger:
   - platform: state
@@ -335,13 +346,16 @@
       volume_level: 0.73
   mode: single
 - id: '1638231245218'
-  alias: Notification - HACS Updates
+  alias: Notification - HACS Updates Available
   description: ''
   trigger:
   - platform: numeric_state
     entity_id: sensor.hacs
     above: '0'
-  condition: []
+  condition:
+  - condition: state
+    entity_id: input_boolean.silent_mode
+    state: 'off'
   action:
   - service: persistent_notification.create
     data:
@@ -353,7 +367,7 @@
       message: HACS has {{ states.sensor.hacs.state }} update(s) available
   mode: single
 - id: '1638232674502'
-  alias: Notification - HACS Update Cleared
+  alias: Notification - HACS Updates Installed
   description: Dismiss persistent_notification for hacs updates
   trigger:
   - platform: numeric_state
@@ -364,4 +378,25 @@
   - service: persistent_notification.dismiss
     data:
       notification_id: hacs_updates
+  mode: single
+- id: '1638243017954'
+  alias: Amp Volume - PS5 Input
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: media_player.str_dn1080_9ba8db_2
+    attribute: source
+    to: PS5
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  condition: []
+  action:
+  - service: media_player.volume_set
+    target:
+      device_id: 52c56236b2c29ff9b4e527c34931ea20
+    data:
+      volume_level: 0.27
   mode: single
