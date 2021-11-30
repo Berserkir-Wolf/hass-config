@@ -58,7 +58,7 @@
       - '819351502640381952'
   mode: single
 - id: '1603249243832'
-  alias: Commit changes to Github
+  alias: Github - Commit Changes
   description: ''
   trigger:
   - platform: state
@@ -156,7 +156,7 @@
     data: {}
   mode: single
 - id: '1611959876984'
-  alias: BTC Alert
+  alias: Notification - BTC Value
   description: Notify me if BTC goes above a certain value
   trigger:
   - platform: numeric_state
@@ -222,7 +222,19 @@
     target:
       area_id:
       - ebfb50d4d7f14ca58bb27f3b2694979c
-      - 8395b9f7ecad4aca90b4a4841fe57df7
+    data:
+      transition: 2
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: person.kirstyn_rolfe
+      state: Home
+  - service: light.turn_on
+    data:
+      transition: 2
+      brightness_pct: 100
+    target:
+      entity_id: light.bedroom
   mode: single
 - id: '1623151855818'
   alias: Sync sub power with amp
@@ -256,4 +268,100 @@
         target:
           entity_id: switch.subwoofer
     default: []
+  mode: single
+- id: '1635829545674'
+  alias: Notify me if Kirstyn leaves
+  description: ''
+  trigger:
+  - entity_id: person.kirstyn_rolfe
+    from: home
+    platform: state
+    to: not_home
+  condition:
+  - condition: state
+    entity_id: person.dyson_parkes
+    state: not_home
+  action:
+  - data:
+      message: 'Kirstyn just left '
+      title: Kirstyn's gone
+    service: notify.html5_notifications
+  - data:
+      message: Kirstyn just left
+      title: Kirstyn's gone
+    service: notify.mobile_app_bnet_a74
+  mode: single
+  initial_state: 'off'
+- id: '1637985620007'
+  alias: Set Xbox Volume
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: media_player.str_dn1080_9ba8db_2
+    attribute: source
+    to: XBox SX
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  condition: []
+  action:
+  - service: media_player.volume_set
+    target:
+      device_id: 52c56236b2c29ff9b4e527c34931ea20
+    data:
+      volume_level: 0.27
+  mode: single
+- id: '1637985790721'
+  alias: Set PC Volume
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: media_player.str_dn1080_9ba8db_2
+    attribute: source
+    to: PC
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  condition: []
+  action:
+  - service: media_player.volume_set
+    target:
+      device_id: 52c56236b2c29ff9b4e527c34931ea20
+    data:
+      volume_level: 0.73
+  mode: single
+- id: '1638231245218'
+  alias: Notification - HACS Updates
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.hacs
+    above: '0'
+  condition: []
+  action:
+  - service: persistent_notification.create
+    data:
+      notification_id: hacs_updates
+      title: HACS Update
+      message: HACS has {{ states.sensor.hacs.state }} update(s) available
+  - service: notify.facebook_text
+    data:
+      message: HACS has {{ states.sensor.hacs.state }} update(s) available
+  mode: single
+- id: '1638232674502'
+  alias: Notification - HACS Update Cleared
+  description: Dismiss persistent_notification for hacs updates
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.hacs
+    below: '1'
+  condition: []
+  action:
+  - service: persistent_notification.dismiss
+    data:
+      notification_id: hacs_updates
   mode: single
