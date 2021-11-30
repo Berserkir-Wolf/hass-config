@@ -5,3 +5,6 @@
 git_commit:
   name: Git Commit
   initial: off
+silent_mode:
+  name: Silent Mode
+  initial: off
