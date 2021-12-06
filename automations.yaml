@@ -3,13 +3,14 @@
   description: ''
   trigger:
   - entity_id: person.kirstyn_rolfe
-    from: not_home
     platform: state
     to: home
   condition:
-  - condition: state
-    entity_id: person.dyson_parkes
-    state: not_home
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: person.dyson_parkes
+      state: home
   action:
   - data:
       message: Kirstyn just arrived
