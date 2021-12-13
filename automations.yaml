@@ -41,7 +41,6 @@
   trigger:
   - platform: state
     entity_id: binary_sensor.updater
-    from: 'Off'
     to: 'On'
   condition:
   - condition: state
