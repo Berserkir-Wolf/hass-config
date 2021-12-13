@@ -1,10 +1,14 @@
 - name: Server Controls
-  url_path: config/server_control # url_path needs to be unique for each panel_custom config
+  url_path: redirect-server-controls
   sidebar_title: Server Controls
-  sidebar_icon: mdi:server # https://materialdesignicons.com/
-  module_url: /local/panel-redirect.js # 'local' is '/config/www/'
-- name: Zones
-  url_path: config/zone
-  sidebar_title: Zones
-  sidebar_icon: mdi:google-maps
+  sidebar_icon: mdi:server
   module_url: /local/panel-redirect.js
+  config:
+    target: /config/server_control
+- name: Supervisor
+  url_path: redirect-supervisor
+  sidebar_title: Supervisor
+  sidebar_icon: mdi:home-assistant
+  module_url: /local/panel-redirect.js
+  config:
+    target: /hassio/dashboard
