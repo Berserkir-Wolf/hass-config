@@ -2,5 +2,5 @@
 # Discord Notifications
 ###########################################
 - platform: discord
-  name: Discord    
+  name: Discord
   token: !secret discord_bot_token
