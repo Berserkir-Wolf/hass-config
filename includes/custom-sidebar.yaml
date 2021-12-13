@@ -1,14 +1,10 @@
 - name: Server Controls
-  url_path: redirect-server-controls
+  url_path: config/server_control
   sidebar_title: Server Controls
   sidebar_icon: mdi:server
   module_url: /local/panel-redirect.js
-  config:
-    target: /config/server_control
 - name: Supervisor
-  url_path: redirect-supervisor
+  url_path: hassio/dashboard
   sidebar_title: Supervisor
   sidebar_icon: mdi:home-assistant
   module_url: /local/panel-redirect.js
-  config:
-    target: /hassio/dashboard
