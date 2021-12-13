@@ -1,0 +1,10 @@
+- name: Server Controls
+  url_path: config/server_control # url_path needs to be unique for each panel_custom config
+  sidebar_title: Server Controls
+  sidebar_icon: mdi:server # https://materialdesignicons.com/
+  module_url: /local/panel-redirect.js # 'local' is '/config/www/'
+- name: Zones
+  url_path: config/zone
+  sidebar_title: Zones
+  sidebar_icon: mdi:google-maps
+  module_url: /local/panel-redirect.js
