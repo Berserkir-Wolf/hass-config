@@ -361,10 +361,22 @@
     data:
       notification_id: hacs_updates
       title: HACS Update
-      message: HACS has {{ states.sensor.hacs.state }} update(s) available
+      message: Updates available in {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs')
+        | int > 1 %}s{% endif %}
   - service: notify.facebook_text
     data:
-      message: HACS has {{ states.sensor.hacs.state }} update(s) available
+      message: Updates available in {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs')
+        | int > 1 %}s{% endif %} {% for repo in states.sensor.hacs.attributes.repositories
+        %} {{ repo.name }} {% endfor %}
+  - service: notify.discord
+    data:
+      message: 'Updates available in {{ states(''sensor.hacs'') }} HACS repo{% if
+        states(''sensor.hacs'') | int > 1 %}s{% endif %}\: {% for repo in states.sensor.hacs.attributes.repositories
+        %} {{repo.name }}, {{repo.installed_version}} -> {{repo.available_version}}
+        {% endfor %}'
+      title: HACS Updates available
+      target:
+      - '819351502640381952'
   mode: single
 - id: '1638232674502'
   alias: Notification - HACS Updates Installed
