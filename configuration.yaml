@@ -78,7 +78,7 @@ scene: !include scenes.yaml
 ## Testing functions
 #camera: !include individuals/unifi_video.yaml
 #influxdb: !include individuals/influxdb.yaml #disabled for system load
-
+panel_custom: !include testing/custom-sidebar.yaml
 #################################################################
 ## Deprecated YAML functions
 #nzbget: !include includes/nzbget.yaml
