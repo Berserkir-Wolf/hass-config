@@ -361,8 +361,8 @@
     data:
       notification_id: hacs_updates
       title: HACS Update
-      message: Updates available in {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs')
-        | int > 1 %}s{% endif %}
+      message: Updates available in {{ states('sensor.hacs') }} [HACS repo{% if states('sensor.hacs')
+        | int > 1 %}s{% endif %}](
   - service: notify.facebook_text
     data:
       message: Updates available in {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs')
