@@ -65,7 +65,7 @@ input_datetime: !include includes/input_datetime.yaml
 light: !include includes/lights.yaml
 #octoprint: !include includes/octoprint.yaml
 ombi: !include includes/ombi.yaml
-
+panel_custom: !include includes/custom_sidebar.yaml
 recorder: !include includes/recorder.yaml
 shell_command: !include includes/shell_commands.yaml
 spotify: !include includes/spotify.yaml
@@ -78,7 +78,6 @@ scene: !include scenes.yaml
 ## Testing functions
 #camera: !include individuals/unifi_video.yaml
 #influxdb: !include individuals/influxdb.yaml #disabled for system load
-
 #################################################################
 ## Deprecated YAML functions
 #nzbget: !include includes/nzbget.yaml

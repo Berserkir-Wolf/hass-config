@@ -65,6 +65,8 @@ views:
         type: custom:button-card
       type: horizontal-stack
     type: vertical-stack
+    view_layout:
+      position: main
   - columns: 3
     entities:
     - entity: light.bedroom
@@ -76,8 +78,9 @@ views:
     type: glance
   - columns: 3
     entities:
-    - entity: light.lounge
-      name: Lounge Light
+    - entity: switch.wol_lounge
+      icon: mdi:desktop-classic
+      name: Lounge PC
       tap_action:
         action: toggle
     - entity: switch.wol_spare
@@ -90,13 +93,17 @@ views:
       name: Shif (NUC)
       tap_action:
         action: toggle
+    - entity: light.lounge
+      name: Lounge Light
+      tap_action:
+        action: toggle
+    - entity: switch.the_plug
+      tap_action:
+        action: toggle
     - entity: media_player.lounge_ps4
     - entity: media_player.str_dn1080_9ba8db_2
       name: Lounge Amp
     - entity: switch.subwoofer
-    - entity: switch.wol_lounge
-      icon: mdi:desktop-classic
-      name: Lounge PC
       tap_action:
         action: toggle
     title: Living Room
@@ -117,25 +124,15 @@ views:
     type: glance
   - entities:
     - entity: switch.pi_hole
+    - entity: switch.adguard_filtering
     - entity: sensor.mikrotik_router_kib_s_received
-      name: WAN (RX)
-    - entity: sensor.mikrotik_router_kib_s_sent
-      name: WAN (TX)
+      name: WAN RX
+    - entity: sensor.mikrotik_router_kib_s_sent_2
+      name: WAN TX
     title: Server Rack
     type: glance
   - entity: weather.home
     type: weather-forecast
-  - cards:
-    - entity: sensor.exchange_rate_1_btc
-      type: entity
-    - entity: input_number.btc_amount
-      type: entity
-    - entity: sensor.my_btc_value
-      icon: mdi:dollar
-      name: My BTC
-      type: entity
-      unit: NZD
-    type: vertical-stack
   icon: mdi:home
   path: home
   title: Home
@@ -166,7 +163,7 @@ views:
   cards:
   - dark_mode: false
     entities:
-    - entity: device_tracker.g8142
+    - entity: device_tracker.cph2197
     - entity: zone.work
     - entity: zone.home
     type: map
@@ -185,11 +182,17 @@ views:
     unique: false
   - columns: 1
     entities:
-    - entity: sensor.g8142_geocoded_location
+    - entity: sensor.bnet_a74_geocoded_location
     show_icon: true
     show_state: true
     title: Phone Location
     type: glance
+  - cards:
+    - entity: automation.notify_me_if_kirstyn_arrives_when_i_am_not_at_home
+      tap_action:
+        action: toggle
+      type: button
+    type: horizontal-stack
   icon: mdi:crosshairs-gps
   path: location
   title: Location
@@ -197,29 +200,31 @@ views:
   - user: 08d29e434e9a4bed98b3a62218eac7a7
 - badges:
   - entity: sensor.mikrotik_router_kib_s_received
-  - entity: sensor.mikrotik_router_kib_s_sent
-  - entity: sensor.pi_hole_dns_queries_today
-  - entity: sensor.pi_hole_ads_blocked_today
+  - entity: sensor.mikrotik_router_kib_s_sent_2
+  - entity: sensor.adguard_dns_queries
+  - entity: sensor.adguard_dns_queries_blocked_ratio
   cards:
   - cards:
     - cards:
-      - entity: sensor.mikrotik_router_kib_s_sent
-        max: 40000
+      - entity: sensor.mikrotik_router_kib_s_sent_2
+        max: 100000
         min: 0
         name: WAN TX
+        needle: true
         severity:
           green: 0
-          red: 35000
-          yellow: 25000
+          red: 75000
+          yellow: 45000
         type: gauge
       - entity: sensor.mikrotik_router_kib_s_received
-        max: 40000
+        max: 100000
         min: 0
         name: WAN RX
+        needle: true
         severity:
           green: 0
-          red: 35000
-          yellow: 25000
+          red: 75000
+          yellow: 45000
         type: gauge
       type: horizontal-stack
     - card:
@@ -237,14 +242,41 @@ views:
     title: Routerboard Stats
     type: vertical-stack
   - cards:
+    - entity: sensor.adguard_dns_queries_blocked_ratio
+      max: 100
+      min: 0
+      name: Blocked Ad Percentage
+      needle: true
+      severity:
+        green: 0
+        red: 75
+        yellow: 50
+      theme: default
+      type: gauge
+    - card:
+        show_header_toggle: false
+        type: entities
+      filter:
+        include:
+        - entity_id: sensor.adguard*
+      show_empty: true
+      sort:
+        ignore_case: true
+        method: name
+      type: custom:auto-entities
+      unique: false
+    title: AdGuard
+    type: vertical-stack
+  - cards:
     - entity: sensor.pi_hole_ads_percentage_blocked_today
       max: 100
       min: 0
       name: Blocked Ad Percentage
+      needle: true
       severity:
         green: 0
-        red: 50
-        yellow: 25
+        red: 75
+        yellow: 50
       theme: default
       type: gauge
     - card:
@@ -477,6 +509,35 @@ views:
     show_header_toggle: false
     title: Steamers
     type: entities
+  - cards:
+    - card:
+        show_header_toggle: false
+        type: entities
+      filter:
+        include:
+        - entity_id: binary_sensor.berserkir_*
+        - entity_id: sensor.berserkir_*
+      show_empty: true
+      sort:
+        ignore_case: true
+        method: name
+      type: custom:auto-entities
+      unique: false
+    - card:
+        show_header_toggle: false
+        type: entities
+      filter:
+        include:
+        - entity_id: binary_sensor.skygirl*
+        - entity_id: sensor.skygirl*
+      show_empty: true
+      sort:
+        ignore_case: true
+        method: name
+      type: custom:auto-entities
+      unique: false
+    title: Xbox
+    type: vertical-stack
   icon: mdi:gamepad-variant
   path: gaming
   title: Gaming
@@ -484,6 +545,37 @@ views:
   - user: 08d29e434e9a4bed98b3a62218eac7a7
 - badges: []
   cards:
+  - cards:
+    - dark_mode: false
+      entities:
+      - entity: device_tracker.cph2197
+      hours_to_show: 0
+      title: Phone Location
+      type: map
+    - entities:
+      - entity: sensor.bnet_a74_battery_level
+        name: Battery
+      - entity: binary_sensor.bnet_a74_is_charging
+        name: Charging?
+      - entity: binary_sensor.bnet_a74_music_active
+        name: Media?
+      - entity: binary_sensor.bnet_a74_interactive
+        name: In Use?
+      title: Phone State
+      type: glance
+    - card:
+        show_header_toggle: false
+        title: Phone Sensors
+        type: entities
+      filter:
+        exclude:
+        - entity_id: sensor.g8142_geo*
+        include:
+        - entity_id: sensor.bnet_a74*
+      show_empty: false
+      type: custom:auto-entities
+      unique: false
+    type: vertical-stack
   - cards:
     - dark_mode: false
       entities:
@@ -629,30 +721,6 @@ views:
       footer: false
     status_adaptive_color: true
     type: custom:uptime-card
-  - cards:
-    - entities:
-      - entity: input_text.git_message
-        name: Message
-      type: entities
-    - card:
-        entity: input_boolean.git_commit
-        hold_action:
-          action: none
-        icon: mdi:github
-        icon_height: 45px
-        show_state: false
-        tap_action:
-          action: call-service
-          service: automation.trigger
-          service_data:
-            entity_id: automation.commit_message
-        type: button
-      conditions:
-      - entity: input_text.git_message
-        state_not: Committed from UI without a message
-      type: conditional
-    title: Git Commands
-    type: vertical-stack
   - entities:
     - sensor.hass_repo
     - sensor.ombi_docs
@@ -660,25 +728,6 @@ views:
     show_github_icon: true
     title: Git Repo
     type: custom:github-card
-  - cards:
-    - hold_action:
-        action: none
-      icon: mdi:monitor-screenshot
-      icon_height: 45px
-      name: Convert Lovelace to Yaml
-      tap_action:
-        action: call-service
-        service: shell_command.convert_lovelace
-      type: button
-    - hold_action:
-        action: none
-      icon: mdi:github
-      name: Commit Update
-      tap_action:
-        action: call-service
-        service: shell_command.commit_new_version
-      type: button
-    type: grid
   icon: mdi:git
   path: git
   title: Git
@@ -686,14 +735,19 @@ views:
   - user: 08d29e434e9a4bed98b3a62218eac7a7
 - badges: []
   cards:
-  - entities:
-    - switch.subwoofer
-    - sensor.subwoofer_amps
-    - sensor.subwoofer_watts
-    - sensor.subwoofer_today_kwh
-    - sensor.subwoofer_total_kwh
-    - sensor.subwoofer_volts
-    type: entities
+  - cards:
+    - entity: sensor.exchange_rate_1_btc
+      type: entity
+    - entity: input_number.btc_amount
+      type: entity
+    - entity: sensor.my_btc_value
+      icon: mdi:dollar
+      name: My BTC
+      type: entity
+      unit: NZD
+    type: vertical-stack
+    view_layout:
+      position: main
   icon: mdi:dev-to
   panel: false
   path: testing
