@@ -5,6 +5,6 @@
   port: 8443
   verify_ssl: False
   udm: False
-  site: !secret unifi_site
+  #site: !secret unifi_site
   username: !secret unifi_user
   password: !secret unifi_pass
