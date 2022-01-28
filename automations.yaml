@@ -59,6 +59,10 @@
       title: Update Available!
       target:
       - '819351502640381952'
+  - service: notify.facebook_text
+    data:
+      message: Home Assistant {{ state_attr('binary_sensor.updater', 'newest_version')
+        }} is available.
   mode: single
 - id: '1603249243832'
   alias: Github - Commit Changes
