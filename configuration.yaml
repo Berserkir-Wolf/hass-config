@@ -28,7 +28,8 @@ homeassistant:
         - !secret trusted_network
 
 # HACS Browser Mod
-browser_mod: !include includes/browser_mod.yaml
+# Deprecated due to not using functions, reducing bloat.
+#browser_mod: !include includes/browser_mod.yaml
 
 # Text to speech
 tts:
