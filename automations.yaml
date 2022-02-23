@@ -239,11 +239,6 @@
       - ebfb50d4d7f14ca58bb27f3b2694979c
     data:
       transition: 2
-  - condition: not
-    conditions:
-    - condition: state
-      entity_id: person.kirstyn_rolfe
-      state: Home
   - service: light.turn_on
     data:
       transition: 2
