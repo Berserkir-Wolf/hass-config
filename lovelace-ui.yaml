@@ -1,3 +1,45 @@
+animated_background:
+  included_users:
+  - Dyson Parkes
+  views:
+  - config:
+      default_url: https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4
+      entity: weather.home
+      state_url:
+        clear-night:
+        - https://cdn.flixel.com/flixel/x9dr8caygivq5secll7i.hd.mp4
+        - https://cdn.flixel.com/flixel/v26zyfd6yf0r33s46vpe.hd.mp4
+        - https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4
+        - https://cdn.flixel.com/flixel/rosz2gi676xhkiw1ut6i.hd.mp4
+        cloudy:
+        - https://cdn.flixel.com/flixel/13e0s6coh6ayapvdyqnv.hd.mp4
+        - https://cdn.flixel.com/flixel/aorl3skmssy7udwopk22.hd.mp4
+        - https://cdn.flixel.com/flixel/qed6wvf2igukiioykg3r.hd.mp4
+        - https://cdn.flixel.com/flixel/3rd72eezaj6d23ahlo7y.hd.mp4
+        - https://cdn.flixel.com/flixel/9m11gd43m6qn3y93ntzp.hd.mp4
+        - https://cdn.flixel.com/flixel/hrkw2m8eofib9sk7t1v2.hd.mp4
+        fog:
+        - https://cdn.flixel.com/flixel/vwqzlk4turo2449be9uf.hd.mp4
+        - https://cdn.flixel.com/flixel/5363uhabodwwrzgnq6vx.hd.mp4
+        mostlycloudy:
+        - https://cdn.flixel.com/flixel/e95h5cqyvhnrk4ytqt4q.hd.mp4
+        - https://cdn.flixel.com/flixel/l2bjw34wnusyf5q2qq3p.hd.mp4
+        - https://cdn.flixel.com/flixel/rrgta099ulami3zb9fd2.hd.mp4
+        partlycloudy:
+        - https://cdn.flixel.com/flixel/13e0s6coh6ayapvdyqnv.hd.mp4
+        - https://cdn.flixel.com/flixel/aorl3skmssy7udwopk22.hd.mp4
+        - https://cdn.flixel.com/flixel/qed6wvf2igukiioykg3r.hd.mp4
+        - https://cdn.flixel.com/flixel/3rd72eezaj6d23ahlo7y.hd.mp4
+        - https://cdn.flixel.com/flixel/9m11gd43m6qn3y93ntzp.hd.mp4
+        - https://cdn.flixel.com/flixel/hrkw2m8eofib9sk7t1v2.hd.mp4
+        rainy: https://cdn.flixel.com/flixel/f0w23bd0enxur5ff0bxz.hd.mp4
+        sunny:
+        - https://cdn.flixel.com/flixel/hlhff0h8md4ev0kju5be.hd.mp4
+        - https://cdn.flixel.com/flixel/zjqsoc6ecqhntpl5vacs.hd.mp4
+        - https://cdn.flixel.com/flixel/jvw1avupguhfbo11betq.hd.mp4
+        - https://cdn.flixel.com/flixel/8cmeusxf3pkanai43djs.hd.mp4
+        - https://cdn.flixel.com/flixel/guwb10mfddctfvwioaex.hd.mp4
+    path: weather
 button_card_templates:
   inkwell:
     extra_styles: "[[[ return `\n  @keyframes pulse {\n    5% {\n      background-color:\
@@ -55,14 +97,6 @@ views:
         tap_action:
           action: toggle
         type: custom:button-card
-      - color_type: card
-        entity: light.office
-        hold_action:
-          action: more-info
-        size: 30px
-        tap_action:
-          action: toggle
-        type: custom:button-card
       type: horizontal-stack
     type: vertical-stack
     view_layout:
@@ -83,16 +117,6 @@ views:
       name: Lounge PC
       tap_action:
         action: toggle
-    - entity: switch.wol_spare
-      icon: mdi:desktop-classic
-      name: temp PC
-      tap_action:
-        action: toggle
-    - entity: switch.wol_shif
-      icon: mdi:desktop-classic
-      name: Shif (NUC)
-      tap_action:
-        action: toggle
     - entity: light.lounge
       name: Lounge Light
       tap_action:
@@ -110,27 +134,50 @@ views:
     type: glance
   - columns: 3
     entities:
-    - entity: light.office
-      name: Office Light
-      tap_action:
-        action: toggle
-    - entity: switch.wol_workstation
+    - entity: switch.wol_undefea
       icon: mdi:desktop-classic
       name: Gaming Rig
+      tap_action:
+        action: toggle
+    - entity: switch.wol_spare
+      icon: mdi:desktop-classic
       tap_action:
         action: toggle
     - entity: sensor.brother_mfc_9340cdw
     title: Office
     type: glance
-  - entities:
-    - entity: switch.pi_hole
-    - entity: switch.adguard_filtering
-    - entity: sensor.mikrotik_router_kib_s_received
-      name: WAN RX
-    - entity: sensor.mikrotik_router_kib_s_sent_2
-      name: WAN TX
+  - cards:
+    - entities:
+      - entity: switch.pi_hole
+      - entity: switch.adguard_filtering
+      - entity: sensor.mikrotik_router_kib_s_received
+        name: WAN RX
+      - entity: sensor.mikrotik_router_kib_s_sent_2
+        name: WAN TX
+      type: glance
+    - card:
+        artwork: cover-fit
+        entity: media_player.vlc_telnet
+        group: false
+        info: scroll
+        replace_mute: stop
+        toggle_power: false
+        type: custom:mini-media-player
+        volume_stateless: true
+      conditions:
+      - entity: media_player.vlc_telnet
+        state_not: idle
+      type: conditional
+    - entities:
+      - entity: switch.wol_detes
+        name: SteamRemote Host
+        tap_action:
+          action: toggle
+      - entity: switch.wol_repea
+        name: QNap NAS
+      type: glance
     title: Server Rack
-    type: glance
+    type: vertical-stack
   - entity: weather.home
     type: weather-forecast
   icon: mdi:home
@@ -187,12 +234,6 @@ views:
     show_state: true
     title: Phone Location
     type: glance
-  - cards:
-    - entity: automation.notify_me_if_kirstyn_arrives_when_i_am_not_at_home
-      tap_action:
-        action: toggle
-      type: button
-    type: horizontal-stack
   icon: mdi:crosshairs-gps
   path: location
   title: Location
@@ -344,7 +385,7 @@ views:
         type: custom:button-card
       - color_type: card
         entity: switch.wol_shif
-        name: Lounge NUC
+        name: Roaming NUC
         size: 30px
         tap_action:
           action: toggle
@@ -352,7 +393,7 @@ views:
       type: horizontal-stack
     - cards:
       - color_type: card
-        entity: switch.wol_workstation
+        entity: switch.wol_undefea
         name: Workstation
         size: 30px
         tap_action:
@@ -499,16 +540,6 @@ views:
     - entity: media_player.lounge_ps4
       type: media-control
     type: vertical-stack
-  - entities:
-    - entity: sensor.steam_76561198056470571
-      secondary_info:
-        '[object Object]': null
-    - entity: sensor.steam_76561198151879355
-    - entity: sensor.steam_76561198120534583
-    - entity: sensor.steam_76561197992785642
-    show_header_toggle: false
-    title: Steamers
-    type: entities
   - cards:
     - card:
         show_header_toggle: false
@@ -675,17 +706,11 @@ views:
       - width: 100%
     type: custom:button-card
   - entities:
-    - entity: sensor.mfc_9340cdw_status
-    - entity: sensor.mfc_9340cdw_page_counter
-    - entity: sensor.mfc_9340cdw_b_w_counter
-    - entity: sensor.mfc_9340cdw_color_counter
-    - entity: sensor.mfc_9340cdw_belt_unit_remaining_life
-    - entity: sensor.mfc_9340cdw_fuser_remaining_life
-    - entity: sensor.mfc_9340cdw_pf_kit_1_remaining_life
-    - entity: sensor.mfc_9340cdw_cyan_drum_remaining_life
-    - entity: sensor.mfc_9340cdw_magenta_drum_remaining_life
-    - entity: sensor.mfc_9340cdw_black_drum_remaining_life
-    - entity: sensor.mfc_9340cdw_yellow_drum_remaining_life
+    - entity: sensor.brother_mfc_9340cdw
+    - entity: sensor.brother_mfc_9340cdw_black_toner_cartridge
+    - entity: sensor.brother_mfc_9340cdw_cyan_toner_cartridge
+    - entity: sensor.brother_mfc_9340cdw_magenta_toner_cartridge
+    - entity: sensor.brother_mfc_9340cdw_yellow_toner_cartridge
     state_color: false
     type: entities
   icon: mdi:printer
@@ -722,12 +747,27 @@ views:
     status_adaptive_color: true
     type: custom:uptime-card
   - entities:
-    - sensor.hass_repo
-    - sensor.ombi_docs
-    show_extended: true
-    show_github_icon: true
-    title: Git Repo
-    type: custom:github-card
+    - attributes:
+      - name: views
+        url: true
+      - name: stargazers
+      - name: open_issues
+      entity: sensor.hass_repo
+      name: Home Assistant
+      url: true
+    - attributes:
+      - name: views
+        url: true
+      - name: stargazers
+      - name: open_issues
+      - name: forks
+      - name: open_pull_requests
+        url: '{latest_open_pull_request_url}'
+      entity: sensor.ombi_docs
+      name: Ombi Docs
+      url: true
+    title: Github Repo
+    type: custom:github-flexi-card
   icon: mdi:git
   path: git
   title: Git
