@@ -12,7 +12,6 @@ default_config:
 map:
 met:
 sun:
-updater:
 wake_on_lan:
 
 ## Complex Components
