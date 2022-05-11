@@ -40,7 +40,7 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: binary_sensor.updater
+    entity_id: update.home_assistant_core_update
     to: 'On'
   condition:
   - condition: state
@@ -49,19 +49,19 @@
   action:
   - service: notify.html5_notifications
     data:
-      message: Home Assistant {{ state_attr('binary_sensor.updater', 'newest_version')
+      message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
         }} is available.
       title: Update Available
   - service: notify.discord
     data:
-      message: Home Assistant {{ state_attr('binary_sensor.updater', 'newest_version')
+      message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
         }} is available.
       title: Update Available!
       target:
       - '819351502640381952'
   - service: notify.facebook_text
     data:
-      message: Home Assistant {{ state_attr('binary_sensor.updater', 'newest_version')
+      message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
         }} is available.
   mode: single
 - id: '1603249243832'
@@ -489,4 +489,33 @@
       media_content_type: spotify://track
     target:
       entity_id: media_player.spotify_sky_girl14
+  mode: single
+- id: '1651206195438'
+  alias: Notification - HAssOS Update Available
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: update.home_assistant_operating_system_update
+    to: 'On'
+  condition:
+  - condition: state
+    entity_id: input_boolean.silent_mode
+    state: 'off'
+  action:
+  - service: notify.html5_notifications
+    data:
+      message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
+        'latest_version') }} is available.
+      title: Update Available
+  - service: notify.discord
+    data:
+      message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
+        'latest_version') }} is available.
+      title: Update Available!
+      target:
+      - '819351502640381952'
+  - service: notify.facebook_text
+    data:
+      message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
+        'latest_version') }} is available.
   mode: single
