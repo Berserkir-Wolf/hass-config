@@ -3,4 +3,8 @@
   entities:
     - light.bedroom
     - light.lounge
-#      - light.office
+- platform: group
+  name: All Lamps
+  entities:
+    - light.bedroom_lamp
+    - light.lounge_lamp
