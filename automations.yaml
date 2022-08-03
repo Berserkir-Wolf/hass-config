@@ -40,8 +40,13 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: update.home_assistant_core_update
-    to: 'On'
+    entity_id:
+    - update.home_assistant_core_update
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
   condition:
   - condition: state
     entity_id: input_boolean.silent_mode
@@ -300,48 +305,6 @@
     service: notify.mobile_app_bnet_a74
   mode: single
   initial_state: 'off'
-- id: '1637985620007'
-  alias: Amp Volume - Xbox Input
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: media_player.str_dn1080_9ba8db_2
-    attribute: source
-    to: XBox SX
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 1
-      milliseconds: 0
-  condition: []
-  action:
-  - service: media_player.volume_set
-    target:
-      device_id: 52c56236b2c29ff9b4e527c34931ea20
-    data:
-      volume_level: 0.27
-  mode: single
-- id: '1637985790721'
-  alias: Amp Volume - PC Input
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: media_player.str_dn1080_9ba8db_2
-    attribute: source
-    to: PC
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 1
-      milliseconds: 0
-  condition: []
-  action:
-  - service: media_player.volume_set
-    target:
-      device_id: 52c56236b2c29ff9b4e527c34931ea20
-    data:
-      volume_level: 0.73
-  mode: single
 - id: '1638231245218'
   alias: Notification - HACS Updates Available
   description: ''
@@ -387,27 +350,6 @@
   - service: persistent_notification.dismiss
     data:
       notification_id: hacs_updates
-  mode: single
-- id: '1638243017954'
-  alias: Amp Volume - PS5 Input
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: media_player.str_dn1080_9ba8db_2
-    attribute: source
-    to: PS5
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 1
-      milliseconds: 0
-  condition: []
-  action:
-  - service: media_player.volume_set
-    target:
-      device_id: 52c56236b2c29ff9b4e527c34931ea20
-    data:
-      volume_level: 0.27
   mode: single
 - id: '1639688722323'
   alias: Amp Power - Sync sub with amp (on startup)
@@ -495,8 +437,13 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: update.home_assistant_operating_system_update
-    to: 'On'
+    entity_id:
+    - update.home_assistant_operating_system_update
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
   condition:
   - condition: state
     entity_id: input_boolean.silent_mode
@@ -518,4 +465,55 @@
     data:
       message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
         'latest_version') }} is available.
+  mode: single
+- id: '1655351847580'
+  alias: Amp Volume - Change Input
+  description: Changes volume on the Lounge amplifier to suit whatever levels are
+    received from the differing sources
+  trigger:
+  - platform: state
+    entity_id:
+    - media_player.str_dn1080_9ba8db_2
+    attribute: source
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: media_player.str_dn1080_9ba8db_2
+        attribute: source
+        state: PC
+      sequence:
+      - service: media_player.volume_set
+        target:
+          device_id: 52c56236b2c29ff9b4e527c34931ea20
+        data:
+          volume_level: 0.73
+    - conditions:
+      - condition: state
+        entity_id: media_player.str_dn1080_9ba8db_2
+        attribute: source
+        state: PS5
+      sequence:
+      - service: media_player.volume_set
+        target:
+          device_id: 52c56236b2c29ff9b4e527c34931ea20
+        data:
+          volume_level: 0.27
+    - conditions:
+      - condition: state
+        entity_id: media_player.str_dn1080_9ba8db_2
+        attribute: source
+        state: XBox SX
+      sequence:
+      - service: media_player.volume_set
+        target:
+          device_id: 52c56236b2c29ff9b4e527c34931ea20
+        data:
+          volume_level: 0.335
+    default: []
   mode: single
