@@ -69,11 +69,18 @@ views:
 - badges: []
   cards:
   - cards:
-    - color_type: label-card
-      entity: light.all_lights
-      name: Lights
-      size: 30px
-      type: custom:button-card
+    - cards:
+      - color_type: label-card
+        entity: light.all_lights
+        name: Lights
+        size: 30px
+        type: custom:button-card
+      - color_type: label-card
+        entity: light.all_lamps
+        name: Lamps
+        size: 30px
+        type: custom:button-card
+      type: horizontal-stack
     - cards:
       - color_type: card
         entity: light.bedroom
@@ -104,30 +111,42 @@ views:
   - columns: 3
     entities:
     - entity: light.bedroom
-      name: Bedroom Light
+      name: Light
+      tap_action:
+        action: toggle
+    - entity: light.bedroom_lamp
+      name: Lamp
       tap_action:
         action: toggle
     - entity: media_player.bedroom_ps4
+      name: PS4
     title: Bedroom
     type: glance
   - columns: 3
     entities:
     - entity: switch.wol_lounge
       icon: mdi:desktop-classic
-      name: Lounge PC
+      name: PC
       tap_action:
         action: toggle
     - entity: light.lounge
-      name: Lounge Light
+      name: Light
       tap_action:
         action: toggle
-    - entity: switch.the_plug
+    - entity: light.lounge_lamp
+      name: Lamp
+      tap_action:
+        action: toggle
+    - entity: media_player.android_tv_192_168_10_87
+      name: TV
+    - entity: media_player.str_dn1080_9ba8db_2
+      name: Amp
+    - entity: switch.subwoofer
       tap_action:
         action: toggle
     - entity: media_player.lounge_ps4
-    - entity: media_player.str_dn1080_9ba8db_2
-      name: Lounge Amp
-    - entity: switch.subwoofer
+      name: PS4
+    - entity: switch.the_plug
       tap_action:
         action: toggle
     title: Living Room
@@ -141,19 +160,23 @@ views:
         action: toggle
     - entity: switch.wol_spare
       icon: mdi:desktop-classic
+      name: Spare PC
       tap_action:
         action: toggle
     - entity: sensor.brother_mfc_9340cdw
+      name: MFC-9340CDW
     title: Office
     type: glance
   - cards:
     - entities:
       - entity: switch.pi_hole
       - entity: switch.adguard_filtering
+        name: AdGuard
       - entity: sensor.mikrotik_router_kib_s_received
         name: WAN RX
       - entity: sensor.mikrotik_router_kib_s_sent_2
         name: WAN TX
+      title: Server Rack
       type: glance
     - card:
         artwork: cover-fit
@@ -176,10 +199,11 @@ views:
       - entity: switch.wol_repea
         name: QNap NAS
       type: glance
-    title: Server Rack
     type: vertical-stack
   - entity: weather.home
     type: weather-forecast
+  - entity: media_player.android_tv_192_168_10_87
+    type: media-control
   icon: mdi:home
   path: home
   title: Home
@@ -248,7 +272,7 @@ views:
   - cards:
     - cards:
       - entity: sensor.mikrotik_router_kib_s_sent_2
-        max: 100000
+        max: 90000
         min: 0
         name: WAN TX
         needle: true
@@ -353,11 +377,15 @@ views:
         secondary_info: 'Berserkir-Net : [[ if(sensor.unifi_clients.attributes.Berserkir-Net
           == undefined, "0", sensor.unifi_clients.attributes.Berserkir-Net) ]] <br>GuestNet
           : [[ if(sensor.unifi_clients.attributes.GuestNet == undefined, "0", sensor.unifi_clients.attributes.GuestNet)
-          ]]'
+          ]] <br>Wired : [[ if(sensor.unifi_clients.attributes.wired == undefined,
+          "0", sensor.unifi_clients.attributes.wired) ]]'
         type: custom:secondaryinfo-entity-row
       type: entities
     - entities:
+      - entity: sensor.state_loungeswitch
+        icon: mdi:lan-connect
       - entity: sensor.state_loungeap
+        icon: mdi:access-point-network
       - entity: sensor.state_officeap
         icon: mdi:access-point-network
       - entity: sensor.state_outdoorap
@@ -371,8 +399,7 @@ views:
   title: Network
 - badges:
   - entity: switch.wol_lounge
-  - entity: switch.wol_shif
-  - entity: switch.wol_workstation
+  - entity: switch.wol_undefea
   cards:
   - cards:
     - cards:
@@ -384,8 +411,8 @@ views:
           action: toggle
         type: custom:button-card
       - color_type: card
-        entity: switch.wol_shif
-        name: Roaming NUC
+        entity: switch.wol_inevi
+        name: Camera Server
         size: 30px
         tap_action:
           action: toggle
@@ -404,6 +431,7 @@ views:
   icon: mdi:dip-switch
   panel: false
   path: wakeonlan
+  theme: Backend-selected
   title: WakeOnLan
 - badges: []
   cards:
@@ -417,6 +445,25 @@ views:
     sort: name
     type: custom:auto-entities
     unique: false
+  - cards:
+    - entity: sensor.geonet_nz_quakes_38_656749085828864_178_01535308361056
+      name: Local Quakes
+      state_color: false
+      type: entity
+    - card:
+        type: entities
+      filter:
+        exclude: []
+        include:
+        - domain: geo_location
+      show_empty: false
+      sort:
+        method: last_updated
+        numeric: false
+        reverse: false
+      type: custom:auto-entities
+    title: GeoNet Quakes
+    type: vertical-stack
   - entities:
     - entity: sensor.new_zealand_coronavirus_confirmed
       name: Confirmed
@@ -488,6 +535,20 @@ views:
     unique: false
   - entity: media_player.spotify_sky_girl14
     type: media-control
+  - card:
+      entity: media_player.str_dn1080_9ba8db_2
+      type: media-control
+    conditions:
+    - entity: media_player.str_dn1080_9ba8db_2
+      state: 'off'
+    type: conditional
+  - card:
+      entity: media_player.2020_2021_uhd_android_tv
+      type: media-control
+    conditions:
+    - entity: media_player.2020_2021_uhd_android_tv
+      state_not: 'off'
+    type: conditional
   - cards:
     - entity: sensor.plex_berserkirnet
       name: Current Plex Streams
@@ -502,8 +563,6 @@ views:
       name: Plex Total Bandwidth
       type: sensor
     type: vertical-stack
-  - entity: media_player.str_dn1080_9ba8db_2
-    type: media-control
   icon: mdi:film
   panel: false
   path: media
@@ -538,6 +597,8 @@ views:
     - entity: media_player.bedroom_ps4
       type: media-control
     - entity: media_player.lounge_ps4
+      type: media-control
+    - entity: media_player.living_room_xbox
       type: media-control
     type: vertical-stack
   - cards:
@@ -713,6 +774,141 @@ views:
     - entity: sensor.brother_mfc_9340cdw_yellow_toner_cartridge
     state_color: false
     type: entities
+  - columns: 4
+    entities:
+    - entity: sensor.mfc_9340cdw_status
+      name: Status
+    - entity: sensor.mfc_9340cdw_page_counter
+      name: Total Count
+    - entity: sensor.mfc_9340cdw_color_counter
+      name: Color Count
+    - entity: sensor.mfc_9340cdw_b_w_counter
+      name: B/W Count
+    - entity: sensor.mfc_9340cdw_cyan_toner_remaining
+      name: Cyan Toner
+    - entity: sensor.mfc_9340cdw_magenta_toner_remaining
+      name: Magenta Toner
+    - entity: sensor.mfc_9340cdw_yellow_toner_remaining
+      name: Yellow Toner
+    - entity: sensor.mfc_9340cdw_black_toner_remaining
+      name: Black Toner
+    - entity: sensor.mfc_9340cdw_cyan_drum_remaining_life
+      name: Cyan Drum
+    - entity: sensor.mfc_9340cdw_magenta_drum_remaining_life
+      name: Magenta Drum
+    - entity: sensor.mfc_9340cdw_yellow_drum_remaining_life
+      name: Yellow Drum
+    - entity: sensor.mfc_9340cdw_black_drum_remaining_life
+      name: Black Drum
+    - entity: sensor.mfc_9340cdw_belt_unit_remaining_life
+      name: Belt
+    - entity: sensor.mfc_9340cdw_fuser_remaining_life
+      name: Fuser
+    - entity: sensor.mfc_9340cdw_pf_kit_1_remaining_life
+      name: Pf Kit
+    show_icon: true
+    show_name: true
+    show_state: true
+    title: MFC-9340CDW
+    type: glance
+  - cards:
+    - color: darkgray
+      custom_fields:
+        c:
+          card:
+            entity: sensor.mfc_9340cdw_cyan_toner_remaining
+            template: inkwell
+            type: custom:button-card
+            variables:
+              color: cyan
+        k:
+          card:
+            entity: sensor.mfc_9340cdw_black_toner_remaining
+            template: inkwell
+            type: custom:button-card
+            variables:
+              color: black
+        m:
+          card:
+            entity: sensor.mfc_9340cdw_magenta_toner_remaining
+            template: inkwell
+            type: custom:button-card
+            variables:
+              color: magenta
+        y:
+          card:
+            entity: sensor.mfc_9340cdw_yellow_toner_remaining
+            template: inkwell
+            type: custom:button-card
+            variables:
+              color: yellow
+      entity: sensor.mfc_9340cdw_status
+      name: MFC-9340
+      show_state: true
+      styles:
+        card:
+        - padding: 0 0 5px 0
+        custom_fields:
+          c:
+          - width: 80%
+          - margin: auto
+          k:
+          - width: 80%
+          - margin: auto
+          m:
+          - width: 80%
+          - margin: auto
+          y:
+          - width: 80%
+          - margin: auto
+        grid:
+        - grid-template-areas: '"i c m y k" "n s s s s"'
+        - grid-template-columns: 1fr 1fr 1fr 1fr 1fr
+        - grid-template-rows: auto 1em
+        icon:
+        - width: 100%
+        state:
+        - text-align: center
+        - width: 100%
+      type: custom:button-card
+    - columns: 4
+      entities:
+      - entity: sensor.mfc_9340cdw_status
+        name: Status
+      - entity: sensor.mfc_9340cdw_page_counter
+        name: Total Count
+      - entity: sensor.mfc_9340cdw_color_counter
+        name: Color Count
+      - entity: sensor.mfc_9340cdw_b_w_counter
+        name: B/W Count
+      - entity: sensor.mfc_9340cdw_cyan_toner_remaining
+        name: Cyan Toner
+      - entity: sensor.mfc_9340cdw_magenta_toner_remaining
+        name: Magenta Toner
+      - entity: sensor.mfc_9340cdw_yellow_toner_remaining
+        name: Yellow Toner
+      - entity: sensor.mfc_9340cdw_black_toner_remaining
+        name: Black Toner
+      - entity: sensor.mfc_9340cdw_cyan_drum_remaining_life
+        name: Cyan Drum
+      - entity: sensor.mfc_9340cdw_magenta_drum_remaining_life
+        name: Magenta Drum
+      - entity: sensor.mfc_9340cdw_yellow_drum_remaining_life
+        name: Yellow Drum
+      - entity: sensor.mfc_9340cdw_black_drum_remaining_life
+        name: Black Drum
+      - entity: sensor.mfc_9340cdw_belt_unit_remaining_life
+        name: Belt
+      - entity: sensor.mfc_9340cdw_fuser_remaining_life
+        name: Fuser
+      - entity: sensor.mfc_9340cdw_pf_kit_1_remaining_life
+        name: Pf Kit
+      show_icon: true
+      show_name: true
+      show_state: true
+      title: MFC-9340CDW
+      type: glance
+    type: vertical-stack
   icon: mdi:printer
   path: ''
   title: Printers
@@ -728,6 +924,27 @@ views:
     sort: name
     type: custom:auto-entities
     unique: false
+  - cards:
+    - entity: switch.wol_inevi
+      icon_height: 30px
+      name: inevi.table.berserkir.net
+      show_icon: true
+      show_name: true
+      tap_action:
+        action: toggle
+      type: button
+    - card:
+        type: entities
+      filter:
+        include:
+        - entity_id: binary_sensor.truenas_*
+        - entity_id: sensor.truenas_*
+      sort:
+        method: entity_id
+        numeric: true
+      type: custom:auto-entities
+    title: TrueNAS - inevi.table.berserkir.net
+    type: vertical-stack
   icon: mdi:nas
   path: nas
   title: NAS
@@ -738,7 +955,7 @@ views:
       ok: Update available !
     color:
       icon: grey
-    entity: binary_sensor.updater
+    entity: update.home_assistant_core_update
     hours_to_show: 168
     icon: mdi:raspberry-pi
     name: HA update
@@ -747,23 +964,10 @@ views:
     status_adaptive_color: true
     type: custom:uptime-card
   - entities:
-    - attributes:
-      - name: views
-        url: true
-      - name: stargazers
-      - name: open_issues
-      entity: sensor.hass_repo
+    - entity: sensor.hass_repo
       name: Home Assistant
       url: true
-    - attributes:
-      - name: views
-        url: true
-      - name: stargazers
-      - name: open_issues
-      - name: forks
-      - name: open_pull_requests
-        url: '{latest_open_pull_request_url}'
-      entity: sensor.ombi_docs
+    - entity: sensor.ombi_docs
       name: Ombi Docs
       url: true
     title: Github Repo
@@ -788,6 +992,8 @@ views:
     type: vertical-stack
     view_layout:
       position: main
+  - entity: media_player.android_tv_192_168_10_87
+    type: media-control
   icon: mdi:dev-to
   panel: false
   path: testing
