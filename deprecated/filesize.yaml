@@ -1,0 +1,4 @@
+#This platform is now done via web UI
+- platform: filesize
+  file_paths:
+    - /config/home-assistant_v2.db
