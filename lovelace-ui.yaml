@@ -104,10 +104,39 @@ views:
         tap_action:
           action: toggle
         type: custom:button-card
+      - color_type: card
+        double_tap_action:
+          action:
+          - data:
+              brightness_pct: 50
+              entity_id: light.smart_bulb_a70_2
+            service: light.toggle
+        entity: light.smart_bulb_a70_2
+        hold_action:
+          action: more-info
+        name: Office
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
       type: horizontal-stack
     type: vertical-stack
     view_layout:
       position: main
+  - card:
+      show_header_toggle: false
+      title: Updates available
+      type: entities
+    filter:
+      exclude: []
+      include:
+      - entity_id: update.*
+        state: 'on'
+    show_empty: false
+    sort:
+      ignore_case: true
+      method: none
+    type: custom:auto-entities
   - columns: 3
     entities:
     - entity: light.bedroom
@@ -120,54 +149,109 @@ views:
         action: toggle
     - entity: media_player.bedroom_ps4
       name: PS4
+    - entity: switch.the_plug
+      hold_action:
+        action: more-info
+      icon: mdi:radiator
+      tap_action:
+        action: toggle
+    show_icon: true
+    show_name: true
+    show_state: true
+    state_color: true
     title: Bedroom
     type: glance
-  - columns: 3
-    entities:
-    - entity: switch.wol_lounge
-      icon: mdi:desktop-classic
-      name: PC
+  - action_button:
+      icon: mdi:power
+      mode: toggle
+      show: true
+      show_spinner: true
       tap_action:
         action: toggle
-    - entity: light.lounge
-      name: Light
+    compact: false
+    entity: light.smart_rgb_light_strip
+    icon:
+      show: true
       tap_action:
-        action: toggle
-    - entity: light.lounge_lamp
-      name: Lamp
-      tap_action:
-        action: toggle
-    - entity: media_player.android_tv_192_168_10_87
-      name: TV
-    - entity: media_player.str_dn1080_9ba8db_2
-      name: Amp
-    - entity: switch.subwoofer
-      tap_action:
-        action: toggle
-    - entity: media_player.lounge_ps4
-      name: PS4
-    - entity: switch.the_plug
-      tap_action:
-        action: toggle
-    title: Living Room
-    type: glance
-  - columns: 3
-    entities:
-    - entity: switch.wol_undefea
-      icon: mdi:desktop-classic
-      name: Gaming Rig
-      tap_action:
-        action: toggle
-    - entity: switch.wol_spare
-      icon: mdi:desktop-classic
-      name: Spare PC
-      tap_action:
-        action: toggle
-    - entity: sensor.brother_mfc_9340cdw
-      name: MFC-9340CDW
-    title: Office
-    type: glance
+        action: more-info
+      use_state_color: true
+    show_name: true
+    show_state: true
+    slider:
+      background: gradient
+      direction: left-right
+      force_square: false
+      show_track: false
+      toggle_on_click: false
+      use_percentage_bg_opacity: true
+      use_state_color: true
+    type: custom:slider-button-card
   - cards:
+    - columns: 3
+      entities:
+      - entity: switch.wol_lounge
+        icon: mdi:desktop-classic
+        name: PC
+        tap_action:
+          action: toggle
+      - entity: light.lounge
+        name: Light
+        tap_action:
+          action: toggle
+      - entity: light.lounge_lamp
+        name: Lamp
+        tap_action:
+          action: toggle
+      - entity: media_player.android_tv_192_168_10_87
+        name: TV
+      - entity: media_player.lounge_amp_2
+        name: Amp
+      - entity: switch.subwoofer
+        tap_action:
+          action: toggle
+      - entity: media_player.lounge_ps4
+        name: PS4
+      show_icon: true
+      show_name: true
+      show_state: true
+      state_color: true
+      title: Living Room
+      type: glance
+    - card:
+        entity: media_player.android_tv_192_168_10_87
+        type: media-control
+      conditions:
+      - entity: media_player.2020_2021_uhd_android_tv
+        state: 'on'
+      type: conditional
+    type: vertical-stack
+  - cards:
+    - columns: 3
+      entities:
+      - entity: switch.wol_undefea_2
+        icon: mdi:desktop-classic
+        name: Gaming Rig
+        tap_action:
+          action: toggle
+      - entity: switch.wol_spare
+        icon: mdi:desktop-classic
+        name: Spare PC
+        tap_action:
+          action: toggle
+      - entity: sensor.brother_mfc_9340cdw
+        name: MFC-9340CDW
+      - entity: light.smart_bulb_a70
+        tap_action:
+          action: toggle
+      - entity: light.smart_bulb_a70_2
+        tap_action:
+          action: toggle
+      show_icon: true
+      show_name: true
+      show_state: true
+      state_color: true
+      title: Office
+      type: glance
     - entities:
       - entity: switch.pi_hole
       - entity: switch.adguard_filtering
@@ -192,6 +276,10 @@ views:
         state_not: idle
       type: conditional
     - entities:
+      - entity: switch.wol_inevi
+        name: TrueNAS
+        tap_action:
+          action: toggle
       - entity: switch.wol_detes
         name: SteamRemote Host
         tap_action:
@@ -202,8 +290,6 @@ views:
     type: vertical-stack
   - entity: weather.home
     type: weather-forecast
-  - entity: media_player.android_tv_192_168_10_87
-    type: media-control
   icon: mdi:home
   path: home
   title: Home
@@ -399,7 +485,7 @@ views:
   title: Network
 - badges:
   - entity: switch.wol_lounge
-  - entity: switch.wol_undefea
+  - entity: switch.wol_undefea_2
   cards:
   - cards:
     - cards:
@@ -483,7 +569,7 @@ views:
 - badges:
   - entity: sensor.plex_berserkirnet
     name: Plex Streams
-  - entity: sensor.plextotalbandwidthrounded
+  - entity: sensor.total_bandwidth_mbps_rounded
     name: Plex Bandwidth
   - entity: sensor.nzbget_speed
   - entity: sensor.ombi_pending_requests
@@ -553,14 +639,23 @@ views:
     - entity: sensor.plex_berserkirnet
       name: Current Plex Streams
       type: sensor
-    - entity: sensor.plexwanbandwidthrounded
-      name: Plex WAN Bandwith
+    - detail: 1
+      entity: sensor.total_bandwidth
+      graph: none
+      hours_to_show: 24
+      name: Plex Raw Bandwith
       type: sensor
-    - entity: sensor.plexlanbandwidthrounded
-      name: Plex LAN Bandwith
+    - detail: 1
+      entity: sensor.total_bandwidth_mbps
+      graph: none
+      hours_to_show: 24
+      name: Plex Outright Bandwith
       type: sensor
-    - entity: sensor.plextotalbandwidthrounded
-      name: Plex Total Bandwidth
+    - detail: 1
+      entity: sensor.total_bandwidth_mbps_rounded
+      graph: none
+      hours_to_show: 24
+      name: Plex Rounded Bandwidth
       type: sensor
     type: vertical-stack
   icon: mdi:film
@@ -664,6 +759,7 @@ views:
         - entity_id: sensor.g8142_geo*
         include:
         - entity_id: sensor.bnet_a74*
+        - entity_id: binary_sensor.bnet_a74*
       show_empty: false
       type: custom:auto-entities
       unique: false
@@ -676,14 +772,14 @@ views:
       title: Phone Location
       type: map
     - entities:
-      - entity: sensor.battery_level
+      - entity: sensor.g8142_battery_level
         name: Battery
       - entity: binary_sensor.g8142_is_charging
         name: Charging?
-      - entity: binary_sensor.g8142_music_active
-        name: Media?
-      - entity: binary_sensor.g8142_interactive
-        name: In Use?
+      - entity: sensor.g8142_battery_temperature
+        name: Battery Temp
+      - entity: sensor.g8142_battery_state
+        name: Battery State
       title: Phone State
       type: glance
     - card:
@@ -937,8 +1033,9 @@ views:
         type: entities
       filter:
         include:
-        - entity_id: binary_sensor.truenas_*
-        - entity_id: sensor.truenas_*
+        - entity_id: update.inevi_*
+        - entity_id: binary_sensor.inevi_*
+        - entity_id: sensor.inevi_*
       sort:
         method: entity_id
         numeric: true
@@ -997,7 +1094,192 @@ views:
   icon: mdi:dev-to
   panel: false
   path: testing
+  theme: Backend-selected
   title: Testing
   visible:
   - user: 08d29e434e9a4bed98b3a62218eac7a7
-  - user: b6db76d5cfd24c73b9acc55e08c0ebd5
+- badges: []
+  cards:
+  - cards:
+    - hold_action:
+        action: none
+      name: Install extra packages
+      show_state: false
+      tap_action:
+        action: call-service
+        service: shell_command.install_extra_packages
+        service_data: {}
+        target: {}
+      type: button
+    - hold_action:
+        action: none
+      icon: mdi:monitor-screenshot
+      icon_height: 45px
+      name: Convert Lovelace to Yaml
+      tap_action:
+        action: call-service
+        service: shell_command.convert_lovelace
+      type: button
+    - hold_action:
+        action: none
+      icon: mdi:github
+      name: Commit Update
+      tap_action:
+        action: call-service
+        service: shell_command.commit_new_version
+      type: button
+    - entity: sensor.hacs
+      name: HACS
+      type: entity
+      unit: updates
+    - card:
+        entity: input_boolean.silent_mode
+        icon: mdi:volume-high
+        name: Notifications Active
+        show_state: false
+        tap_action:
+          action: toggle
+        type: button
+      conditions:
+      - entity: input_boolean.silent_mode
+        state: 'off'
+      type: conditional
+    - card:
+        entity: input_boolean.silent_mode
+        icon: mdi:volume-off
+        name: Notifications Silenced
+        show_state: false
+        tap_action:
+          action: toggle
+        type: button
+      conditions:
+      - entity: input_boolean.silent_mode
+        state: 'on'
+      type: conditional
+    - cards:
+      - entity: automation.notify_me_if_kirstyn_arrives_when_i_am_not_at_home
+        tap_action:
+          action: toggle
+        type: button
+      type: horizontal-stack
+    - entity: media_player.lounge_amp_2
+      icon: mdi:volume-high
+      name: Set to 40
+      show_icon: true
+      show_name: true
+      show_state: false
+      tap_action:
+        action: call-service
+        data:
+          volume_level: 0.73
+        service: media_player.volume_set
+        target:
+          entity_id: media_player.lounge_amp_2
+      type: button
+    - card:
+        hold_action:
+          action: none
+        icon: mdi:music
+        name: Play all Music
+        show_icon: true
+        show_state: false
+        tap_action:
+          action: call-service
+          service: media_player.play_media
+          service_data:
+            media_content_id: /media/Music
+            media_content_type: music
+          target:
+            entity_id: media_player.vlc_telnet
+        type: button
+      conditions:
+      - entity: media_player.vlc_telnet
+        state: idle
+      type: conditional
+    - card:
+        hold_action:
+          action: none
+        icon: mdi:music-off
+        name: Stop all Music
+        show_icon: true
+        show_state: false
+        tap_action:
+          action: call-service
+          service: media_player.media_stop
+          service_data: {}
+          target:
+            entity_id: media_player.vlc_telnet
+        type: button
+      conditions:
+      - entity: media_player.vlc_telnet
+        state_not: idle
+      type: conditional
+    - entity: automation.turn_on_the_lights_when_i_get_home
+      name: Greeting Lights
+      show_icon: true
+      show_name: true
+      tap_action:
+        action: toggle
+      type: button
+    columns: 3
+    type: grid
+  - cards:
+    - entity: sensor.glances_cpu_used
+      max: 100
+      min: 0
+      name: CPU Usage
+      needle: true
+      severity:
+        green: 0
+        red: 60
+        yellow: 40
+      type: gauge
+    - entity: sensor.glances_ram_used_percent
+      max: 100
+      min: 0
+      name: RAM Usage
+      needle: true
+      severity:
+        green: 0
+        red: 60
+        yellow: 40
+      type: gauge
+    - entity: sensor.glances_acpitz_1_temperature
+      max: 100
+      min: 0
+      name: System Temp
+      needle: true
+      severity:
+        green: 0
+        red: 64
+        yellow: 48
+      type: gauge
+    - hold_action:
+        action: none
+      name: Restart Hass
+      tap_action:
+        action: call-service
+        service: homeassistant.restart
+        service_data: {}
+        target: {}
+      type: button
+    - hold_action:
+        action: navigate
+        navigation_path: /config/logs
+      name: Check Config
+      tap_action:
+        action: call-service
+        service: homeassistant.check_config
+        service_data: {}
+        target: {}
+      type: button
+    - bar: {}
+      entity: sensor.hass_uptime
+      type: custom:uptime-card
+    columns: 3
+    type: grid
+  icon: mdi:shield-crown
+  theme: Backend-selected
+  title: Admin Tools
+  visible:
+  - user: 08d29e434e9a4bed98b3a62218eac7a7
