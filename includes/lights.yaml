@@ -1,10 +1,47 @@
+# All Lights
+- platform: group
+  name: Every Light
+  entities:
+    - light.bedroom_lamp
+    - light.lounge_lamp
+    - light.smart_bulb_a70
+    - light.bedroom_lamp
+    - light.lounge_lamp
+    - light.smart_bulb_a70
+# All Roof Lights
 - platform: group
   name: All Lights
   entities:
     - light.bedroom
     - light.lounge
+    - light.smart_bulb_a70_2
+# All Lamps
 - platform: group
   name: All Lamps
   entities:
     - light.bedroom_lamp
     - light.lounge_lamp
+    - light.smart_bulb_a70
+# Lounge Lights
+- platform: group
+  name: Lounge Lights
+  entities:
+    - light.lounge
+    - light.lounge_lamp
+# Hall Lights
+- platform: group
+  name: Hall Lights
+  entities:
+    - light.smart_rgb_light_strip
+# Bedroom Lights
+- platform: group
+  name: Bedroom Lights
+  entities:
+    - light.bedroom
+    - light.bedroom_lamp
+# Office Lights
+- platform: group
+  name: Office Lights
+  entities:
+    - light.smart_bulb_a70
+    - light.smart_bulb_a70_2
