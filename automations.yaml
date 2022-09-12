@@ -257,11 +257,13 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: media_player.str_dn1080_9ba8db_2
+    entity_id:
+    - media_player.lounge_amp
     from: 'off'
     to: 'on'
   - platform: state
-    entity_id: media_player.str_dn1080_9ba8db_2
+    entity_id:
+    - media_player.lounge_amp
     from: 'on'
     to: 'off'
   condition: []
@@ -269,20 +271,22 @@
   - choose:
     - conditions:
       - condition: state
-        entity_id: media_player.str_dn1080_9ba8db_2
+        entity_id: media_player.lounge_amp
         state: 'on'
       sequence:
       - service: switch.turn_on
         target:
           entity_id: switch.subwoofer
+        data: {}
     - conditions:
       - condition: state
-        entity_id: media_player.str_dn1080_9ba8db_2
+        entity_id: media_player.lounge_amp
         state: 'off'
       sequence:
       - service: switch.turn_off
         target:
           entity_id: switch.subwoofer
+        data: {}
     default: []
   mode: single
 - id: '1635829545674'
@@ -362,20 +366,22 @@
   - choose:
     - conditions:
       - condition: state
-        entity_id: media_player.str_dn1080_9ba8db_2
-        state: 'on'
+        entity_id: media_player.lounge_amp
+        state: 'off'
       sequence:
       - service: switch.turn_on
         target:
           entity_id: switch.subwoofer
+        data: {}
     - conditions:
       - condition: state
-        entity_id: media_player.str_dn1080_9ba8db_2
+        entity_id: media_player.lounge_amp
         state: 'off'
       sequence:
       - service: switch.turn_off
         target:
           entity_id: switch.subwoofer
+        data: {}
     default: []
   mode: single
 - id: '1641896084660'
@@ -473,46 +479,77 @@
   trigger:
   - platform: state
     entity_id:
-    - media_player.str_dn1080_9ba8db_2
-    attribute: source
+    - media_player.lounge_amp_2
     for:
       hours: 0
       minutes: 0
       seconds: 0
+    attribute: media_title
   condition: []
   action:
   - choose:
     - conditions:
       - condition: state
-        entity_id: media_player.str_dn1080_9ba8db_2
-        attribute: source
-        state: PC
+        entity_id: media_player.lounge_amp_2
+        attribute: media_title
+        state: BD/DVD
+        for:
+          hours: 0
+          minutes: 0
+          seconds: 0
+        alias: PC (BD/DVD)
       sequence:
       - service: media_player.volume_set
         target:
-          device_id: 52c56236b2c29ff9b4e527c34931ea20
+          entity_id: media_player.lounge_amp_2
         data:
           volume_level: 0.73
     - conditions:
       - condition: state
-        entity_id: media_player.str_dn1080_9ba8db_2
-        attribute: source
-        state: PS5
+        entity_id: media_player.lounge_amp_2
+        attribute: media_title
+        state: GAME
+        for:
+          hours: 0
+          minutes: 0
+          seconds: 0
+        alias: PS5 (GAME)
       sequence:
       - service: media_player.volume_set
         target:
-          device_id: 52c56236b2c29ff9b4e527c34931ea20
+          entity_id: media_player.lounge_amp_2
         data:
           volume_level: 0.27
     - conditions:
       - condition: state
-        entity_id: media_player.str_dn1080_9ba8db_2
-        attribute: source
-        state: XBox SX
+        entity_id: media_player.lounge_amp_2
+        attribute: media_title
+        state: VIDEO 1
+        for:
+          hours: 0
+          minutes: 0
+          seconds: 0
+        alias: Xbox SX (VIDEO 1)
       sequence:
       - service: media_player.volume_set
         target:
-          device_id: 52c56236b2c29ff9b4e527c34931ea20
+          entity_id: media_player.lounge_amp_2
+        data:
+          volume_level: 0.335
+    - conditions:
+      - condition: state
+        entity_id: media_player.lounge_amp_2
+        attribute: media_title
+        state: VIDEO 2
+        for:
+          hours: 0
+          minutes: 0
+          seconds: 0
+        alias: Xbox One (VIDEO 2)
+      sequence:
+      - service: media_player.volume_set
+        target:
+          entity_id: media_player.lounge_amp_2
         data:
           volume_level: 0.335
     default: []
