@@ -1,6 +1,6 @@
 ((LitElement) => {
 
-console.info('NUMBERBOX_CARD 3.12');
+console.info('NUMBERBOX_CARD 4.0');
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 class NumberBox extends LitElement {
@@ -22,6 +22,9 @@ render() {
 	if( this.config.icon === undefined && this.stateObj.attributes.icon ){
 		this.config.icon=this.stateObj.attributes.icon;
 	}
+	if( this.config.picture === undefined && this.stateObj.attributes.entity_picture ){
+		this.config.picture=this.stateObj.attributes.entity_picture;
+	}
 	if( this.config.unit === undefined && this.stateObj.attributes.unit_of_measurement ){
 		this.config.unit=this.stateObj.attributes.unit_of_measurement;
 	}
@@ -29,14 +32,17 @@ render() {
 	if(isNaN(parseFloat(this.config.min))){this.config.min=0;}
 	if(this.config.max === undefined){ this.config.max=this.stateObj.attributes.max;}
 	if(isNaN(parseFloat(this.config.max))){this.config.max=9e9;}
+	if('step_entity' in this.config && this.config.step_entity in this._hass.states && !isNaN(parseFloat(this._hass.states[this.config.step_entity].state))) {this.config.step=this._hass.states[this.config.step_entity].state;}
 	if(this.config.step === undefined){ this.config.step=this.stateObj.attributes.step;}
-
 
 	return html`
 	<ha-card class="${(!this.config.border)?'noborder':''}">
-		${(this.config.icon || this.config.name) ? html`<div class="grid">
+		${(this.config.icon || this.config.picture || this.config.name) ? html`<div class="grid">
 		<div class="grid-content grid-left" @click="${() => this.moreInfo()}">
-			${this.config.icon ? html`
+			${this.config.picture ? html`
+				<state-badge
+				.overrideImage="${this.config.picture}"
+				></state-badge>` : this.config.icon ? html`
 				<state-badge
 				.overrideIcon="${this.config.icon}"
 				.stateObj=${this.stateObj}
@@ -146,10 +152,14 @@ timeNum(x,s,m){
 	return Number(x);
 }
 
-numTime(x,f,t){
+numTime(x,f,t,u){
+	if(t=="timehm"){u=1;f=1;}
+	x=Math.round(x);
 	t = (x>=3600 || f)? Math.floor(x/3600).toString().padStart(2,'0') + ':' : '';
 	t += (Math.floor(x/60)-Math.floor(x/3600)*60).toString().padStart(2,'0');
-	t += ':' + (x%60).toString().padStart(2,'0');
+	if( !u ){
+		t += ':' + Math.round(x%60).toString().padStart(2,'0');
+	}
 	return t;
 }
 
@@ -157,7 +167,7 @@ setNumb(c){
 	let v=this.pending;
 	if( v===false ){ v=this.timeNum(this.state); v=isNaN(v)?this.config.min:v;}
 	let adval=c?(v + Number(this.config.step)):(v - Number(this.config.step));
-	adval=Math.round(adval*1000)/1000;
+	adval=Math.round(adval*1e9)/1e9;
 	if( adval <= Number(this.config.max) && adval >= Number(this.config.min)){
 		this.pending=(adval);
 		if(this.config.delay){
@@ -195,8 +205,8 @@ niceNum(){
 	}else{ stp=fix; }
 	fix = v.toFixed(fix);
 	const u=this.config.unit;
-	if( u=="time" ){
-		let t = this.numTime(fix);
+	if( u=="time" || u=="timehm"){
+		let t = this.numTime(fix,0,u);
 		return html`${t}`;
 	}
 	fix = new Intl.NumberFormat(
@@ -344,7 +354,6 @@ static getStubConfig() {
 } customElements.define('numberbox-card', NumberBox);
 
 //Editor
-const includeDomains = ['input_number','number'];
 const fireEvent = (node, type, detail = {}, options = {}) => {
 	const event = new Event(type, {
 		bubbles: options.bubbles === undefined ? true : options.bubbles,
@@ -358,6 +367,21 @@ const fireEvent = (node, type, detail = {}, options = {}) => {
 
 class NumberBoxEditor extends LitElement {
 
+async Pick(){
+	const c="ha-entity-picker";
+	if(!customElements.get(c)){
+		const r = "partial-panel-resolver";
+		await customElements.whenDefined(r);
+		const p = document.createElement(r);
+		p.hass = {panels: [{url_path: "tmp", component_name: "config"}]};
+		p._updateRoutes();
+		await p.routerOptions.routes.tmp.load();
+		const d=document.createElement("ha-panel-config");
+		await d.routerOptions.routes.automation.load();
+	}
+	const a=document.createElement(c);
+	this.render();
+}
 static get properties() {
 	return { hass: {}, config: {} };
 }
@@ -383,6 +407,7 @@ get _border() {
 }
 setConfig(config) {
 	this.config = config;
+	this.Pick();
 }
 
 render() {
@@ -394,7 +419,7 @@ render() {
 		.hass=${this.hass}
 		.value="${this.config.entity}"
 		.configValue=${'entity'}
-		.includeDomains=${includeDomains}
+		.includeDomains=${['input_number','number']}
 		@change="${this.updVal}"
 		allow-custom-entity
 	></ha-entity-picker>
@@ -429,6 +454,13 @@ render() {
 	></ha-icon-picker>
 </div>
 <div class="side">
+	<paper-input
+		label="Picture url(Optional, false to hide)"
+		.value="${this.config.picture}"
+		.configValue="${'picture'}"
+		@value-changed="${this.updVal}"
+	></paper-input>
+</div><div class="side">
 	<ha-icon-picker
 		label="Icon Plus [mdi:plus]"
 		.value="${this.config.icon_plus}"
@@ -470,6 +502,66 @@ render() {
 		@value-changed=${this.updVal}
 	></paper-input>
 </div>
+<div><b>Advanced Config</b> <a target="_blank" href="https://github.com/htmltiger/numberbox-card#configuration">more info</a></div>
+<div class="side">
+	<paper-input
+		label="min"
+		.value="${this.config.min}"
+		.configValue="${'min'}"
+		@value-changed="${this.updVal}"
+	></paper-input>
+	<paper-input
+		label="max"
+		.value="${this.config.max}"
+		.configValue="${'max'}"
+		@value-changed="${this.updVal}"
+	></paper-input>
+	<paper-input
+		label="step"
+		.value="${this.config.step}"
+		.configValue="${'step'}"
+		@value-changed="${this.updVal}"
+	></paper-input>
+</div>
+<div class="side">
+	<ha-entity-picker
+		label="step_entity"
+		.hass=${this.hass}
+		.value="${this.config.step_entity}"
+		.configValue=${'step_entity'}
+		@change="${this.updVal}"
+		allow-custom-entity
+	></ha-entity-picker>
+	<ha-entity-picker
+		label="moreinfo"
+		.hass=${this.hass}
+		.value="${this.config.moreinfo}"
+		.configValue=${'moreinfo'}
+		@change="${this.updVal}"
+		allow-custom-entity
+	></ha-entity-picker>
+</div>
+<div class="side">
+	<paper-input
+		label="service"
+		.value="${this.config.service}"
+		.configValue="${'service'}"
+		@value-changed="${this.updVal}"
+	></paper-input>
+	<paper-input
+		label="param"
+		.value="${this.config.param}"
+		.configValue="${'param'}"
+		@value-changed="${this.updVal}"
+	></paper-input>
+	<paper-input
+		label="state"
+		.value="${this.config.state}"
+		.configValue="${'state'}"
+		@value-changed="${this.updVal}"
+	></paper-input>
+</div>
+
 `;
 }
 
