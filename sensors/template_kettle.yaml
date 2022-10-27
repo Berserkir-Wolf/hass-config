@@ -1,4 +1,4 @@
-# This is the template that works out the value of the wallet amount based on the input amount.
+# This is a template that gives me a dedicated sensor for kettle temperature, rather than just an attribute.
 - platform: template
   sensors:
     kettle_temperature:
