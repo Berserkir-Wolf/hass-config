@@ -6,11 +6,9 @@
     platform: state
     to: home
   condition:
-  - condition: not
-    conditions:
-    - condition: state
-      entity_id: person.dyson_parkes
-      state: home
+  - condition: state
+    entity_id: person.dyson_parkes
+    state: not_home
   action:
   - data:
       message: Kirstyn just arrived
@@ -198,36 +196,46 @@
   alias: Notification - Welcome Home Sir
   description: ''
   trigger:
-  - platform: homeassistant
-    event: start
+  - platform: state
+    entity_id:
+    - person.dyson_parkes
+    to: home
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
   condition:
   - condition: state
     entity_id: input_boolean.silent_mode
     state: 'off'
+  - condition: time
+    before: '23:00:00'
+    after: 08:00:00
+    alias: Not nighttime
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: person.kirstyn_rolfe
+      state: home
+      alias: Kirstyn location check
+    alias: Kirstyn isn't home
   action:
-  - service: media_player.turn_on
-    target:
-      entity_id: media_player.str_dn1080_9ba8db_2
-  - wait_template: ''
-    continue_on_timeout: true
-    timeout: '3'
-  - service: media_player.play_media
+  - service: notify.alexa_media_lounge_dot
     data:
-      media_content_id: media-source://media_source/local/sir-im-afraid-hes-insisting.wav
-      media_content_type: music
-    target:
-      entity_id: media_player.str_dn1080_9ba8db
-  - wait_template: ''
-    timeout: '12'
-    continue_on_timeout: true
-  - service: media_player.select_source
-    target:
-      entity_id: media_player.str_dn1080_9ba8db_2
+      data:
+        type: tts
+        target: media_player.lounge_dot
+      message: Welcome home m'lord
+    alias: Welcome home via lounge dot
+    enabled: false
+  - service: notify.alexa_media_doppler
     data:
-      source: VIDEO 1
-  - service: media_player.turn_off
-    target:
-      entity_id: media_player.str_dn1080_9ba8db_2
+      data:
+        type: tts
+        target: media_player.doppler
+      message: Welcome home m'lord
+    alias: Welcome home via doppler
+    enabled: true
   mode: single
 - id: '1621926272836'
   alias: Lights - Turn on to greet me
@@ -258,19 +266,36 @@
   trigger:
   - platform: state
     entity_id:
-    - media_player.lounge_amp
-    from: 'off'
-  - platform: state
-    entity_id:
-    - media_player.lounge_amp
-    to: 'off'
+    - media_player.lounge_amp_3
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
   condition: []
   action:
   - choose:
     - conditions:
       - condition: state
-        entity_id: media_player.lounge_amp
+        entity_id: media_player.lounge_amp_2
         state: 'off'
+      sequence:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.subwoofer
+        data: {}
+    - conditions:
+      - condition: state
+        state: standby
+        entity_id: media_player.lounge_amp_2
+      sequence:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.subwoofer
+        data: {}
+    - conditions:
+      - condition: state
+        entity_id: media_player.lounge_amp_3
+        state: idle
       sequence:
       - service: switch.turn_off
         target:
@@ -361,7 +386,7 @@
       - condition: not
         conditions:
         - condition: state
-          entity_id: media_player.lounge_amp
+          entity_id: media_player.lounge_amp_3
           state: 'off'
           alias: Confirm lounge amp is not off
       sequence:
@@ -371,7 +396,7 @@
         data: {}
     - conditions:
       - condition: state
-        entity_id: media_player.lounge_amp
+        entity_id: media_player.lounge_amp_3
         state: 'off'
       sequence:
       - service: switch.turn_off
@@ -549,4 +574,67 @@
         data:
           volume_level: 0.335
     default: []
+  mode: single
+- id: '1665709420254'
+  alias: Doppler - Button 1
+  description: Toggles a light on push of Doppler smart button 1
+  trigger:
+  - platform: device
+    domain: sandman_doppler
+    device_id: 71b40ef41901e6650f2ec43ddd2b63dc
+    button: 1
+    type: sandman_doppler_button_pressed
+    subtype: 1
+  condition: []
+  action:
+  - service: light.toggle
+    data: {}
+    target:
+      entity_id: light.bedroom
+  mode: single
+- id: '1665709479272'
+  alias: Doppler - Button 2
+  description: Toggles a light on push of Doppler smart button 2
+  trigger:
+  - platform: device
+    domain: sandman_doppler
+    device_id: 71b40ef41901e6650f2ec43ddd2b63dc
+    button: 2
+    type: sandman_doppler_button_pressed
+    subtype: 2
+  condition: []
+  action:
+  - service: light.toggle
+    data: {}
+    target:
+      entity_id: light.bedroom_lamp
+  mode: single
+- id: '1666768764502'
+  alias: Printer - Notify if out of paper
+  description: Talks through the speakers to notify if the printer runs out of paper
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.mfc_9340cdw_status
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+  condition:
+  - condition: state
+    entity_id: input_boolean.silent_mode
+    state: 'off'
+  - condition: time
+    before: '23:00:00'
+    after: 08:00:00
+    alias: Not nighttime
+  action:
+  - service: notify.alexa_media_lounge_dot
+    data:
+      data:
+        type: tts
+        target: media_player.lounge_dot
+      message: The printer has run out of paper
+    alias: Printer status via lounge dot
+    enabled: true
   mode: single
