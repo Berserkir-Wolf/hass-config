@@ -1,19 +1,21 @@
 """Basic CLI for testing pyhdr."""
 
 # region #-- imports --#
+from __future__ import annotations
+
 import asyncio
 import logging
-from typing import List, Optional
+from typing import Dict, List, Tuple
 
+import aiohttp
 import asyncclick as click
 
-from . import HDHomeRunDevice
-from .discover import Discover, DiscoverMode
+from .discover import Discover, DiscoverMode, HDHomeRunDevice
 from .logger import Logger
 
 # endregion
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger("pyhdhr.cli")
 log_formatter: Logger = Logger()
 
 click.anyio_backend = "asyncio"
@@ -24,45 +26,129 @@ click.anyio_backend = "asyncio"
 @click.pass_context
 async def cli(ctx: click.Context = None, verbose: int = 0) -> None:
     """Initialise the CLI."""
-    if ctx.invoked_subcommand is None:
-        click.echo(ctx.get_help())
-    else:
-        if verbose:
-            logging.basicConfig()
-            _LOGGER.setLevel(logging.DEBUG)
-            if verbose > 1:
-                logging.getLogger("pyhdhr").setLevel(logging.DEBUG)
+    ctx.obj = aiohttp.ClientSession()
+    if verbose:
+        logging.basicConfig()
+        _LOGGER.setLevel(logging.DEBUG)
+        if verbose > 1:
+            logging.getLogger("pyhdhr").setLevel(logging.DEBUG)
 
-    await asyncio.sleep(0.1)
+
+@cli.command()
+@click.option("--source")
+@click.option("--target")
+@click.pass_context
+async def channel_scan(ctx: click.Context, source: str, target: str):
+    """Carry out a channel scan on the device."""
+    _LOGGER.debug(log_formatter.format("entered, args: %s"), locals())
+
+    async with ctx.obj as session:
+        device: List[HDHomeRunDevice] | HDHomeRunDevice = await Discover(
+            broadcast_address=target, session=session
+        ).async_discover()
+        if device:
+            device = device[0]
+            await device.async_gather_details()
+            try:
+                await device.async_channel_scan_start(channel_source=source)
+            except Exception as err:  # pylint: disable=broad-except
+                _LOGGER.error(
+                    log_formatter.format("Error when attempting to scan channels")
+                )
+                _LOGGER.error(log_formatter.format("%s"), err)
+            else:
+                prev_progress: int = 0
+
+                with click.progressbar(
+                    label="Channel scanning progress",
+                    length=100,
+                    show_eta=False,
+                    show_percent=True,
+                ) as pbar:
+                    while True:
+                        progress: int | None = (
+                            await device.async_get_channel_scan_progress()
+                        )
+                        if progress is None:
+                            pbar.update(100 - prev_progress)
+                            break
+
+                        if prev_progress != progress:
+                            pbar.update(progress - prev_progress)
+                            prev_progress = progress
+                        await asyncio.sleep(1)
+
+    _LOGGER.debug(log_formatter.format("exited"))
 
 
 @cli.command()
 @click.option("-b", "--broadcast-address", default="255.255.255.255")
-@click.option("--include-tuner-info/--no-include-tuner-info", default=False)
 @click.option("-m", "--mode", default=DiscoverMode.AUTO.value)
-@click.option("--target")
+@click.pass_context
 async def discover(
-    broadcast_address: Optional[str] = None,
-    mode: Optional[DiscoverMode] = DiscoverMode.AUTO,
-    target: Optional[str] = None,
-    include_tuner_info: bool = False,
+    ctx: click.Context,
+    broadcast_address: str | None = None,
+    mode: DiscoverMode = DiscoverMode.AUTO,
 ) -> None:
     """Attempt to discover devices."""
     _LOGGER.debug(log_formatter.format("entered, args: %s"), locals())
 
-    if target is None:
-        discovery = Discover(mode=mode)
-        devices: List[HDHomeRunDevice] = await discovery.discover(broadcast_address=broadcast_address)
-    else:
-        device = HDHomeRunDevice(host=target)
-        # setattr(device, "_discover_url", f"http://{device.ip}/discover.json")
-        device = await Discover.rediscover(target=device)
-        devices: List[HDHomeRunDevice] = [device]
+    async with ctx.obj as session:
+        devices: List[HDHomeRunDevice] = await Discover(
+            broadcast_address=broadcast_address, mode=mode, session=session
+        ).async_discover()
 
-    for dev in devices:
-        if include_tuner_info:
-            await dev.async_tuner_refresh()
-        _print_to_screen(device=dev)
+        dev: HDHomeRunDevice
+        for dev in devices:
+            await dev.async_gather_details()
+            await dev.async_refresh_tuner_status()
+            _display_data(
+                _build_display_data(
+                    mappings=[
+                        ("device_id", "Device ID"),
+                        ("device_type", "Device Type"),
+                        ("discovery_method", "Discovery Method"),
+                        ("device_auth_string", "Device Auth"),
+                        ("base_url", "Base URL"),
+                        ("lineup_url", "LineUp URL"),
+                        ("tuner_count", "# Tuners"),
+                        ("model", "Model"),
+                        ("hw_model", "HW Model"),
+                        ("installed_version", "Firmware Version"),
+                        ("latest_version", "Latest Firmware Version"),
+                        ("channel_scanning", "Channel Scanning"),
+                        ("tuner_status", "Tuner Status"),
+                        # (
+                        #     "channels",
+                        #     "Channels",
+                        #     "\n  "
+                        #     + "\n  ".join(
+                        #         [
+                        #             f"{channel.get('GuideNumber')}: {channel.get('GuideName')}"
+                        #             for channel in dev.channels
+                        #         ]
+                        #     ),
+                        # ),
+                    ],
+                    obj=dev,
+                    title=dev.friendly_name or dev.device_id,
+                )
+            )
+
+    _LOGGER.debug(log_formatter.format("exited"))
+
+
+@cli.command()
+@click.option("--target", required=True)
+@click.option("--variable", required=True)
+async def get_variable(target: str, variable: str) -> None:
+    """Retrieve a specific variable from the device."""
+    _LOGGER.debug(log_formatter.format("entered, args: %s"), locals())
+
+    device: HDHomeRunDevice = HDHomeRunDevice(host=target)
+    ret = await device.async_get_protocol_variable(name=variable)
+
+    click.echo(ret)
 
     _LOGGER.debug(log_formatter.format("exited"))
 
@@ -79,41 +165,39 @@ async def restart(target: str) -> None:
     _LOGGER.debug(log_formatter.format("exited"))
 
 
-@cli.command()
-@click.option("--target", required=True)
-@click.option("--variable", required=True)
-async def get_variable(target: str, variable: str) -> None:
-    """Retrieve a specific variable from the device."""
-    _LOGGER.debug(log_formatter.format("entered, args: %s"), locals())
+def _build_display_data(
+    mappings: List[Tuple],
+    obj: HDHomeRunDevice | Dict,
+    indent: int = 0,
+    title: str = "",
+):
+    """Build the string to display the given data."""
+    ret: str = ""
+    if title:
+        ret = f"{title}\n"
+        ret += f"{len(title) * '-'}\n"
 
-    device: HDHomeRunDevice = HDHomeRunDevice(host=target)
-    ret = await device.async_get_variable(variable=variable)
+    for properties in mappings:
+        try:
+            property_name, display_name, display_value = properties
+        except ValueError:
+            display_value = None
+            property_name, display_name = properties
 
-    click.echo(ret)
+        if display_value is None:
+            if isinstance(obj, Dict):
+                display_value = obj.get(property_name)
+            else:
+                display_value = getattr(obj, property_name, None)
 
-    _LOGGER.debug(log_formatter.format("exited"))
+        ret += f"{indent * ' '}{display_name}: {display_value}\n"
+
+    return ret.rstrip()
 
 
-def _print_to_screen(device: HDHomeRunDevice) -> None:
-    """Print device details to the screen."""
-    click.echo(device.device_id)
-    click.echo('-' * len(device.device_id))
-    click.echo(f"Online: {device.online}")
-    click.echo(f"FriendlyName: {device.friendly_name}")
-    click.echo(f"IP: {device.ip}")
-    click.echo(f"Type: {device.device_type}")
-    click.echo(f"TunerCount: {device.tuner_count}")
-    click.echo(f"DeviceAuth: {device.device_auth_string}")
-    click.echo(f"BaseURL: {device.base_url}")
-    click.echo(f"LineupURL: {device.lineup_url}")
-    click.echo(f"FirmwareVersion: {device.installed_version}")
-    click.echo(f"FirmwareName: {device.model}")
-    click.echo(f"ModelNumber: {device.hw_model}")
-    click.echo(f"UpgradeAvailable: {device.latest_version}")
-    click.echo(f"Channels: {device.channels}")
-    if device.tuner_status is not None:
-        click.echo(f"Tuner Status: {device.tuner_status}")
-    click.echo()
+def _display_data(message: str = "") -> None:
+    """Display the given data on screen."""
+    click.echo(message)
 
 
 if __name__ == "__main__":
