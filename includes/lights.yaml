@@ -7,14 +7,14 @@
     - light.office_lamp
     - light.bedroom
     - light.lounge
-    - light.smart_bulb_a70_2
+    - light.office_light
 # All Roof Lights
 - platform: group
   name: All Lights
   entities:
     - light.bedroom
     - light.lounge
-    - light.smart_bulb_a70_2
+    - light.office_light
 # All Lamps
 - platform: group
   name: All Lamps
@@ -43,5 +43,5 @@
 - platform: group
   name: Office Lights
   entities:
-    - light.smart_bulb_a70_2
+    - light.office_light
     - light.office_lamp
