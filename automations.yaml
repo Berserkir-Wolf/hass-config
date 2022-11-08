@@ -1,643 +1,654 @@
-- id: '1584476995764'
+- id: "1584476995764"
   alias: Notification - SWMBO Arrives
-  description: ''
+  description: ""
   trigger:
-  - entity_id: person.kirstyn_rolfe
-    platform: state
-    to: home
+    - entity_id: person.kirstyn_rolfe
+      platform: state
+      to: home
   condition:
-  - condition: not
-    conditions:
-    - condition: state
-      entity_id: person.dyson_parkes
-      state: home
-    alias: Confirm Dyson is out
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: person.dyson_parkes
+          state: home
+      alias: Confirm Dyson is out
   action:
-  - data:
-      message: Kirstyn just arrived
-      title: Kirstyn's Home
-    service: notify.html5_notifications
-  - data:
-      message: Kirstyn just arrived
-      title: Kirstyn's Home
-    service: notify.mobile_app_bnet_a74
-  initial_state: 'off'
+    - data:
+        message: Kirstyn just arrived
+        title: Kirstyn's Home
+      service: notify.html5_notifications
+    - data:
+        message: Kirstyn just arrived
+        title: Kirstyn's Home
+      service: notify.mobile_app_bnet_a74
+  initial_state: false
   mode: single
-- id: '1597613199016'
-  alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
+- id: "1597613199016"
+  alias: "Lovelace: convert lovelace.json to lovelace-ui.yaml"
   description: Convert lovelace.json to lovelace-ui.yaml
   trigger:
-  - platform: event
-    event_type: lovelace_updated
-    event_data: {}
-    context:
-      user_id:
-      - 08d29e434e9a4bed98b3a62218eac7a7
+    - platform: event
+      event_type: lovelace_updated
+      event_data: {}
+      context:
+        user_id:
+          - 08d29e434e9a4bed98b3a62218eac7a7
   action:
-  - service: shell_command.convert_lovelace
+    - service: shell_command.convert_lovelace
   mode: single
-- id: '1602904795038'
+- id: "1602904795038"
   alias: Notification - HAss Update Available
-  description: ''
+  description: ""
   trigger:
-  - platform: state
-    entity_id:
-    - update.home_assistant_core_update
-    to: 'on'
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 0
+    - platform: state
+      entity_id:
+        - update.home_assistant_core_update
+      to: "on"
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0
   condition:
-  - condition: state
-    entity_id: input_boolean.silent_mode
-    state: 'off'
+    - condition: state
+      entity_id: input_boolean.silent_mode
+      state: "off"
   action:
-  - service: notify.html5_notifications
-    data:
-      message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
-        }} is available.
-      title: Update Available
-  - service: notify.discord
-    data:
-      message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
-        }} is available.
-      title: Update Available!
-      target:
-      - '819351502640381952'
-  - service: notify.facebook_text
-    data:
-      message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
-        }} is available.
+    - service: notify.html5_notifications
+      data:
+        message:
+          Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
+          }} is available.
+        title: Update Available
+    - service: notify.discord
+      data:
+        message:
+          Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
+          }} is available.
+        title: Update Available!
+        target:
+          - "819351502640381952"
+    - service: notify.facebook_text
+      data:
+        message:
+          Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
+          }} is available.
   mode: single
-- id: '1603249243832'
+- id: "1603249243832"
   alias: Github - Commit Changes
-  description: ''
+  description: ""
   trigger:
-  - platform: state
-    entity_id: input_boolean.git_commit
-    from: 'off'
-    to: 'on'
+    - platform: state
+      entity_id: input_boolean.git_commit
+      from: "off"
+      to: "on"
   condition: []
   action:
-  - service: shell_command.commit_changes
-    data: {}
-  - service: input_text.set_value
-    data:
-      value: Committed from UI without a message
-    entity_id: input_text.git_message
-  - service: input_boolean.turn_off
-    data: {}
-    entity_id: input_boolean.git_commit
+    - service: shell_command.commit_changes
+      data: {}
+    - service: input_text.set_value
+      data:
+        value: Committed from UI without a message
+      entity_id: input_text.git_message
+    - service: input_boolean.turn_off
+      data: {}
+      entity_id: input_boolean.git_commit
   mode: single
-- id: '1603311446063'
+- id: "1603311446063"
   alias: Github - Convert Lovelace json to yaml and commit
-  description: ''
+  description: ""
   trigger:
-  - platform: event
-    event_type: lovelace_updated
-    event_data: {}
+    - platform: event
+      event_type: lovelace_updated
+      event_data: {}
   condition: []
   action:
-  - service: shell_command.convert_lovelace
-  - delay: '5'
-  - service: shell_command.commit_lovelace
-    data: {}
-  initial_state: 'off'
+    - service: shell_command.convert_lovelace
+    - delay: "5"
+    - service: shell_command.commit_lovelace
+      data: {}
+  initial_state: false
   mode: single
-- id: '1605335470308'
+- id: "1605335470308"
   alias: Notification - SWMBO home and away
   description: Is she home or isn't she?
   trigger:
-  - platform: state
-    entity_id: person.kirstyn_rolfe
-    from: home
-    to: not_home
-  - platform: state
-    entity_id: person.kirstyn_rolfe
-    from: not_home
-    to: home
+    - platform: state
+      entity_id: person.kirstyn_rolfe
+      from: home
+      to: not_home
+    - platform: state
+      entity_id: person.kirstyn_rolfe
+      from: not_home
+      to: home
   condition: []
   action:
-  - service: persistent_notification.create
-    data:
-      notification_id: Kirstyn
-      title: Kirstyn is {{ trigger.to_state.state }}
-      message: Kirstyn went from {{ trigger.from_state.state }} to {{ trigger.to_state.state
-        }} at {{ now().strftime('%H:%M %d/%m/%Y') }}
+    - service: persistent_notification.create
+      data:
+        notification_id: Kirstyn
+        title: Kirstyn is {{ trigger.to_state.state }}
+        message:
+          Kirstyn went from {{ trigger.from_state.state }} to {{ trigger.to_state.state
+          }} at {{ now().strftime('%H:%M %d/%m/%Y') }}
   mode: single
-- id: '1608262512161'
+- id: "1608262512161"
   alias: Notification - Happy Birthday Sir
   description: A silly little automation to have HAss wish me happy birthday
   trigger:
-  - platform: state
-    entity_id: sensor.birthday_me
-    to: '0'
-    for: '"07:00:00"'
+    - platform: state
+      entity_id: sensor.birthday_me
+      to: "0"
+      for: '"07:00:00"'
   condition:
-  - condition: state
-    entity_id: input_boolean.silent_mode
-    state: 'off'
+    - condition: state
+      entity_id: input_boolean.silent_mode
+      state: "off"
   action:
-  - service: notify.notify
-    data:
-      message: Happy Birthday Sir!
-      title: Bappy Hirthday
+    - service: notify.notify
+      data:
+        message: Happy Birthday Sir!
+        title: Bappy Hirthday
   mode: single
-- id: '1608262874242'
+- id: "1608262874242"
   alias: Notification - Birthday Reminders
   description: Remind me of upcoming birthdays
   trigger:
-  - platform: state
-    entity_id: sensor.birthday_swmbo,sensor.birthday_me
-    to: '1'
+    - platform: state
+      entity_id: sensor.birthday_swmbo,sensor.birthday_me
+      to: "1"
   condition: []
   action:
-  - service: persistent_notification.create
-    data:
-      notification_id: Birthday
-      title: Upcoming birthday!
-      message: '''{{trigger.to_state.attributes.friendly_name}} is tomorrow!'''
+    - service: persistent_notification.create
+      data:
+        notification_id: Birthday
+        title: Upcoming birthday!
+        message: "'{{trigger.to_state.attributes.friendly_name}} is tomorrow!'"
   mode: single
-- id: '1608606143148'
+- id: "1608606143148"
   alias: System - Install additional packages
   description: Installs packages defined in a shell script
   trigger:
-  - platform: homeassistant
-    event: start
+    - platform: homeassistant
+      event: start
   condition: []
   action:
-  - delay: 00:00:10
-  - service: shell_command.install_extra_packages
-    data: {}
+    - delay: 00:00:10
+    - service: shell_command.install_extra_packages
+      data: {}
   mode: single
-  initial_state: 'off'
-- id: '1611959876984'
+  initial_state: false
+- id: "1611959876984"
   alias: Notification - BTC Value
   description: Notify me if BTC goes above a certain value
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.exchange_rate_1_btc
-    above: '85000'
+    - platform: numeric_state
+      entity_id: sensor.exchange_rate_1_btc
+      above: "85000"
   condition:
-  - condition: not
-    conditions:
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: input_boolean.silent_mode
+          state: "on"
+  action:
+    - service: notify.mobile_app_g8142
+      data:
+        message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
+        title: BTC Value
+    - service: notify.discord
+      data:
+        message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
+        target: "819351502640381952"
+  mode: single
+- id: "1618826864131"
+  alias: Notification - Welcome Home Sir
+  description: ""
+  trigger:
+    - platform: state
+      entity_id:
+        - person.dyson_parkes
+      to: home
+      for:
+        hours: 0
+        minutes: 2
+        seconds: 0
+  condition:
     - condition: state
       entity_id: input_boolean.silent_mode
-      state: 'on'
+      state: "off"
+    - condition: time
+      before: "23:00:00"
+      after: 08:00:00
+      alias: Not nighttime
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: person.kirstyn_rolfe
+          state: home
+          alias: Kirstyn location check
+      alias: Kirstyn isn't home
   action:
-  - service: notify.mobile_app_g8142
-    data:
-      message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
-      title: BTC Value
-  - service: notify.discord
-    data:
-      message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
-      target: '819351502640381952'
-  mode: single
-- id: '1618826864131'
-  alias: Notification - Welcome Home Sir
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - person.dyson_parkes
-    to: home
-    for:
-      hours: 0
-      minutes: 2
-      seconds: 0
-  condition:
-  - condition: state
-    entity_id: input_boolean.silent_mode
-    state: 'off'
-  - condition: time
-    before: '23:00:00'
-    after: 08:00:00
-    alias: Not nighttime
-  - condition: not
-    conditions:
-    - condition: state
-      entity_id: person.kirstyn_rolfe
-      state: home
-      alias: Kirstyn location check
-    alias: Kirstyn isn't home
-  action:
-  - service: notify.alexa_media_lounge_dot
-    data:
+    - service: notify.alexa_media_lounge_dot
       data:
-        type: tts
-        target: media_player.lounge_dot
-      message: Welcome home m'lord
-    alias: Welcome home via lounge dot
-    enabled: false
-  - service: notify.alexa_media_doppler
-    data:
+        data:
+          type: tts
+          target: media_player.lounge_dot
+        message: Welcome home m'lord
+      alias: Welcome home via lounge dot
+      enabled: false
+    - service: notify.alexa_media_doppler
       data:
-        type: tts
-        target: media_player.doppler
-      message: Welcome home m'lord
-    alias: Welcome home via doppler
-    enabled: true
+        data:
+          type: tts
+          target: media_player.doppler
+        message: Welcome home m'lord
+      alias: Welcome home via doppler
+      enabled: true
   mode: single
-- id: '1621926272836'
+- id: "1621926272836"
   alias: Lights - Turn on to greet me
-  description: ''
+  description: ""
   trigger:
-  - platform: zone
-    entity_id: person.dyson_parkes
-    zone: zone.home
-    event: enter
+    - platform: zone
+      entity_id: person.dyson_parkes
+      zone: zone.home
+      event: enter
   condition: []
   action:
-  - service: light.turn_on
-    target:
-      area_id:
-      - ebfb50d4d7f14ca58bb27f3b2694979c
-    data:
-      transition: 2
-  - service: light.turn_on
-    data:
-      transition: 2
-      brightness_pct: 100
-    target:
-      entity_id: light.bedroom
+    - service: light.turn_on
+      target:
+        area_id:
+          - ebfb50d4d7f14ca58bb27f3b2694979c
+      data:
+        transition: 2
+    - service: light.turn_on
+      data:
+        transition: 2
+        brightness_pct: 100
+      target:
+        entity_id: light.bedroom
   mode: single
-- id: '1623151855818'
+- id: "1623151855818"
   alias: Amp Power - Sync sub with amp
-  description: ''
+  description: ""
   trigger:
-  - platform: state
-    entity_id:
-    - media_player.lounge_amp_3
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 1
+    - platform: state
+      entity_id:
+        - media_player.lounge_amp_3
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 1
   condition: []
   action:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: media_player.lounge_amp_2
-        state: 'off'
-      sequence:
-      - service: switch.turn_off
-        target:
-          entity_id: switch.subwoofer
-        data: {}
-    - conditions:
-      - condition: state
-        state: standby
-        entity_id: media_player.lounge_amp_2
-      sequence:
-      - service: switch.turn_off
-        target:
-          entity_id: switch.subwoofer
-        data: {}
-    - conditions:
-      - condition: state
-        entity_id: media_player.lounge_amp_3
-        state: idle
-      sequence:
-      - service: switch.turn_off
-        target:
-          entity_id: switch.subwoofer
-        data: {}
-    default:
-    - service: switch.turn_on
-      data: {}
-      target:
-        entity_id: switch.subwoofer
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: media_player.lounge_amp_2
+              state: "off"
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: switch.subwoofer
+              data: {}
+        - conditions:
+            - condition: state
+              state: standby
+              entity_id: media_player.lounge_amp_2
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: switch.subwoofer
+              data: {}
+        - conditions:
+            - condition: state
+              entity_id: media_player.lounge_amp_3
+              state: idle
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: switch.subwoofer
+              data: {}
+      default:
+        - service: switch.turn_on
+          data: {}
+          target:
+            entity_id: switch.subwoofer
   mode: single
-- id: '1635829545674'
+- id: "1635829545674"
   alias: Notification - SWMBO Leaves
-  description: ''
+  description: ""
   trigger:
-  - entity_id: person.kirstyn_rolfe
-    from: home
-    platform: state
-    to: not_home
+    - entity_id: person.kirstyn_rolfe
+      from: home
+      platform: state
+      to: not_home
   condition: []
   action:
-  - data:
-      message: 'Kirstyn just left '
-      title: Kirstyn's gone
-    service: notify.html5_notifications
-  - data:
-      message: Kirstyn just left
-      title: Kirstyn's gone
-    service: notify.mobile_app_bnet_a74
+    - data:
+        message: "Kirstyn just left "
+        title: Kirstyn's gone
+      service: notify.html5_notifications
+    - data:
+        message: Kirstyn just left
+        title: Kirstyn's gone
+      service: notify.mobile_app_bnet_a74
   mode: single
-  initial_state: 'off'
-- id: '1638231245218'
+  initial_state: false
+- id: "1638231245218"
   alias: Notification - HACS Updates Available
-  description: ''
+  description: ""
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.hacs
-    above: '0'
+    - platform: numeric_state
+      entity_id: sensor.hacs
+      above: "0"
   condition:
-  - condition: state
-    entity_id: input_boolean.silent_mode
-    state: 'off'
+    - condition: state
+      entity_id: input_boolean.silent_mode
+      state: "off"
   action:
-  - service: persistent_notification.create
-    data:
-      notification_id: hacs_updates
-      title: HACS Update
-      message: Updates available in {{ states('sensor.hacs') }} [HACS repo{% if states('sensor.hacs')
-        | int > 1 %}s{% endif %}](/hacs)
-  - service: notify.facebook_text
-    data:
-      message: Updates available in {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs')
-        | int > 1 %}s{% endif %} {% for repo in states.sensor.hacs.attributes.repositories
-        %} {{ repo.name }} {% endfor %}
-  - service: notify.discord
-    data:
-      message: 'Updates available in {{ states(''sensor.hacs'') }} HACS repo{% if
-        states(''sensor.hacs'') | int > 1 %}s{% endif %}\: {% for repo in states.sensor.hacs.attributes.repositories
-        %} {{repo.name }}, {{repo.installed_version}} -> {{repo.available_version}}
-        {% endfor %}'
-      title: HACS Updates available
-      target:
-      - '819351502640381952'
+    - service: persistent_notification.create
+      data:
+        notification_id: hacs_updates
+        title: HACS Update
+        message:
+          Updates available in {{ states('sensor.hacs') }} [HACS repo{% if states('sensor.hacs')
+          | int > 1 %}s{% endif %}](/hacs)
+    - service: notify.facebook_text
+      data:
+        message:
+          Updates available in {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs')
+          | int > 1 %}s{% endif %} {% for repo in states.sensor.hacs.attributes.repositories
+          %} {{ repo.name }} {% endfor %}
+    - service: notify.discord
+      data:
+        message:
+          'Updates available in {{ states(''sensor.hacs'') }} HACS repo{% if
+          states(''sensor.hacs'') | int > 1 %}s{% endif %}\: {% for repo in states.sensor.hacs.attributes.repositories
+          %} {{repo.name }}, {{repo.installed_version}} -> {{repo.available_version}}
+          {% endfor %}'
+        title: HACS Updates available
+        target:
+          - "819351502640381952"
   mode: single
-- id: '1638232674502'
+- id: "1638232674502"
   alias: Notification - HACS Updates Installed
   description: Dismiss persistent_notification for hacs updates
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.hacs
-    below: '1'
+    - platform: numeric_state
+      entity_id: sensor.hacs
+      below: "1"
   condition: []
   action:
-  - service: persistent_notification.dismiss
-    data:
-      notification_id: hacs_updates
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: hacs_updates
   mode: single
-- id: '1639688722323'
+- id: "1639688722323"
   alias: Amp Power - Sync sub with amp (on startup)
-  description: ''
+  description: ""
   trigger:
-  - platform: homeassistant
-    event: start
+    - platform: homeassistant
+      event: start
   condition: []
   action:
-  - choose:
-    - conditions:
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: media_player.lounge_amp_3
-          state: 'off'
-          alias: Confirm lounge amp is not off
-      sequence:
-      - service: switch.turn_on
-        target:
-          entity_id: switch.subwoofer
-        data: {}
-    - conditions:
-      - condition: state
-        entity_id: media_player.lounge_amp_3
-        state: 'off'
-      sequence:
-      - service: switch.turn_off
-        target:
-          entity_id: switch.subwoofer
-        data: {}
-    default: []
+    - choose:
+        - conditions:
+            - condition: not
+              conditions:
+                - condition: state
+                  entity_id: media_player.lounge_amp_3
+                  state: "off"
+                  alias: Confirm lounge amp is not off
+          sequence:
+            - service: switch.turn_on
+              target:
+                entity_id: switch.subwoofer
+              data: {}
+        - conditions:
+            - condition: state
+              entity_id: media_player.lounge_amp_3
+              state: "off"
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: switch.subwoofer
+              data: {}
+      default: []
   mode: single
-- id: '1641896084660'
+- id: "1641896084660"
   alias: Media - Play all music
   description: Shuffles all music from system /media/Music folder
   trigger:
-  - platform: sun
-    event: sunrise
-    offset: '0'
+    - platform: sun
+      event: sunrise
+      offset: "0"
   condition:
-  - condition: not
-    conditions:
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: input_boolean.silent_mode
+          state: ""
+  action:
+    - service: media_player.clear_playlist
+      target:
+        entity_id: media_player.vlc_telnet
+    - service: media_player.shuffle_set
+      target:
+        entity_id: media_player.vlc_telnet
+      data:
+        shuffle: true
+    - service: media_player.play_media
+      target:
+        entity_id: media_player.vlc_telnet
+      data:
+        media_content_type: music
+        media_content_id: /media/Music
+  mode: single
+  initial_state: false
+- id: "1650799270361"
+  alias: Doppler - Audio
+  description: ""
+  trigger:
+    - platform: state
+      entity_id: input_button.alarm
+      to: "on"
+    - platform: state
+      entity_id: input_button.alarm
+      to: "off"
+  condition: []
+  action:
+    - service: media_player.select_source
+      data:
+        source: Doppler-f073b00a
+      target:
+        entity_id: media_player.spotify_sky_girl14
+    - service: media_player.play_media
+      data:
+        media_content_id: spotify:playlist:1ybvvEY140z6firMaSmopx
+        media_content_type: spotify://track
+      target:
+        entity_id: media_player.spotify_sky_girl14
+  mode: single
+- id: "1651206195438"
+  alias: Notification - HAssOS Update Available
+  description: ""
+  trigger:
+    - platform: state
+      entity_id:
+        - update.home_assistant_operating_system_update
+      to: "on"
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 1
+  condition:
     - condition: state
       entity_id: input_boolean.silent_mode
-      state: ''
+      state: "off"
   action:
-  - service: media_player.clear_playlist
-    target:
-      entity_id: media_player.vlc_telnet
-  - service: media_player.shuffle_set
-    target:
-      entity_id: media_player.vlc_telnet
-    data:
-      shuffle: true
-  - service: media_player.play_media
-    target:
-      entity_id: media_player.vlc_telnet
-    data:
-      media_content_type: music
-      media_content_id: /media/Music
+    - service: notify.html5_notifications
+      data:
+        message:
+          Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
+          'latest_version') }} is available.
+        title: Update Available
+    - service: notify.discord
+      data:
+        message:
+          Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
+          'latest_version') }} is available.
+        title: Update Available!
+        target:
+          - "819351502640381952"
+    - service: notify.facebook_text
+      data:
+        message:
+          Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
+          'latest_version') }} is available.
   mode: single
-  initial_state: 'off'
-- id: '1650799270361'
-  alias: Doppler - Audio
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: input_button.alarm
-    to: 'on'
-  - platform: state
-    entity_id: input_button.alarm
-    to: 'off'
-  condition: []
-  action:
-  - service: media_player.select_source
-    data:
-      source: Doppler-f073b00a
-    target:
-      entity_id: media_player.spotify_sky_girl14
-  - service: media_player.play_media
-    data:
-      media_content_id: spotify:playlist:1ybvvEY140z6firMaSmopx
-      media_content_type: spotify://track
-    target:
-      entity_id: media_player.spotify_sky_girl14
-  mode: single
-- id: '1651206195438'
-  alias: Notification - HAssOS Update Available
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - update.home_assistant_operating_system_update
-    to: 'on'
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 1
-  condition:
-  - condition: state
-    entity_id: input_boolean.silent_mode
-    state: 'off'
-  action:
-  - service: notify.html5_notifications
-    data:
-      message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
-        'latest_version') }} is available.
-      title: Update Available
-  - service: notify.discord
-    data:
-      message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
-        'latest_version') }} is available.
-      title: Update Available!
-      target:
-      - '819351502640381952'
-  - service: notify.facebook_text
-    data:
-      message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
-        'latest_version') }} is available.
-  mode: single
-- id: '1655351847580'
+- id: "1655351847580"
   alias: Amp Volume - Change Input
-  description: Changes volume on the Lounge amplifier to suit whatever levels are
+  description:
+    Changes volume on the Lounge amplifier to suit whatever levels are
     received from the differing sources
   trigger:
-  - platform: state
-    entity_id:
-    - media_player.lounge_amp_2
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 0
-    attribute: media_title
+    - platform: state
+      entity_id:
+        - media_player.lounge_amp_2
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0
+      attribute: media_title
   condition: []
   action:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: media_player.lounge_amp_2
-        attribute: media_title
-        state: BD/DVD
-        for:
-          hours: 0
-          minutes: 0
-          seconds: 0
-        alias: PC (BD/DVD)
-      sequence:
-      - service: media_player.volume_set
-        target:
-          entity_id: media_player.lounge_amp_2
-        data:
-          volume_level: 0.73
-    - conditions:
-      - condition: state
-        entity_id: media_player.lounge_amp_2
-        attribute: media_title
-        state: GAME
-        for:
-          hours: 0
-          minutes: 0
-          seconds: 0
-        alias: PS5 (GAME)
-      sequence:
-      - service: media_player.volume_set
-        target:
-          entity_id: media_player.lounge_amp_2
-        data:
-          volume_level: 0.27
-    - conditions:
-      - condition: state
-        entity_id: media_player.lounge_amp_2
-        attribute: media_title
-        state: VIDEO 1
-        for:
-          hours: 0
-          minutes: 0
-          seconds: 0
-        alias: Xbox SX (VIDEO 1)
-      sequence:
-      - service: media_player.volume_set
-        target:
-          entity_id: media_player.lounge_amp_2
-        data:
-          volume_level: 0.335
-    - conditions:
-      - condition: state
-        entity_id: media_player.lounge_amp_2
-        attribute: media_title
-        state: VIDEO 2
-        for:
-          hours: 0
-          minutes: 0
-          seconds: 0
-        alias: Xbox One (VIDEO 2)
-      sequence:
-      - service: media_player.volume_set
-        target:
-          entity_id: media_player.lounge_amp_2
-        data:
-          volume_level: 0.335
-    default: []
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: media_player.lounge_amp_2
+              attribute: media_title
+              state: BD/DVD
+              for:
+                hours: 0
+                minutes: 0
+                seconds: 0
+              alias: PC (BD/DVD)
+          sequence:
+            - service: media_player.volume_set
+              target:
+                entity_id: media_player.lounge_amp_2
+              data:
+                volume_level: 0.73
+        - conditions:
+            - condition: state
+              entity_id: media_player.lounge_amp_2
+              attribute: media_title
+              state: GAME
+              for:
+                hours: 0
+                minutes: 0
+                seconds: 0
+              alias: PS5 (GAME)
+          sequence:
+            - service: media_player.volume_set
+              target:
+                entity_id: media_player.lounge_amp_2
+              data:
+                volume_level: 0.27
+        - conditions:
+            - condition: state
+              entity_id: media_player.lounge_amp_2
+              attribute: media_title
+              state: VIDEO 1
+              for:
+                hours: 0
+                minutes: 0
+                seconds: 0
+              alias: Xbox SX (VIDEO 1)
+          sequence:
+            - service: media_player.volume_set
+              target:
+                entity_id: media_player.lounge_amp_2
+              data:
+                volume_level: 0.335
+        - conditions:
+            - condition: state
+              entity_id: media_player.lounge_amp_2
+              attribute: media_title
+              state: VIDEO 2
+              for:
+                hours: 0
+                minutes: 0
+                seconds: 0
+              alias: Xbox One (VIDEO 2)
+          sequence:
+            - service: media_player.volume_set
+              target:
+                entity_id: media_player.lounge_amp_2
+              data:
+                volume_level: 0.335
+      default: []
   mode: single
-- id: '1665709420254'
+- id: "1665709420254"
   alias: Doppler - Button 1
   description: Toggles a light on push of Doppler smart button 1
   trigger:
-  - platform: device
-    domain: sandman_doppler
-    device_id: 71b40ef41901e6650f2ec43ddd2b63dc
-    button: 1
-    type: sandman_doppler_button_pressed
-    subtype: 1
+    - platform: device
+      domain: sandman_doppler
+      device_id: 71b40ef41901e6650f2ec43ddd2b63dc
+      button: 1
+      type: sandman_doppler_button_pressed
+      subtype: 1
   condition: []
   action:
-  - service: light.toggle
-    data: {}
-    target:
-      entity_id: light.bedroom
+    - service: light.toggle
+      data: {}
+      target:
+        entity_id: light.bedroom
   mode: single
-- id: '1665709479272'
+- id: "1665709479272"
   alias: Doppler - Button 2
   description: Toggles a light on push of Doppler smart button 2
   trigger:
-  - platform: device
-    domain: sandman_doppler
-    device_id: 71b40ef41901e6650f2ec43ddd2b63dc
-    button: 2
-    type: sandman_doppler_button_pressed
-    subtype: 2
+    - platform: device
+      domain: sandman_doppler
+      device_id: 71b40ef41901e6650f2ec43ddd2b63dc
+      button: 2
+      type: sandman_doppler_button_pressed
+      subtype: 2
   condition: []
   action:
-  - service: light.toggle
-    data: {}
-    target:
-      entity_id: light.bedroom_lamp
+    - service: light.toggle
+      data: {}
+      target:
+        entity_id: light.bedroom_lamp
   mode: single
-- id: '1666768764502'
+- id: "1666768764502"
   alias: Printer - Notify if out of paper
   description: Talks through the speakers to notify if the printer runs out of paper
   trigger:
-  - platform: state
-    entity_id:
-    - sensor.mfc_9340cdw_status
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 0
+    - platform: state
+      entity_id:
+        - sensor.mfc_9340cdw_status
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0
   condition:
-  - condition: state
-    entity_id: input_boolean.silent_mode
-    state: 'off'
-  - condition: time
-    before: '23:00:00'
-    after: 08:00:00
-    alias: Not nighttime
+    - condition: state
+      entity_id: input_boolean.silent_mode
+      state: "off"
+    - condition: time
+      before: "23:00:00"
+      after: 08:00:00
+      alias: Not nighttime
   action:
-  - service: notify.alexa_media_lounge_dot
-    data:
+    - service: notify.alexa_media_lounge_dot
       data:
-        type: tts
-        target: media_player.lounge_dot
-      message: The printer has run out of paper
-    alias: Printer status via lounge dot
-    enabled: true
+        data:
+          type: tts
+          target: media_player.lounge_dot
+        message: The printer has run out of paper
+      alias: Printer status via lounge dot
+      enabled: true
   mode: single
