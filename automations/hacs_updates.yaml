@@ -1,0 +1,33 @@
+- id: '1638231245218'
+  alias: Notification - HACS Updates Available
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.hacs
+    above: '0'
+  condition:
+  - condition: state
+    entity_id: input_boolean.silent_mode
+    state: 'off'
+  action:
+  - service: persistent_notification.create
+    data:
+      notification_id: hacs_updates
+      title: HACS Update
+      message: Updates available in {{ states('sensor.hacs') }} [HACS repo{% if states('sensor.hacs')
+        | int > 1 %}s{% endif %}](/hacs)
+  - service: notify.facebook_text
+    data:
+      message: Updates available in {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs')
+        | int > 1 %}s{% endif %} {% for repo in states.sensor.hacs.attributes.repositories
+        %} {{ repo.name }} {% endfor %}
+  - service: notify.discord
+    data:
+      message: 'Updates available in {{ states(''sensor.hacs'') }} HACS repo{% if
+        states(''sensor.hacs'') | int > 1 %}s{% endif %}\: {% for repo in states.sensor.hacs.attributes.repositories
+        %} {{repo.name }}, {{repo.installed_version}} -> {{repo.available_version}}
+        {% endfor %}'
+      title: HACS Updates available
+      target:
+      - '819351502640381952'
+  mode: single
