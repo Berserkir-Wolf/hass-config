@@ -6,9 +6,12 @@
     platform: state
     to: home
   condition:
-  - condition: state
-    entity_id: person.dyson_parkes
-    state: not_home
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: person.dyson_parkes
+      state: home
+    alias: Confirm Dyson is out
   action:
   - data:
       message: Kirstyn just arrived
