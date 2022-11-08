@@ -1,5 +1,0 @@
-# https://home-assistant.io/components/switch.wake_on_lan/
-  - platform: wake_on_lan
-    name: WOL_workstation
-    mac: !secret workstation_mac
-    host: !secret workstation_ip

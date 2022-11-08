@@ -4,16 +4,13 @@ import logging
 import ssl
 from time import time
 from threading import Lock
-
 from voluptuous import Optional
-
 from .const import (
     DEFAULT_LOGIN_METHOD,
     DEFAULT_ENCODING,
 )
 
 import librouteros
-from socket import error as socket_error, timeout as socket_timeout
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,7 +49,7 @@ class MikrotikAPI:
         self._connection_retry_sec = 58
         self.error = None
         self.connection_error_reported = False
-        self.accounting_last_run = None
+        self.client_traffic_last_run = None
 
         # Default ports
         if not self._port:
@@ -133,35 +130,12 @@ class MikrotikAPI:
             self._connection = librouteros.connect(
                 self._host, self._username, self._password, **kwargs
             )
-        except (
-            librouteros.exceptions.TrapError,
-            librouteros.exceptions.MultiTrapError,
-            librouteros.exceptions.ConnectionClosed,
-            librouteros.exceptions.ProtocolError,
-            librouteros.exceptions.FatalError,
-            socket_timeout,
-            socket_error,
-            ssl.SSLError,
-            BrokenPipeError,
-            OSError,
-        ) as api_error:
+        except Exception as e:
             if not self.connection_error_reported:
-                _LOGGER.error(
-                    "Mikrotik %s error while connecting: %s", self._host, api_error
-                )
+                _LOGGER.error("Mikrotik %s error while connecting: %s", self._host, e)
                 self.connection_error_reported = True
 
-            self.error_to_strings("%s" % api_error)
-            self._connection = None
-            self.lock.release()
-            return False
-        except:
-            if not self.connection_error_reported:
-                _LOGGER.error(
-                    "Mikrotik %s error while connecting: %s", self._host, "Unknown"
-                )
-                self.connection_error_reported = True
-
+            self.error_to_strings(f"{e}")
             self._connection = None
             self.lock.release()
             return False
@@ -198,11 +172,13 @@ class MikrotikAPI:
         return self._connected
 
     # ---------------------------
-    #   path
+    #   query
     # ---------------------------
-    def path(self, path, return_list=True) -> Optional(list):
+    def query(self, path, command=None, args=None, return_list=True) -> Optional(list):
         """Retrieve data from Mikrotik API."""
         """Returns generator object, unless return_list passed as True"""
+        if args is None:
+            args = {}
 
         if not self.connection_check():
             return None
@@ -211,56 +187,41 @@ class MikrotikAPI:
         try:
             _LOGGER.debug("API query: %s", path)
             response = self._connection.path(path)
-        except librouteros.exceptions.ConnectionClosed:
-            self.disconnect()
-            self.lock.release()
-            return None
-        except (
-            librouteros.exceptions.TrapError,
-            librouteros.exceptions.MultiTrapError,
-            librouteros.exceptions.ProtocolError,
-            librouteros.exceptions.FatalError,
-            socket_timeout,
-            socket_error,
-            ssl.SSLError,
-            BrokenPipeError,
-            OSError,
-            ValueError,
-        ) as api_error:
-            self.disconnect("path", api_error)
-            self.lock.release()
-            return None
-        except:
-            self.disconnect("path")
+        except Exception as e:
+            self.disconnect("path", e)
             self.lock.release()
             return None
 
-        if return_list:
+        if response and return_list and not command:
             try:
                 response = list(response)
-            except librouteros.exceptions.ConnectionClosed as api_error:
-                self.disconnect("building list for path", api_error)
+            except Exception as e:
+                self.disconnect("building list for path", e)
                 self.lock.release()
                 return None
-            except:
-                self.disconnect("building list for path")
+        elif response and command:
+            _LOGGER.debug("API query: %s, %s, %s", path, command, args)
+            try:
+                response = list(response(command, **args))
+            except Exception as e:
+                self.disconnect("path", e)
                 self.lock.release()
                 return None
 
         self.lock.release()
-        return response if response else None
+        return response or None
 
     # ---------------------------
-    #   update
+    #   set_value
     # ---------------------------
-    def update(self, path, param, value, mod_param, mod_value) -> bool:
+    def set_value(self, path, param, value, mod_param, mod_value) -> bool:
         """Modify a parameter"""
         entry_found = None
 
         if not self.connection_check():
             return False
 
-        response = self.path(path, return_list=False)
+        response = self.query(path, return_list=False)
         if response is None:
             return False
 
@@ -275,7 +236,7 @@ class MikrotikAPI:
 
         if not entry_found:
             _LOGGER.error(
-                "Mikrotik %s Update parameter %s with value %s not found",
+                "Mikrotik %s set_value parameter %s with value %s not found",
                 self._host,
                 param,
                 value,
@@ -286,27 +247,8 @@ class MikrotikAPI:
         self.lock.acquire()
         try:
             response.update(**params)
-        except librouteros.exceptions.ConnectionClosed:
-            self.disconnect()
-            self.lock.release()
-            return False
-        except (
-            librouteros.exceptions.TrapError,
-            librouteros.exceptions.MultiTrapError,
-            librouteros.exceptions.ProtocolError,
-            librouteros.exceptions.FatalError,
-            socket_timeout,
-            socket_error,
-            ssl.SSLError,
-            BrokenPipeError,
-            OSError,
-            ValueError,
-        ) as api_error:
-            self.disconnect("update", api_error)
-            self.lock.release()
-            return False
-        except:
-            self.disconnect("update")
+        except Exception as e:
+            self.disconnect("set_value", e)
             self.lock.release()
             return False
 
@@ -319,58 +261,42 @@ class MikrotikAPI:
     def execute(self, path, command, param, value) -> bool:
         """Execute a command"""
         entry_found = None
+        params = {}
 
         if not self.connection_check():
             return False
 
-        response = self.path(path, return_list=False)
+        response = self.query(path, return_list=False)
         if response is None:
             return False
 
-        for tmp in response:
-            if param not in tmp:
-                continue
+        if param:
+            for tmp in response:
+                if param not in tmp:
+                    continue
 
-            if tmp[param] != value:
-                continue
+                if tmp[param] != value:
+                    continue
 
-            entry_found = tmp[".id"]
+                entry_found = tmp[".id"]
 
-        if not entry_found:
-            _LOGGER.error(
-                "Mikrotik %s Execute %s parameter %s with value %s not found",
-                self._host,
-                command,
-                param,
-                value,
-            )
-            return True
+            if not entry_found:
+                _LOGGER.error(
+                    "Mikrotik %s Execute %s parameter %s with value %s not found",
+                    self._host,
+                    command,
+                    param,
+                    value,
+                )
+                return True
 
-        params = {".id": entry_found}
+            params = {".id": entry_found}
+
         self.lock.acquire()
         try:
             tuple(response(command, **params))
-        except librouteros.exceptions.ConnectionClosed:
-            self.disconnect()
-            self.lock.release()
-            return False
-        except (
-            librouteros.exceptions.TrapError,
-            librouteros.exceptions.MultiTrapError,
-            librouteros.exceptions.ProtocolError,
-            librouteros.exceptions.FatalError,
-            socket_timeout,
-            socket_error,
-            ssl.SSLError,
-            BrokenPipeError,
-            OSError,
-            ValueError,
-        ) as api_error:
-            self.disconnect("execute", api_error)
-            self.lock.release()
-            return False
-        except:
-            self.disconnect("execute")
+        except Exception as e:
+            self.disconnect("execute", e)
             self.lock.release()
             return False
 
@@ -386,7 +312,7 @@ class MikrotikAPI:
         if not self.connection_check():
             return False
 
-        response = self.path("/system/script", return_list=False)
+        response = self.query("/system/script", return_list=False)
         if response is None:
             return False
 
@@ -407,142 +333,13 @@ class MikrotikAPI:
         try:
             run = response("run", **{".id": entry_found})
             tuple(run)
-        except librouteros.exceptions.ConnectionClosed:
-            self.disconnect()
-            self.lock.release()
-            return False
-        except (
-            librouteros.exceptions.TrapError,
-            librouteros.exceptions.MultiTrapError,
-            librouteros.exceptions.ProtocolError,
-            librouteros.exceptions.FatalError,
-            socket_timeout,
-            socket_error,
-            ssl.SSLError,
-            BrokenPipeError,
-            OSError,
-            ValueError,
-        ) as api_error:
-            self.disconnect("run_script", api_error)
-            self.lock.release()
-            return False
-        except:
-            self.disconnect("run_script")
+        except Exception as e:
+            self.disconnect("run_script", e)
             self.lock.release()
             return False
 
         self.lock.release()
         return True
-
-    # ---------------------------
-    #   get_traffic
-    # ---------------------------
-    def get_traffic(self, interfaces) -> Optional(list):
-        """Get traffic stats"""
-        if not self.connection_check():
-            return None
-
-        response = self.path("/interface", return_list=False)
-        if response is None:
-            return None
-
-        args = {"interface": interfaces, "once": True}
-        self.lock.acquire()
-        try:
-            _LOGGER.debug("API query: %s", "/interface/monitor-traffic")
-            traffic = response("monitor-traffic", **args)
-        except librouteros.exceptions.ConnectionClosed:
-            self.disconnect()
-            self.lock.release()
-            return None
-        except (
-            librouteros.exceptions.TrapError,
-            librouteros.exceptions.MultiTrapError,
-            librouteros.exceptions.ProtocolError,
-            librouteros.exceptions.FatalError,
-            ssl.SSLError,
-            socket_timeout,
-            socket_error,
-            BrokenPipeError,
-            OSError,
-            ValueError,
-        ) as api_error:
-            self.disconnect("get_traffic", api_error)
-            self.lock.release()
-            return None
-        except:
-            self.disconnect("get_traffic")
-            self.lock.release()
-            return None
-
-        try:
-            traffic = list(traffic)
-        except librouteros.exceptions.ConnectionClosed as api_error:
-            self.disconnect("get_traffic", api_error)
-            self.lock.release()
-            return None
-        except:
-            self.disconnect("get_traffic")
-            self.lock.release()
-            return None
-
-        self.lock.release()
-        return traffic if traffic else None
-
-    # ---------------------------
-    #   get_sfp
-    # ---------------------------
-    def get_sfp(self, interfaces) -> Optional(list):
-        """Get sfp info"""
-        if not self.connection_check():
-            return None
-
-        response = self.path("/interface/ethernet", return_list=False)
-        if response is None:
-            return None
-
-        args = {".id": interfaces, "once": True}
-        self.lock.acquire()
-        try:
-            _LOGGER.debug("API query: %s %s", "/interface/ethernet/monitor", interfaces)
-            sfpinfo = response("monitor", **args)
-        except librouteros.exceptions.ConnectionClosed:
-            self.disconnect()
-            self.lock.release()
-            return None
-        except (
-            librouteros.exceptions.TrapError,
-            librouteros.exceptions.MultiTrapError,
-            librouteros.exceptions.ProtocolError,
-            librouteros.exceptions.FatalError,
-            ssl.SSLError,
-            socket_timeout,
-            socket_error,
-            BrokenPipeError,
-            OSError,
-            ValueError,
-        ) as api_error:
-            self.disconnect("get_sfp", api_error)
-            self.lock.release()
-            return None
-        except:
-            self.disconnect("get_sfp")
-            self.lock.release()
-            return None
-
-        try:
-            sfpinfo = list(sfpinfo)
-        except librouteros.exceptions.ConnectionClosed as api_error:
-            self.disconnect("get_sfp", api_error)
-            self.lock.release()
-            return None
-        except:
-            self.disconnect("get_sfp")
-            self.lock.release()
-            return None
-
-        self.lock.release()
-        return sfpinfo if sfpinfo else None
 
     # ---------------------------
     #   arp_ping
@@ -552,7 +349,7 @@ class MikrotikAPI:
         if not self.connection_check():
             return False
 
-        response = self.path("/ping", return_list=False)
+        response = self.query("/ping", return_list=False)
         if response is None:
             return False
 
@@ -567,39 +364,15 @@ class MikrotikAPI:
         try:
             # _LOGGER.debug("Ping host query: %s", args["address"])
             ping = response("/ping", **args)
-        except librouteros.exceptions.ConnectionClosed:
-            self.disconnect()
-            self.lock.release()
-            return False
-
-        except (
-            librouteros.exceptions.TrapError,
-            librouteros.exceptions.MultiTrapError,
-            librouteros.exceptions.ProtocolError,
-            librouteros.exceptions.FatalError,
-            socket_timeout,
-            socket_error,
-            ssl.SSLError,
-            BrokenPipeError,
-            OSError,
-            ValueError,
-        ) as api_error:
-            self.disconnect("arp_ping", api_error)
-            self.lock.release()
-            return False
-        except:
-            self.disconnect("arp_ping")
+        except Exception as e:
+            self.disconnect("arp_ping", e)
             self.lock.release()
             return False
 
         try:
             ping = list(ping)
-        except librouteros.exceptions.ConnectionClosed as api_error:
-            self.disconnect("arp_ping", api_error)
-            self.lock.release()
-            return False
-        except:
-            self.disconnect("arp_ping")
+        except Exception as e:
+            self.disconnect("arp_ping", e)
             self.lock.release()
             return False
 
@@ -625,7 +398,7 @@ class MikrotikAPI:
         if not self.connection_check():
             return False, False
 
-        response = self.path("/ip/accounting")
+        response = self.query("/ip/accounting")
         if response is None:
             return False, False
 
@@ -644,64 +417,42 @@ class MikrotikAPI:
         return True, True
 
     # ---------------------------
-    #   take_accounting_snapshot
+    #   take_client_traffic_snapshot
     #   Returns float -> period in seconds between last and current run
     # ---------------------------
-    def take_accounting_snapshot(self) -> float:
-        """Get accounting data"""
+    def take_client_traffic_snapshot(self, use_accounting) -> float:
+        """Tako accounting snapshot and return time diff"""
         if not self.connection_check():
             return 0
 
-        accounting = self.path("/ip/accounting", return_list=False)
+        if use_accounting:
+            accounting = self.query("/ip/accounting", return_list=False)
 
-        self.lock.acquire()
-        try:
-            # Prepare command
-            take = accounting("snapshot/take")
-        except librouteros.exceptions.ConnectionClosed:
-            self.disconnect()
-            self.lock.release()
-            return 0
-        except (
-            librouteros.exceptions.TrapError,
-            librouteros.exceptions.MultiTrapError,
-            librouteros.exceptions.ProtocolError,
-            librouteros.exceptions.FatalError,
-            socket_timeout,
-            socket_error,
-            ssl.SSLError,
-            BrokenPipeError,
-            OSError,
-            ValueError,
-        ) as api_error:
-            self.disconnect("accounting_snapshot", api_error)
-            self.lock.release()
-            return 0
-        except:
-            self.disconnect("accounting_snapshot")
-            self.lock.release()
-            return 0
+            self.lock.acquire()
+            try:
+                # Prepare command
+                take = accounting("snapshot/take")
+            except Exception as e:
+                self.disconnect("accounting_snapshot", e)
+                self.lock.release()
+                return 0
 
-        try:
-            list(take)
-        except librouteros.exceptions.ConnectionClosed as api_error:
-            self.disconnect("accounting_snapshot", api_error)
-            self.lock.release()
-            return 0
-        except:
-            self.disconnect("accounting_snapshot")
-            self.lock.release()
-            return 0
+            try:
+                list(take)
+            except Exception as e:
+                self.disconnect("accounting_snapshot", e)
+                self.lock.release()
+                return 0
 
-        self.lock.release()
+            self.lock.release()
 
         # First request will be discarded because we cannot know when the last data was retrieved
         # prevents spikes in data
-        if not self.accounting_last_run:
-            self.accounting_last_run = self._current_milliseconds()
+        if not self.client_traffic_last_run:
+            self.client_traffic_last_run = self._current_milliseconds()
             return 0
 
         # Calculate time difference in seconds and return
-        time_diff = self._current_milliseconds() - self.accounting_last_run
-        self.accounting_last_run = self._current_milliseconds()
+        time_diff = self._current_milliseconds() - self.client_traffic_last_run
+        self.client_traffic_last_run = self._current_milliseconds()
         return time_diff / 1000

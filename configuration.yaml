@@ -1,18 +1,21 @@
 # Configure a default setup of Home Assistant (frontend, api, etc)
-# This is used for a recovery boot
+# This gets used for a recovery boot
 default_config:
-  # This tells HAss that it should still accept reverse proxy info when it does a recovery boot.
-  http:
+  http: # This tells Hass that it should still accept reverse proxy info when it does a recovery boot.
     use_x_forwarded_for: true
     trusted_proxies:
       - !secret server_1_ip
       - !secret server_2_ip
       - !secret server_3_ip
+
 ## Simple Components
+# Used for geolocation functions.
 map:
+# Provides the default weather functions
 met:
+# Used for sunrise/sunset times.
 sun:
-updater:
+# Allows for remote WOL of network devices.
 wake_on_lan:
 
 ## Complex Components
@@ -27,9 +30,6 @@ homeassistant:
       trusted_networks:
         - !secret trusted_network
 
-# HACS Browser Mod
-browser_mod: !include includes/browser_mod.yaml
-
 # Text to speech
 tts:
   - platform: google_translate
@@ -41,7 +41,7 @@ http:
     - !secret server_1_ip
     - !secret server_2_ip
     - !secret server_3_ip
-## Frontend
+## Frontend config - sets up support for themes
 frontend:
   themes: !include_dir_merge_named themes
 
@@ -52,11 +52,11 @@ notify: !include_dir_merge_list notify
 sensor: !include_dir_merge_list sensors
 switch: !include_dir_merge_list switches
 zone: !include_dir_merge_list zones
+
 # Single Files / Direct includes (All saved in the includes directory)
 anniversaries: !include includes/anniversaries.yaml
 #coinbase: !include includes/coinbase.yaml
-google: !include includes/google.yaml
-hdhomerun: !include includes/hdhomerun.yaml
+#hdhomerun: !include includes/hdhomerun.yaml
 input_select: !include includes/input_select.yaml
 input_boolean: !include includes/input_boolean.yaml
 input_number: !include includes/input_number.yaml
@@ -65,11 +65,11 @@ input_datetime: !include includes/input_datetime.yaml
 light: !include includes/lights.yaml
 #octoprint: !include includes/octoprint.yaml
 ombi: !include includes/ombi.yaml
-panel_custom: !include includes/custom_sidebar.yaml
+#panel_custom: !include includes/custom_sidebar.yaml
 recorder: !include includes/recorder.yaml
 shell_command: !include includes/shell_commands.yaml
-spotify: !include includes/spotify.yaml
 tplink: !include includes/tplink.yaml
+
 # Root includes (these files do not handle being moved at all - some are edited by the system itself)
 automation: !include automations.yaml
 script: !include scripts.yaml
@@ -78,7 +78,10 @@ scene: !include scenes.yaml
 ## Testing functions
 #camera: !include individuals/unifi_video.yaml
 #influxdb: !include individuals/influxdb.yaml #disabled for system load
+#
 #################################################################
 ## Deprecated YAML functions
+#google: !include includes/google.yaml ##Deprecated 2022.08
 #nzbget: !include includes/nzbget.yaml
 #pi_hole: !include includes/communica_pihole.yaml
+#spotify: !include includes/spotify.yaml #Deprecated 2022.08

@@ -1,18 +1,9 @@
 # This file generates the extra sensors for tautulli - they're just attributes, but splitting out via template.
 - platform: template
   sensors:
-    plexlanbandwidth:
-      value_template: "{{ states.sensor.tautulli.attributes.lan_bandwidth / 1024 }}"
-    plexwanbandwidth:
-      value_template: "{{ states.sensor.tautulli.attributes.wan_bandwidth / 1024 }}"
-    plextotalbandwidth:
-      value_template: "{{ states.sensor.tautulli.attributes.total_bandwidth / 1024 }}"
-    plexlanbandwidthrounded:
-      value_template: "{{ states('sensor.plexlanbandwidth') | round(2) }}"
+    total_bandwidth_mbps:
+      value_template: "{{ (int(states('sensor.total_bandwidth')) / 1024) }}"
       unit_of_measurement: "Mbps"
-    plexwanbandwidthrounded:
-      value_template: "{{ states('sensor.plexwanbandwidth') | round(2)  }}"
-      unit_of_measurement: "Mbps"
-    plextotalbandwidthrounded:
-      value_template: "{{ states('sensor.plextotalbandwidth') | round(2)  }}"
+    total_bandwidth_mbps_rounded:
+      value_template: "{{ (int(states('sensor.total_bandwidth')) / 1024) | round(2) }}"
       unit_of_measurement: "Mbps"

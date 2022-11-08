@@ -1,0 +1,7 @@
+# This is a template that gives me a dedicated sensor for kettle temperature, rather than just an attribute.
+- platform: template
+  sensors:
+    kettle_temperature:
+      friendly_name: Kettle Temperature
+      value_template: "{{ (state_attr('climate.kettle', 'current_temperature')) }}"
+      unit_of_measurement: "°C"

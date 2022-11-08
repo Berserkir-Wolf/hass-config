@@ -1,0 +1,5 @@
+## Was used for google calendar API
+## Defunct - deprecated.
+client_id: !secret google_token_id
+client_secret: !secret google_token_secret
+track_new_calendar: false

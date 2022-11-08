@@ -1,5 +1,0 @@
-# https://home-assistant.io/components/switch.wake_on_lan/
-  - platform: wake_on_lan
-    name: WOL_shif
-    mac: !secret shif_mac
-    host: !secret shif_host

@@ -1,6 +1,10 @@
 ## Unifi AP Connected Devices
-  - platform: unifics
-    name: Unifi_Clients
-    host: !secret server_2_ip
-    username: !secret unifi_user
-    password: !secret unifi_pass
+- platform: unifics
+  name: Unifi_Clients
+  host: !secret server_2_ip
+  port: 8443
+  verify_ssl: False
+  udm: False
+  #site: !secret unifi_site
+  username: !secret unifi_user
+  password: !secret unifi_pass

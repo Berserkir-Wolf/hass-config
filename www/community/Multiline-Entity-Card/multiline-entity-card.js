@@ -75,6 +75,41 @@ class MultilineEntityCard extends LitElement {
         `;
       }
 
+      if (this.config.entity.indexOf("input_datetime.") == 0) {
+        var hasDate = this._hass.states[this.config.entity]['attributes']['has_date'];
+        var hasTime = this._hass.states[this.config.entity]['attributes']['has_time'];
+
+        //default to just parsing time object
+        var today = new Date().toLocaleDateString('en-GB', { year: "numeric", month: "short", day: "numeric" })
+
+        var value = new Date(today + " " + this.showValue).toLocaleTimeString('en-GB')
+
+        if (hasDate) {
+            //parse only date object if has_date is true
+            var value = new Date(this.showValue).toLocaleDateString('en-GB', { year: "numeric", month: "short", day: "numeric" })
+            //parse datetime object if has_date & has_time are true
+            if (hasTime) {
+              var value = new Date(this.showValue).toLocaleDateString('en-GB', { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+            }
+        }
+
+        this.showValue = value
+      }
+
+      var uom = this._hass.states[this.config.entity]['attributes']['unit_of_measurement'];
+      var uomPrefix = "";
+      var uomSuffix = "";
+
+      if (uom != undefined && uom.length > 0) {
+        if (this.config.unit_of_measurement == "prefix") {
+          uomPrefix = uom;
+        }
+        if (this.config.unit_of_measurement == "suffix"){
+          uomSuffix = uom;
+        }
+      }
+
+
       return html`
         <ha-card @click="${this._handleClick}">
         <div class="header">
@@ -88,16 +123,24 @@ class MultilineEntityCard extends LitElement {
           }
           </div>
 
-          ${this.config.show_icon == false ? '' : html`
-              <ha-icon icon="${state.attributes.icon == undefined ?
-                "mdi:eye" :
-                state.attributes.icon
-              }" ></ha-icon>`
+          ${this.config.image == undefined ?
+                this.config.show_icon == false ? '' : html`
+                  <ha-icon icon="${state.attributes.icon == undefined ?
+                    "mdi:eye" :
+                    state.attributes.icon
+                  }" ></ha-icon>` : html`
+              <img src="${
+                this.config.image
+              }" height=25></img>`
           }
+
+
         </div>
         <div class="info">
           <span class="value">
+            ${uomPrefix}
             ${this.stringToHTML(this.showValue)}
+            ${uomSuffix}
           </span>
         </div>
         </ha-card>
