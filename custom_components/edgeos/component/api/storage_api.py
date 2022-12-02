@@ -1,9 +1,9 @@
 """Storage handlers."""
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 import logging
 import sys
-from typing import Awaitable, Callable
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.json import JSONEncoder
@@ -24,7 +24,7 @@ class StorageAPI(BaseAPI):
     _data: dict
 
     def __init__(self,
-                 hass: HomeAssistant,
+                 hass: HomeAssistant | None,
                  async_on_data_changed: Callable[[], Awaitable[None]] | None = None,
                  async_on_status_changed: Callable[[ConnectivityStatus], Awaitable[None]] | None = None
                  ):
