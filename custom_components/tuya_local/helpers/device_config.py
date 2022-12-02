@@ -326,7 +326,7 @@ class TuyaDpsConfig:
 
     def decoded_value(self, device):
         v = self.get_value(device)
-        if self.rawtype == "hex":
+        if self.rawtype == "hex" and isinstance(v, str):
             return bytes.fromhex(v)
         elif self.rawtype == "base64":
             return b64decode(v)
@@ -705,7 +705,7 @@ class TuyaDpsConfig:
                 )
 
         r = self.range(device, scaled=False)
-        if r:
+        if r and isinstance(result, (int, float)):
             minimum = r["min"]
             maximum = r["max"]
             if result < minimum or result > maximum:
