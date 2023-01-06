@@ -1,6 +1,4 @@
 name: Dual switch with timers
-products:
-  - id: key9nfnyp89j4esc
 primary_entity:
   entity: switch
   name: Switch 1
@@ -20,7 +18,7 @@ secondary_entities:
     icon: "mdi:timer"
     category: config
     dps:
-      - id: 7
+      - id: 9
         type: integer
         name: value
         range:
@@ -35,7 +33,7 @@ secondary_entities:
     icon: "mdi:timer"
     category: config
     dps:
-      - id: 8
+      - id: 10
         type: integer
         name: value
         range:

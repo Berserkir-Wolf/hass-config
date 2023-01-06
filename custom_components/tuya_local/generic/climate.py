@@ -28,9 +28,7 @@ from homeassistant.components.climate.const import (
 )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
-    TEMP_CELSIUS,
-    TEMP_FAHRENHEIT,
-    TEMP_KELVIN,
+    UnitOfTemperature,
 )
 
 from ..device import TuyaLocalDevice
@@ -39,12 +37,13 @@ from ..helpers.mixin import TuyaLocalEntity, unit_from_ascii
 
 _LOGGER = logging.getLogger(__name__)
 
-VALID_TEMP_UNIT = [TEMP_CELSIUS, TEMP_FAHRENHEIT, TEMP_KELVIN]
-
 
 def validate_temp_unit(unit):
     unit = unit_from_ascii(unit)
-    return unit if unit in VALID_TEMP_UNIT else None
+    try:
+        return UnitOfTemperature(unit)
+    except ValueError:
+        return None
 
 
 class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
@@ -286,6 +285,24 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
         if self._hvac_mode_dps is None:
             raise NotImplementedError()
         await self._hvac_mode_dps.async_set_value(self._device, hvac_mode)
+
+    async def async_turn_on(self):
+        """Turn on the climate device."""
+        # Bypass the usual dps mapping to switch the power dp directly
+        # this way the hvac_mode will be kept when toggling off and on.
+        if self._hvac_mode_dps and self._hvac_mode_dps.type is bool:
+            await self._device.async_set_property(self._hvac_mode_dps.id, True)
+        else:
+            await super().async_turn_on()
+
+    async def async_turn_off(self):
+        """Turn off the climate device."""
+        # Bypass the usual dps mapping to switch the power dp directly
+        # this way the hvac_mode will be kept when toggling off and on.
+        if self._hvac_mode_dps and self._hvac_mode_dps.type is bool:
+            await self._device.async_set_property(self._hvac_mode_dps.id, False)
+        else:
+            await super().async_turn_off()
 
     @property
     def is_aux_heat(self):

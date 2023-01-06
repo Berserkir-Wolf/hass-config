@@ -9,13 +9,14 @@ from threading import Lock, Timer
 from time import time
 
 
-from homeassistant.const import CONF_HOST, CONF_NAME, TEMP_CELSIUS
+from homeassistant.const import CONF_HOST, CONF_NAME, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 
 from .const import (
     API_PROTOCOL_VERSIONS,
     CONF_DEVICE_ID,
     CONF_LOCAL_KEY,
+    CONF_PROTOCOL_VERSION,
     DOMAIN,
 )
 from .helpers.device_config import possible_matches
@@ -25,7 +26,15 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class TuyaLocalDevice(object):
-    def __init__(self, name, dev_id, address, local_key, hass: HomeAssistant):
+    def __init__(
+        self,
+        name,
+        dev_id,
+        address,
+        local_key,
+        protocol_version,
+        hass: HomeAssistant,
+    ):
         """
         Represents a Tuya-based device.
 
@@ -33,17 +42,18 @@ class TuyaLocalDevice(object):
             dev_id (str): The device id.
             address (str): The network address.
             local_key (str): The encryption key.
+            protocol_version (str | number): The protocol version.
         """
         self._name = name
         self._api_protocol_version_index = None
         self._api_protocol_working = False
         self._api = tinytuya.Device(dev_id, address, local_key)
         self._refresh_task = None
-        self._rotate_api_protocol_version()
+        self._protocol_configured = protocol_version
 
         self._reset_cached_state()
 
-        self._TEMPERATURE_UNIT = TEMP_CELSIUS
+        self._TEMPERATURE_UNIT = UnitOfTemperature.CELSIUS
         self._hass = hass
 
         # API calls to update Tuya devices are asynchronous and non-blocking.
@@ -166,7 +176,7 @@ class TuyaLocalDevice(object):
 
     def _refresh_cached_state(self):
         new_state = self._api.status()
-        self._cached_state = new_state["dps"]
+        self._cached_state = self._cached_state | new_state["dps"]
         self._cached_state["updated_at"] = time()
         _LOGGER.debug(f"{self.name} refreshed device state: {json.dumps(new_state)}")
         _LOGGER.debug(
@@ -235,6 +245,9 @@ class TuyaLocalDevice(object):
             self._lock.release()
 
     def _retry_on_failed_connection(self, func, error_message):
+        if self._api_protocol_version_index is None:
+            self._rotate_api_protocol_version()
+
         for i in range(self._CONNECTION_ATTEMPTS):
             try:
                 func()
@@ -267,8 +280,15 @@ class TuyaLocalDevice(object):
 
     def _rotate_api_protocol_version(self):
         if self._api_protocol_version_index is None:
-            self._api_protocol_version_index = 0
-        else:
+            try:
+                self._api_protocol_version_index = API_PROTOCOL_VERSIONS.index(
+                    self._protocol_configured
+                )
+            except ValueError:
+                self._api_protocol_version_index = 0
+
+        # only rotate if configured as auto
+        elif self._protocol_configured == "auto":
             self._api_protocol_version_index += 1
 
         if self._api_protocol_version_index >= len(API_PROTOCOL_VERSIONS):
@@ -295,6 +315,7 @@ def setup_device(hass: HomeAssistant, config: dict):
         config[CONF_DEVICE_ID],
         config[CONF_HOST],
         config[CONF_LOCAL_KEY],
+        config[CONF_PROTOCOL_VERSION],
         hass,
     )
     hass.data[DOMAIN][config[CONF_DEVICE_ID]] = {"device": device}
