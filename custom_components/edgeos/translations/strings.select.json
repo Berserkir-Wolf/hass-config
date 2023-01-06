@@ -1,9 +1,0 @@
-{
-  "state": {
-    "edgeos__unit": {
-      "Bytes": "Bytes",
-      "KBytes": "KBytes",
-      "MBytes": "MBytes"
-    }
-  }
-}
