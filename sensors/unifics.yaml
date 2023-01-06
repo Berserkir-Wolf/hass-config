@@ -1,7 +1,7 @@
 ## Unifi AP Connected Devices
 - platform: unifics
   name: Unifi_Clients
-  host: !secret server_2_ip
+  host: !secret cloud_key_ip
   port: 8443
   verify_ssl: False
   udm: False

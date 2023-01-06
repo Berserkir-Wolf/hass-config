@@ -28,11 +28,11 @@
          {% else %}
            mdi:access-point-network-off
          {% endif %}'
-    state_outdoorap:
-      friendly_name: "Outdoor AP"
-      value_template: '{% if is_state("device_tracker.outdoorap", "home") %}Online{% else %}Offline{% endif %}'
+    state_garageap:
+      friendly_name: "Garage AP"
+      value_template: '{% if is_state("device_tracker.garageap", "home") %}Online{% else %}Offline{% endif %}'
       icon_template: >-
-        '{% if is_state("device_tracker.outdoorap", "home") %}
+        '{% if is_state("device_tracker.garageap", "home") %}
            mdi:access-point-network
          {% else %}
            mdi:access-point-network-off
