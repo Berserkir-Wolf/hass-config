@@ -4,6 +4,8 @@ products:
     name: Deta 360 Motion Sensor
   - id: 8mrw54ape8opgl69
     name: Deta Light Motion Sensor
+  - id: pxyhz90upglpoedu
+    name: Arlec MAL315HA
 primary_entity:
   entity: light
   dps:
@@ -12,15 +14,41 @@ primary_entity:
       name: effect
       mapping:
         - dps_val: mode_off
-          value: "Off"
+          value: "off"
         - dps_val: mode_auto
-          value: Auto
+          value: auto
         - dps_val: mode_on
-          value: "On"
+          value: "on"
     - id: 102
       type: boolean
       name: switch
+      readonly: true
 secondary_entities:
+  - entity: switch
+    name: Auto mode
+    icon: "mdi:motion-sensor"
+    dps:
+      - id: 101
+        type: string
+        name: switch
+        mapping:
+          - dps_val: mode_auto
+            value: on
+          - dps_val: mode_on
+            constraint: relay
+            conditions:
+              - dps_val: true
+                value: false
+          - dps_val: mode_off
+            constraint: relay
+            conditions:
+              - dps_val: false
+                value: false
+      - id: 102
+        name: relay
+        type: boolean
+        readonly: true
+        hidden: true
   - entity: number
     name: Sensitivity
     icon: "mdi:human-greeting-proximity"
@@ -31,7 +59,9 @@ secondary_entities:
         name: value
         range:
           min: 0
-          max: 100
+          max: 4
+        mapping:
+          - invert: true 
   - entity: number
     name: Duration
     icon: "mdi:camera-timer"
@@ -42,12 +72,12 @@ secondary_entities:
         name: value
         unit: s
         range:
-          min: 0
+          min: 10
           max: 900
         mapping:
           - step: 10
   - entity: number
-    name: Light Level
+    name: Light level
     icon: "mdi:theme-light-dark"
     category: config
     dps:
@@ -56,13 +86,14 @@ secondary_entities:
         name: value
         unit: lx
         range:
-          min: 3
-          max: 2000
-  - entity: binary_sensor
-    name: Detect
-    category: diagnostic
-    class: presence
+          min: 0
+          max: 3900
+        mapping:
+          - invert: true
+  - entity: switch
+    name: Auto reset
+    category: config
     dps:
       - id: 106
         type: boolean
-        name: sensor
+        name: switch

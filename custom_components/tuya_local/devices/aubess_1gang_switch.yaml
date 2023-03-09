@@ -50,12 +50,11 @@ secondary_entities:
   - entity: sensor
     name: Energy
     category: diagnostic
-    class: energy
     dps:
       - id: 20
         name: sensor
         type: integer
-        class: total_increasing
+        optional: true
         unit: Wh
   - entity: sensor
     name: Current
@@ -66,6 +65,7 @@ secondary_entities:
         name: sensor
         type: integer
         class: measurement
+        force: true
         unit: mA
   - entity: sensor
     name: Power
@@ -76,6 +76,7 @@ secondary_entities:
         name: sensor
         type: integer
         class: measurement
+        force: true
         unit: W
         mapping:
           - scale: 10
@@ -87,6 +88,7 @@ secondary_entities:
       - id: 23
         name: sensor
         type: integer
+        force: true
         class: measurement
         unit: V
         mapping:

@@ -1,18 +1,18 @@
 name: Avatto curtain switch
 primary_entity:
-  entity: select
-  icon: "mdi:curtains"
+  entity: cover
+  class: curtain
   dps:
     - id: 1
-      name: option
+      name: control
       type: string
       mapping:
         - dps_val: open
-          value: Open
+          value: open
         - dps_val: close
-          value: Close
+          value: close
         - dps_val: stop
-          value: Stop
+          value: stop
 secondary_entities:
   - entity: light
     category: config
