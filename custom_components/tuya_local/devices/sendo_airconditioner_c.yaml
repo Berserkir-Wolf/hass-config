@@ -80,18 +80,15 @@ secondary_entities:
   - entity: sensor
     name: Power consumption
     category: diagnostic
-    class: energy
     dps:
       - id: 28
         name: sensor
         type: integer
         unit: kWh
-        class: total_increasing
   - entity: switch
     name: Sleep
     category: config
     icon: "mdi:power-sleep"
-    category: config
     dps:
       - id: 102
         name: switch

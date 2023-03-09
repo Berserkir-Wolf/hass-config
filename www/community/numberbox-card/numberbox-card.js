@@ -1,6 +1,6 @@
 ((LitElement) => {
 
-console.info('NUMBERBOX_CARD 4.0');
+console.info('NUMBERBOX_CARD 4.7');
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 class NumberBox extends LitElement {
@@ -16,28 +16,31 @@ constructor() {
 
 render() {
 	if(!this.stateObj){return html`<ha-card>Missing:'${this.config.entity}'</ha-card>`;}
-	if( this.config.name === undefined && this.stateObj.attributes.friendly_name ){
-		this.config.name=this.stateObj.attributes.friendly_name;
+	
+	const k={name:'friendly_name',icon:'icon',picture:'entity_picture',unit:'unit_of_measurement'};
+	for(const n of Object.keys(k)) {
+		if( this.config[n] === undefined && this.stateObj.attributes[k[n]] ){
+			this.config[n]=this.stateObj.attributes[k[n]];
+		}
 	}
-	if( this.config.icon === undefined && this.stateObj.attributes.icon ){
-		this.config.icon=this.stateObj.attributes.icon;
+
+	const d={min:0,max:9e9,step:1,toggle:null};
+	for(const j of Object.keys(d)) {
+		const b=j+'_entity';
+		if(b in this.config && this.config[b] in this._hass.states ) {
+			const c=this._hass.states[this.config[b]]; this.old.t[this.config[b]]=c.last_updated
+			if( d[j]!==null && !isNaN(parseFloat(c.state)) ){this.config[j]=c.state;}
+			if(j=='toggle'){this.config[j]=c;}
+		}
+		if(d[j]!==null){
+			if(this.config[j] === undefined){ this.config[j]=this.stateObj.attributes[j];}
+			if(isNaN(parseFloat(this.config[j]))){this.config[j]=d[j];}
+		}
 	}
-	if( this.config.picture === undefined && this.stateObj.attributes.entity_picture ){
-		this.config.picture=this.stateObj.attributes.entity_picture;
-	}
-	if( this.config.unit === undefined && this.stateObj.attributes.unit_of_measurement ){
-		this.config.unit=this.stateObj.attributes.unit_of_measurement;
-	}
-	if(this.config.min === undefined){ this.config.min=this.stateObj.attributes.min;}
-	if(isNaN(parseFloat(this.config.min))){this.config.min=0;}
-	if(this.config.max === undefined){ this.config.max=this.stateObj.attributes.max;}
-	if(isNaN(parseFloat(this.config.max))){this.config.max=9e9;}
-	if('step_entity' in this.config && this.config.step_entity in this._hass.states && !isNaN(parseFloat(this._hass.states[this.config.step_entity].state))) {this.config.step=this._hass.states[this.config.step_entity].state;}
-	if(this.config.step === undefined){ this.config.step=this.stateObj.attributes.step;}
 
 	return html`
 	<ha-card class="${(!this.config.border)?'noborder':''}">
-		${(this.config.icon || this.config.picture || this.config.name) ? html`<div class="grid">
+		${(this.config.icon || this.config.picture || this.config.name) ? html`<div class="${this.config.toggle?'gridt':'grid'}">
 		<div class="grid-content grid-left" @click="${() => this.moreInfo()}">
 			${this.config.picture ? html`
 				<state-badge
@@ -51,7 +54,10 @@ render() {
 				${this.config.name?this.config.name:''}
 				${this.secondaryInfo()}
 			</div>
-		</div><div class="grid-content grid-right">${this.renderNum()}</div></div>` : this.renderNum() }
+		</div><div class="grid-content grid-right">${this.renderNum()}</div>
+		${this.config.toggle ? html`<div class="grid-content grid-right"><ha-entity-toggle .stateObj="${this.config.toggle}"
+		.hass="${this._hass}"></ha-entity-toggle></div>` : null }
+		</div>` : this.renderNum() }
 	</ha-card>
 `;
 }
@@ -168,24 +174,28 @@ setNumb(c){
 	if( v===false ){ v=this.timeNum(this.state); v=isNaN(v)?this.config.min:v;}
 	let adval=c?(v + Number(this.config.step)):(v - Number(this.config.step));
 	adval=Math.round(adval*1e9)/1e9;
-	if( adval <= Number(this.config.max) && adval >= Number(this.config.min)){
-		this.pending=(adval);
-		if(this.config.delay){
-			clearTimeout(this.bounce);
-			this.bounce = setTimeout(this.publishNum, this.config.delay, this);
-		}else{
-			this.publishNum(this);
+	if(adval==this.state){
+		clearTimeout(this.bounce);this.pending=false;
+	}else{
+		if(adval <= Number(this.config.max) && adval >= Number(this.config.min)){
+			this.pending = adval;
+			if(this.config.delay){
+				clearTimeout(this.bounce);
+				this.bounce = setTimeout(this.publishNum, this.config.delay, this);
+			}else{
+				this.publishNum(this);
+			}
 		}
 	}
 }
 
 publishNum(dhis){
+	if(dhis.pending===false){return;}
 	const s=dhis.config.service.split('.');
 	if(s[0]=='input_datetime'){dhis.pending=dhis.numTime(dhis.pending,1);}
 	const v={entity_id: dhis.config.entity, [dhis.config.param]: dhis.pending};
 	dhis.pending=false;
 	dhis.old.state=dhis.state;
-							  
 	dhis._hass.callService(s[0], s[1], v);
 }
 
@@ -197,6 +207,7 @@ niceNum(){
 		v=this.timeNum(v);
 		if(isNaN(v) && this.config.initial !== undefined){
 			v=Number(this.config.initial);
+			if(isNaN(v)){return this.config.initial;}
 		}
 	}	
 	let stp=Number(this.config.step) || 1;
@@ -209,10 +220,13 @@ niceNum(){
 		let t = this.numTime(fix,0,u);
 		return html`${t}`;
 	}
-	fix = new Intl.NumberFormat(
-			this._hass.language,
-			{maximumFractionDigits: stp, minimumFractionDigits: stp}
-		).format(Number(fix));
+	if(isNaN(Number(fix))){return fix;}
+	const lang={language:this._hass.language, comma_decimal:['en-US','en'], decimal_comma:['de','es','it'], space_comma:['fr','sv','cs'], system:undefined};
+	let g=this._hass.locale.number_format || 'language';
+	if(g!='none'){
+		g=lang.hasOwnProperty(g)? lang[g] : lang.language;
+		fix = new Intl.NumberFormat(g, {maximumFractionDigits: stp, minimumFractionDigits: stp}).format(Number(fix));
+	}
 	return u===false ? fix: html`${fix}<span class="cur-unit">${u}</span>`;
 }
 
@@ -266,6 +280,10 @@ static get styles() {
 	.grid {
 		display: grid;
 		grid-template-columns: repeat(2, auto);
+	}
+	.gridt {
+		display: grid;
+		grid-template-columns: repeat(3, auto);
 	}
 	.grid-content {
 		display: grid; align-items: center;
@@ -432,34 +450,34 @@ render() {
 	</ha-formfield>
 </div>
 <div class="side">
-	<paper-input
-		label="Secondary Info (Optional)"
-		.value="${this.config.secondary_info}"
-		.configValue="${'secondary_info'}"
-		@value-changed="${this.updVal}"
-	></paper-input>
-</div>
-<div class="side">
-	<paper-input
+	<ha-textfield
 		label="Name (Optional, false to hide)"
-		.value="${this.config.name}"
+		.value="${(this.config.name!==undefined)?this.config.name:''}"
 		.configValue="${'name'}"
-		@value-changed="${this.updVal}"
-	></paper-input>
+		@input="${this.updVal}"
+	></ha-textfield>
 	<ha-icon-picker
 		label="Icon (Optional, false to hide)"
-		.value="${this.config.icon}"
+		.value="${(this.config.icon!==undefined)?this.config.icon:''}"
 		.configValue="${'icon'}"
 		@value-changed="${this.updVal}"
 	></ha-icon-picker>
 </div>
 <div class="side">
-	<paper-input
+	<ha-textfield
+		label="Secondary Info (Optional)"
+		.value="${(this.config.secondary_info!==undefined)?this.config.secondary_info:''}"
+		.configValue="${'secondary_info'}"
+		@input="${this.updVal}"
+	></ha-textfield>
+</div>
+<div class="side">
+	<ha-textfield
 		label="Picture url(Optional, false to hide)"
-		.value="${this.config.picture}"
+		.value="${(this.config.picture!==undefined)?this.config.picture:''}"
 		.configValue="${'picture'}"
-		@value-changed="${this.updVal}"
-	></paper-input>
+		@input="${this.updVal}"
+	></ha-textfield>
 </div><div class="side">
 	<ha-icon-picker
 		label="Icon Plus [mdi:plus]"
@@ -475,53 +493,81 @@ render() {
 	></ha-icon-picker>
 </div>			
 <div class="side">
-	<paper-input
+	<ha-textfield
 		label="Initial [?]"
-		.value="${this.config.initial}"
+		.value="${(this.config.initial!==undefined)?this.config.initial:''}"
 		.configValue=${'initial'}
-		@value-changed=${this.updVal}
-	></paper-input>
-	<paper-input
+		@input=${this.updVal}
+		type="number"
+		step="any"
+	></ha-textfield>
+	<ha-textfield
 		label="Unit (false to hide)"
-		.value="${this.config.unit}"
+		.value="${(this.config.unit!==undefined)?this.config.unit:''}"
 		.configValue=${'unit'}
-		@value-changed=${this.updVal}
-	></paper-input>
+		@input=${this.updVal}
+	></ha-textfield>
 </div>
 <div class="side">
-	<paper-input
+	<ha-textfield
 		label="Update Delay [1000] ms"
-		.value="${this.config.delay}"
+		.value="${(this.config.delay!==undefined)?this.config.delay:''}"
 		.configValue=${'delay'}
-		@value-changed=${this.updVal}
-	></paper-input>
-	<paper-input
+		@input=${this.updVal}
+		type="number"
+	></ha-textfield>
+	<ha-textfield
 		label="Long press Speed [0] ms"
-		.value="${this.config.speed}"
+		.value="${(this.config.speed!==undefined)?this.config.speed:''}"
 		.configValue=${'speed'}
-		@value-changed=${this.updVal}
-	></paper-input>
+		@input=${this.updVal}
+		type="number"
+	></ha-textfield>
 </div>
 <div><b>Advanced Config</b> <a target="_blank" href="https://github.com/htmltiger/numberbox-card#configuration">more info</a></div>
 <div class="side">
-	<paper-input
+	<ha-textfield
 		label="min"
-		.value="${this.config.min}"
+		.value="${(this.config.min!==undefined)?this.config.min:''}"
 		.configValue="${'min'}"
-		@value-changed="${this.updVal}"
-	></paper-input>
-	<paper-input
+		@input="${this.updVal}"
+		type="number"
+		step="any"
+	></ha-textfield>
+	<ha-textfield
 		label="max"
-		.value="${this.config.max}"
+		.value="${(this.config.max!==undefined)?this.config.max:''}"
 		.configValue="${'max'}"
-		@value-changed="${this.updVal}"
-	></paper-input>
-	<paper-input
+		@input="${this.updVal}"
+		type="number"
+		step="any"
+	></ha-textfield>
+	<ha-textfield
 		label="step"
-		.value="${this.config.step}"
+		.value="${(this.config.step!==undefined)?this.config.step:''}"
 		.configValue="${'step'}"
-		@value-changed="${this.updVal}"
-	></paper-input>
+		@input="${this.updVal}"
+		type="number"
+		step="any"
+	></ha-textfield>
+</div>
+<div class="side">
+	<ha-entity-picker
+		label="min_entity"
+		.hass=${this.hass}
+		.value="${this.config.min_entity}"
+		.configValue=${'min_entity'}
+		@change="${this.updVal}"
+		allow-custom-entity
+	></ha-entity-picker>
+	<ha-entity-picker
+		label="max_entity"
+		.hass=${this.hass}
+		.value="${this.config.max_entity}"
+		.configValue=${'max_entity'}
+		@change="${this.updVal}"
+		allow-custom-entity
+	></ha-entity-picker>
 </div>
 <div class="side">
 	<ha-entity-picker
@@ -533,6 +579,16 @@ render() {
 		allow-custom-entity
 	></ha-entity-picker>
 	<ha-entity-picker
+		label="toggle_entity"
+		.hass=${this.hass}
+		.value="${this.config.toggle_entity}"
+		.configValue=${'toggle_entity'}
+		@change="${this.updVal}"
+		allow-custom-entity
+	></ha-entity-picker>
+</div>
+<div class="side">
+	<ha-entity-picker
 		label="moreinfo"
 		.hass=${this.hass}
 		.value="${this.config.moreinfo}"
@@ -542,24 +598,24 @@ render() {
 	></ha-entity-picker>
 </div>
 <div class="side">
-	<paper-input
+	<ha-textfield
 		label="service"
-		.value="${this.config.service}"
+		.value="${(this.config.service!==undefined)?this.config.service:''}"
 		.configValue="${'service'}"
-		@value-changed="${this.updVal}"
-	></paper-input>
-	<paper-input
+		@input="${this.updVal}"
+	></ha-textfield>
+	<ha-textfield
 		label="param"
-		.value="${this.config.param}"
+		.value="${(this.config.param!==undefined)?this.config.param:''}"
 		.configValue="${'param'}"
-		@value-changed="${this.updVal}"
-	></paper-input>
-	<paper-input
+		@input="${this.updVal}"
+	></ha-textfield>
+	<ha-textfield
 		label="state"
-		.value="${this.config.state}"
+		.value="${(this.config.state!==undefined)?this.config.state:''}"
 		.configValue="${'state'}"
-		@value-changed="${this.updVal}"
-	></paper-input>
+		@input="${this.updVal}"
+	></ha-textfield>
 </div>
 
 `;
@@ -576,7 +632,12 @@ updVal(v) {
 		if (target.value === '') {
 			try{delete this.config[target.configValue];}catch(e){}
 		} else {
-		if (target.value === 'false') {target.value = false;}
+			const reg = new RegExp(/^-?\d*\.?\d+$/);
+			if (target.value === 'false') {
+				target.value = false;
+			}else if(reg.test(target.value)){
+				target.value=Number(target.value);
+			}
 			this.config = {
 				...this.config,
 				[target.configValue]: target.checked !== undefined ? target.checked : target.value,

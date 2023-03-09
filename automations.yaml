@@ -6,9 +6,12 @@
     platform: state
     to: home
   condition:
-  - condition: state
-    entity_id: person.dyson_parkes
-    state: not_home
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: person.dyson_parkes
+      state: home
+    alias: Confirm Dyson is out
   action:
   - data:
       message: Kirstyn just arrived
@@ -18,7 +21,6 @@
       message: Kirstyn just arrived
       title: Kirstyn's Home
     service: notify.mobile_app_bnet_a74
-  initial_state: 'off'
   mode: single
 - id: '1597613199016'
   alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
@@ -100,7 +102,7 @@
   - delay: '5'
   - service: shell_command.commit_lovelace
     data: {}
-  initial_state: 'off'
+  initial_state: false
   mode: single
 - id: '1605335470308'
   alias: Notification - SWMBO home and away
@@ -168,7 +170,7 @@
   - service: shell_command.install_extra_packages
     data: {}
   mode: single
-  initial_state: 'off'
+  initial_state: false
 - id: '1611959876984'
   alias: Notification - BTC Value
   description: Notify me if BTC goes above a certain value
@@ -276,7 +278,7 @@
   - choose:
     - conditions:
       - condition: state
-        entity_id: media_player.lounge_amp_2
+        entity_id: media_player.lounge_amp_3
         state: 'off'
       sequence:
       - service: switch.turn_off
@@ -286,7 +288,7 @@
     - conditions:
       - condition: state
         state: standby
-        entity_id: media_player.lounge_amp_2
+        entity_id: media_player.lounge_amp_3
       sequence:
       - service: switch.turn_off
         target:
@@ -296,6 +298,7 @@
       - condition: state
         entity_id: media_player.lounge_amp_3
         state: idle
+        enabled: true
       sequence:
       - service: switch.turn_off
         target:
@@ -326,7 +329,7 @@
       title: Kirstyn's gone
     service: notify.mobile_app_bnet_a74
   mode: single
-  initial_state: 'off'
+  initial_state: false
 - id: '1638231245218'
   alias: Notification - HACS Updates Available
   description: ''
@@ -434,7 +437,7 @@
       media_content_type: music
       media_content_id: /media/Music
   mode: single
-  initial_state: 'off'
+  initial_state: false
 - id: '1650799270361'
   alias: Doppler - Audio
   description: ''
@@ -629,12 +632,41 @@
     after: 08:00:00
     alias: Not nighttime
   action:
-  - service: notify.alexa_media_lounge_dot
+  - service: notify.alexa_media_dyson_s_echo_dot
     data:
       data:
         type: tts
-        target: media_player.lounge_dot
+        target: media_player.dyson_s_echo_dot
       message: The printer has run out of paper
     alias: Printer status via lounge dot
+    enabled: true
+  mode: single
+- id: '1670119294104'
+  alias: Notification - Kettle boiled
+  description: Talks through the speakers to notify if the jug has boiled
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.kettle_temperature
+    above: 98
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+  condition:
+  - condition: state
+    entity_id: input_boolean.silent_mode
+    state: 'off'
+  - condition: time
+    before: '23:00:00'
+    after: 08:00:00
+    alias: Not nighttime
+  action:
+  - service: notify.alexa_media_dyson_s_echo_dot
+    data:
+      data:
+        type: tts
+        target: media_player.dyson_s_echo_dot
+      message: The kettle has finished boiling
+    alias: Jug boiled
     enabled: true
   mode: single

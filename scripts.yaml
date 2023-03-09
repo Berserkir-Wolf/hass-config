@@ -1,0 +1,12 @@
+toggle_mute:
+  mode: parallel
+  fields:
+    media_player:
+      description: Media Player that will be mute or unmuted
+      example: media_player.media_room
+  sequence:
+    - service: media_player.volume_mute
+      target:
+        entity_id: "{{ media_player }}"
+      data:
+        is_volume_muted: "{{ not state_attr(media_player , 'is_volume_muted') }}"

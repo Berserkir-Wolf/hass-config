@@ -27,6 +27,7 @@ primary_entity:
     - id: 4
       type: string
       name: direction_control
+      optional: true
       mapping:
         - dps_val: forward
           value: forward
@@ -65,6 +66,7 @@ primary_entity:
     - id: 13
       type: boolean
       name: locate
+      optional: true
     - id: 15
       type: string
       name: clean_record
@@ -88,8 +90,12 @@ primary_entity:
           value: land_check
         - dps_val: 64
           value: collision
+        - dps_val: 512
+          value: low_battery
         - dps_val: 1024
           value: stuck
+        - dps_val: 262144
+          value: switched_off
     - id: 19
       type: string
       name: map_parameter
@@ -142,6 +148,7 @@ secondary_entities:
   - entity: sensor
     name: Clean time
     category: diagnostic
+    class: duration
     icon: "mdi:clock-outline"
     dps:
       - id: 17

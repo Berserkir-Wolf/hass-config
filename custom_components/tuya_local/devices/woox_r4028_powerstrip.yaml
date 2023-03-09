@@ -1,7 +1,7 @@
 name: 3 outlet + USB powerstrip
 primary_entity:
   entity: switch
-  name: outlet 1
+  name: Outlet 1
   class: outlet
   dps:
     - id: 1

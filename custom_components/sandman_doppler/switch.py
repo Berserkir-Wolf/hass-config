@@ -250,7 +250,7 @@ class DopplerAlarmSwitch(CoordinatorEntity[DopplerDataUpdateCoordinator], Switch
 
     @property
     def is_on(self) -> bool | None:
-        return self.alarm.enabled
+        return True if self.alarm.status=="set" or self.alarm.status == "snoozed" or self.alarm.status=="active" else False
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
@@ -259,8 +259,8 @@ class DopplerAlarmSwitch(CoordinatorEntity[DopplerDataUpdateCoordinator], Switch
 
     async def _async_update_alarm_status(self, enabled: bool) -> None:
         """Update the alarm status."""
-        self.alarm.enabled = enabled
-        await self.device.update_alarms([self.alarm])
+        self.alarm.status = "set" if enabled == True else "unarmed"
+        await self.device.update_alarm(self.alarm.id, self.alarm)
         self.async_write_ha_state()
 
     async_turn_on = functools.partialmethod(_async_update_alarm_status, True)

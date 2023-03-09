@@ -2,4 +2,4 @@
 discovery: false
 switch:
   - host: !secret subwoofer_switch_ip
-  - host: !secret heater_switch_ip
+  - host: !secret smart_switch_ip

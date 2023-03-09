@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import timedelta
+from datetime import timedelta, time
 import functools
 import logging
 from typing import Any
@@ -18,6 +18,7 @@ from doppyler.const import (
     ATTR_GAP,
     ATTR_ID,
     ATTR_LOCATION,
+    ATTR_MODE,
     ATTR_NAME,
     ATTR_NUMBER,
     ATTR_RAINBOW,
@@ -28,6 +29,7 @@ from doppyler.const import (
     ATTR_SPEED,
     ATTR_TEXT,
     ATTR_VOLUME,
+    ATTR_STATUS,
 )
 from doppyler.model.alarm import Alarm, AlarmSource, RepeatDayOfWeek
 from doppyler.model.color import Color
@@ -35,6 +37,7 @@ from doppyler.model.doppler import Doppler
 from doppyler.model.light_bar import Direction, LightBarDisplayEffect, Mode, Sparkle
 from doppyler.model.main_display_text import MainDisplayText
 from doppyler.model.mini_display_number import MiniDisplayNumber
+from doppyler.model.rainbow import RainbowConfiguration, RainbowMode
 import voluptuous as vol
 
 from homeassistant.const import ATTR_AREA_ID, ATTR_DEVICE_ID, ATTR_ENTITY_ID, ATTR_TIME
@@ -57,9 +60,11 @@ from .const import (
     SERVICE_ACTIVATE_LIGHT_BAR_SWEEP,
     SERVICE_ADD_ALARM,
     SERVICE_DELETE_ALARM,
+    SERVICE_UPDATE_ALARM,
     SERVICE_SET_MAIN_DISPLAY_TEXT,
     SERVICE_SET_MINI_DISPLAY_NUMBER,
     SERVICE_SET_WEATHER_LOCATION,
+    SERVICE_SET_RAINBOW_MODE,
 )
 
 SCAN_INTERVAL = timedelta(seconds=60)
@@ -99,7 +104,7 @@ LIGHT_BAR_SET_SCHEMA = LIGHT_BAR_BLINK_SCHEMA = LIGHT_BAR_BASE_SCHEMA.extend(
 
 async def call_doppyler_api_across_devices(
     devices: set[Doppler], func_name: str, *args, **kwargs
-) -> None:
+) -> Any:
     """Call Doppyler API across all devices."""
     results = await asyncio.gather(
         *(getattr(device, func_name)(*args, **kwargs) for device in devices),
@@ -114,7 +119,8 @@ async def call_doppyler_api_across_devices(
         if len(lines) > 1:
             lines.insert(0, f"{len(errors)} error(s):")
         raise HomeAssistantError("\n".join(lines))
-
+    return results
+    
 
 def _validate_colors(data: dict[str, Any]) -> dict[str, Any]:
     """Validate colors in service call dict."""
@@ -226,7 +232,7 @@ class DopplerServices:
                     vol.Required(ATTR_VOLUME): vol.All(
                         vol.Coerce(int), vol.Range(1, 100)
                     ),
-                    vol.Required(ATTR_ENABLED): cv.boolean,
+                    vol.Required(ATTR_STATUS): cv.string,
                     vol.Required(ATTR_SOUND): cv.string,
                 }
             ),
@@ -237,6 +243,18 @@ class DopplerServices:
             SERVICE_DELETE_ALARM,
             self.handle_delete_alarm,
             schema=self._expand_schema({vol.Required(ATTR_ID): vol.Coerce(int)}),
+        )
+
+        self.hass.services.async_register(
+            DOMAIN,
+            SERVICE_UPDATE_ALARM,
+            self.handle_update_alarm,
+            schema=self._expand_schema(
+                {
+                    vol.Required(ATTR_ID): vol.Coerce(int),
+                    vol.Required(ATTR_STATUS): vol.Coerce(str),
+                }
+            ),
         )
 
         self.hass.services.async_register(
@@ -347,18 +365,34 @@ class DopplerServices:
                 )
             ),
         )
+        self.hass.services.async_register(
+            DOMAIN,
+            SERVICE_SET_RAINBOW_MODE,
+            self.handle_set_rainbow_mode,
+            schema=self._expand_schema(
+                {
+                    vol.Required(ATTR_SPEED): vol.All(
+                        vol.Coerce(int), vol.Range(min=0, max=255)
+                    ),
+                    vol.Required(ATTR_MODE): vol.Coerce(RainbowMode),
+                }
+            ),
+        )
 
     async def handle_set_weather_location(self, call: ServiceCall) -> None:
         """Handle set_weather_location service."""
         data = call.data.copy()
         devices: set[Doppler] = data.pop(ATTR_DEVICES)
         _LOGGER.debug("Called set_weather_location service, sending %s", data)
-        call_doppyler_api_across_devices(devices, "set_weather_configuration", **data)
+        await call_doppyler_api_across_devices(
+            devices, "set_weather_configuration", **data
+        )
 
     async def handle_add_alarm(self, call: ServiceCall) -> None:
         """Handle add_alarm service."""
         data = call.data.copy()
         devices: set[Doppler] = data.pop(ATTR_DEVICES)
+        _LOGGER.warning(f"data is {data}")
         alarm = Alarm(**data, src=AlarmSource.APP)
         _LOGGER.debug("Called add_alarm service, sending %s", alarm)
         await call_doppyler_api_across_devices(devices, "add_alarm", alarm)
@@ -369,6 +403,17 @@ class DopplerServices:
         devices: set[Doppler] = data.pop(ATTR_DEVICES)
         _LOGGER.debug("Called delete_alarm service for id %s", data[ATTR_ID])
         await call_doppyler_api_across_devices(devices, "delete_alarm", data[ATTR_ID])
+
+    async def handle_update_alarm(self, call: ServiceCall) -> None:
+        """Handle update_alarm service."""
+        data = call.data.copy()
+        devices: set[Doppler] = data.pop(ATTR_DEVICES)
+        alarms: dict[Alarm] = {}
+        for device in devices:
+            alarms[device]=await getattr(device, "get_all_alarms")()
+            alarm=alarms[device][data[ATTR_ID]]
+            alarm.status=data[ATTR_STATUS]
+            await getattr(device,"update_alarm")(data[ATTR_ID],alarm) 
 
     async def handle_set_main_display(self, call: ServiceCall) -> None:
         """Handle set_main_display service."""
@@ -395,3 +440,11 @@ class DopplerServices:
             "Called activate_light_bar_%s service, sending %s", mode.value, lbde
         )
         await call_doppyler_api_across_devices(devices, "set_light_bar_effect", lbde)
+
+    async def handle_set_rainbow_mode(self, call: ServiceCall) -> None:
+        """Handle set rainbow mode"""
+        data = call.data.copy()
+        devices: set[Doppler] = data.pop(ATTR_DEVICES)
+        rbc = RainbowConfiguration(**data)
+        _LOGGER.debug("Called set_rainbow_mode service, sending %s", rbc)
+        await call_doppyler_api_across_devices(devices, "set_rainbow_mode", rbc)

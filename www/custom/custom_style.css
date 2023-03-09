@@ -1,0 +1,4 @@
+:root {
+    --state-icon-active-color: #fdd835;
+    --paper-item-icon-active-color: var(--state-icon-active-color);
+  }
