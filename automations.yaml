@@ -21,7 +21,6 @@
       message: Kirstyn just arrived
       title: Kirstyn's Home
     service: notify.mobile_app_bnet_a74
-  initial_state: false
   mode: single
 - id: '1597613199016'
   alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
@@ -279,7 +278,7 @@
   - choose:
     - conditions:
       - condition: state
-        entity_id: media_player.lounge_amp_2
+        entity_id: media_player.lounge_amp_3
         state: 'off'
       sequence:
       - service: switch.turn_off
@@ -289,7 +288,7 @@
     - conditions:
       - condition: state
         state: standby
-        entity_id: media_player.lounge_amp_2
+        entity_id: media_player.lounge_amp_3
       sequence:
       - service: switch.turn_off
         target:
@@ -299,6 +298,7 @@
       - condition: state
         entity_id: media_player.lounge_amp_3
         state: idle
+        enabled: true
       sequence:
       - service: switch.turn_off
         target:
