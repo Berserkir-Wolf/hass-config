@@ -1,0 +1,6 @@
+# This file generates the extra sensors for The smart switches
+- platform: template
+  sensors:
+    approximate_cost:
+      value_template: "${{ (((states('sensor.the_plug_total_consumption'))|float) * ('0.1779'|float))|round(3) }}"
+      friendly_name: "Approximate Cost"
