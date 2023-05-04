@@ -1,0 +1,26 @@
+substitutions:
+
+###### CHANGE ME START ######
+
+  device_name: "devpanel" 
+  wifi_ssid: "Berserkir-Net"
+  wifi_password: "b3rs3rk1r"
+
+  nextion_update_url: "http://192.168.10.23:8123/local/nspanel_us.tft" # URL to local tft File
+#  nextion_update_url: "https://raw.githubusercontent.com/Blackymas/NSPanel_HA_Blueprint/main/nspanel_us.tft" # URL to Github
+
+##### CHANGE ME END #####
+
+
+
+##### DO NOT CHANGE ANYTHING! #####
+
+packages:
+  ##### download esphome code from Github
+  remote_package:
+    url: https://github.com/Blackymas/NSPanel_HA_Blueprint
+    ref: main
+    files: [nspanel_esphome.yaml]
+    refresh: 300s
+
+##### DO NOT CHANGE ANYTHING! #####
