@@ -130,9 +130,13 @@
   description: A silly little automation to have HAss wish me happy birthday
   trigger:
   - platform: state
-    entity_id: sensor.birthday_me
+    entity_id:
+    - sensor.birthday_me
     to: '0'
-    for: '"07:00:00"'
+    for:
+      hours: 7
+      minutes: 0
+      seconds: 0
   condition:
   - condition: state
     entity_id: input_boolean.silent_mode
@@ -670,3 +674,18 @@
     alias: Jug boiled
     enabled: true
   mode: single
+- id: '1679630068333'
+  alias: 1-NSPanel Configuration
+  description: ''
+  use_blueprint:
+    path: Blackymas/nspanel_blueprint.yaml
+    input:
+      language: ENG
+      nspanel_name: devpanel
+      delay: 4
+      weather: AccuWeather
+      weather_entity: weather.home
+      left_button_entity: light.office_light
+      left_button_name: Light
+      right_button_entity: light.office_lamp
+      right_button_name: Lamp
