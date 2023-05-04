@@ -17,15 +17,6 @@ secondary_entities:
       - id: 7
         type: boolean
         name: button
-  - entity: switch
-    deprecated: button.filter_replaced
-    name: Filter replaced
-    icon: "mdi:air-filter"
-    category: config
-    dps:
-      - id: 7
-        type: boolean
-        name: switch
   - entity: button
     name: Pump cleaned
     icon: "mdi:pump"
@@ -43,6 +34,9 @@ secondary_entities:
         type: integer
         name: sensor
         precision: 0
+        range:
+          min: 0
+          max: 43200
         mapping:
           - scale: 1440 # minutes => days
             invert: true
@@ -56,6 +50,9 @@ secondary_entities:
         type: integer
         name: sensor
         precision: 0
+        range:
+          min: 0
+          max: 86400
         mapping:
           - scale: 1440
             invert: true
