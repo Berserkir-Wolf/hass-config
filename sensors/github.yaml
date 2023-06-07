@@ -1,10 +1,11 @@
 ###########################################
 # Github
 ###########################################
-  - platform: github
-    access_token: !secret hacs_token
-    repositories:
-      - path: 'Berserkir-Wolf/hass-config'
-        name: hass-repo
-      - path: 'Ombi-app/Ombi.Docs'
-        name: ombi-docs
+#  - platform: github
+#    access_token: !secret hacs_token
+#    repositories:
+#      - path: 'Berserkir-Wolf/hass-config'
+#        name: hass-repo
+#      - path: 'Ombi-app/Ombi.Docs'
+#        name: ombi-docs
+## This integration has been moved to the UI. Starting to get frustrated at the number of things this happens with.
