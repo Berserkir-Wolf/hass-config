@@ -580,6 +580,22 @@
           entity_id: media_player.lounge_amp_2
         data:
           volume_level: 0.335
+    - conditions:
+      - condition: state
+        entity_id: media_player.lounge_amp_2
+        attribute: media_title
+        state: TV
+        for:
+          hours: 0
+          minutes: 0
+          seconds: 0
+        alias: TV
+      sequence:
+      - service: media_player.volume_set
+        target:
+          entity_id: media_player.lounge_amp_2
+        data:
+          volume_level: 0.27
     default: []
   mode: single
 - id: '1665709420254'
