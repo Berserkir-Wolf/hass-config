@@ -11,8 +11,6 @@ default_config:
 ## Simple Components
 # Used for geolocation functions.
 map:
-# Provides the default weather functions
-met:
 # Used for sunrise/sunset times.
 sun:
 # Allows for remote WOL of network devices.
