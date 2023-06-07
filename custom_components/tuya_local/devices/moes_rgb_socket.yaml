@@ -20,7 +20,7 @@ secondary_entities:
           - dps_val: white
             value: white
           - dps_val: colour
-            value: rgbw
+            value: hs
           - dps_val: scene
             value: Scene
           - dps_val: scene_1
@@ -82,6 +82,7 @@ secondary_entities:
       - id: 102
         type: integer
         name: value
+        optional: true
         unit: min
         range:
           min: 0
@@ -98,7 +99,6 @@ secondary_entities:
         name: sensor
         type: integer
         class: measurement
-        force: true
         unit: mA
   - entity: sensor
     name: Power
@@ -109,7 +109,6 @@ secondary_entities:
         name: sensor
         type: integer
         class: measurement
-        force: true
         unit: W
         mapping:
           - scale: 10
@@ -122,7 +121,6 @@ secondary_entities:
         name: sensor
         type: integer
         class: measurement
-        force: true
         unit: V
         mapping:
           - scale: 10

@@ -293,6 +293,17 @@ different than the DP value from the Tuya protocol.  Normally it will be used
 with `dps_val` to map from one value to another. It could also be used at top
 level to override all values, but I can't imagine a useful purpose for that.
 
+### `hidden`
+
+*Optional, default=false*
+
+When set to true, the mapping value is hidden from the list of all values.
+This can be used for items that should not be available for selection by the
+user but you still want to map for feedback coming from the device.  For
+example, some devices have a "Manual" mode, which is automatically selected
+when adjustments are made to other settings, but should not be available as
+an explicit mode for the user to select.
+
 ### `scale`
 
 *Optional, default=1.*
@@ -553,8 +564,8 @@ Humidifer can also cover dehumidifiers (use class to specify which).
     will be mapped so the minimum corresponds to 153 mireds (6500K), and max to 500 (2000K).
 - **rgbhsv** (optional, hex): a dp to control the color of the light, using encoded RGB and HSV values.  The `format` field names recognized for decoding this field are `r`, `g`, `b`, `h`, `s`, `v`.
 - **color_mode** (optional, mapping of strings): a dp to control which mode to use if the light supports multiple modes.
-    Special values: `white, color_temp, rgbw, hs, xy, rgb, rgbww`, others will be treated as effects,
-	Note: only white, color_temp and rgbw are currently supported, others listed above are reserved and may be implemented in future when the need arises.
+    Special values: `white, color_temp, hs, xy, rgb, rgbw, rgbww`, others will be treated as effects,
+	Note: only white, color_temp and hs are currently supported, others listed above are reserved and may be implemented in future when the need arises.
     If no `color_mode` dp is available, a single supported color mode will be
     calculated based on which of the above dps are available.
 - **effect** (optional, mapping of strings): a dp to control effects / presets supported by the light.
