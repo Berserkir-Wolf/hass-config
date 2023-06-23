@@ -1,0 +1,5 @@
+- platform: template
+  sensors:
+    sunweather:
+      friendly_name: Combined Sun and Weather state
+      value_template: "{{ (states('sun.sun')) }}-{{ (states('weather.home')) }}"
