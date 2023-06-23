@@ -151,6 +151,35 @@
                     }
                 }
             }
+        },
+        "humidifier": {
+            "dehumidifier": {
+                "state_attributes": {
+                    "mode": {
+                        "state": {
+                            "laundry": "Dry clothes",
+                            "purify": "Purify"
+                        }
+                    }
+                }
+            }
+        },
+        "fan": {
+            "fan_with_presets": {
+                "state_attributes": {
+                    "preset_mode": {
+                        "state": {
+                            "normal": "Normal",
+                            "nature": "Natural",
+                            "sleep": "Sleep",
+                            "fresh": "Fresh",
+                            "smart": "Smart",
+                            "strong": "Strong",
+                            "off": "Off"
+                        }
+                    }
+                }
+            }
         }
     }
 }

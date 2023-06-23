@@ -80,6 +80,15 @@ def _equal_or_in(value1, values2):
         return value1 == values2
 
 
+def _remove_duplicates(seq):
+    """Remove dulicates from seq, maintaining order."""
+    if not seq:
+        return []
+    seen = set()
+    adder = seen.add
+    return [x for x in seq if not (x in seen or adder(x))]
+
+
 class TuyaDeviceConfig:
     """Representation of a device config for Tuya Local devices."""
 
@@ -490,7 +499,7 @@ class TuyaDpsConfig:
                     val = c_val
                     break
         _LOGGER.debug("%s values: %s", self.name, val)
-        return list(set(val)) if val else []
+        return _remove_duplicates(val)
 
     @property
     def default(self):
@@ -689,6 +698,12 @@ class TuyaDpsConfig:
         for m in self._config.get("mapping", {}):
             if "dps_val" not in m:
                 default = m
+            # The following avoids further matching on the above case
+            # and in the null mapping case, which is intended to be
+            # a one-way map to prevent the entity showing as unavailable
+            # when no value is being reported by the device.
+            if m.get("dps_val") is None:
+                continue
             if "value" in m and str(m["value"]) == str(value):
                 return m
             if (

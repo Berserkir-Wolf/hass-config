@@ -30,15 +30,18 @@ class TuyaLocalLock(TuyaLocalEntity, LockEntity):
           device (TuyaLocalDevice): The device API instance.
           config (TuyaEntityConfig): The configuration for this entity.
         """
+        super().__init__()
         dps_map = self._init_begin(device, config)
         self._lock_dp = dps_map.pop("lock", None)
         self._unlock_fp_dp = dps_map.pop("unlock_fingerprint", None)
         self._unlock_pw_dp = dps_map.pop("unlock_password", None)
         self._unlock_tmppw_dp = dps_map.pop("unlock_temp_pwd", None)
         self._unlock_dynpw_dp = dps_map.pop("unlock_dynamic_pwd", None)
+        self._unlock_offlinepw_dp = dps_map.pop("unlock_offline_pwd", None)
         self._unlock_card_dp = dps_map.pop("unlock_card", None)
         self._unlock_app_dp = dps_map.pop("unlock_app", None)
         self._unlock_key_dp = dps_map.pop("unlock_key", None)
+        self._unlock_ble_dp = dps_map.pop("unlock_ble", None)
         self._req_unlock_dp = dps_map.pop("request_unlock", None)
         self._approve_unlock_dp = dps_map.pop("approve_unlock", None)
         self._req_intercom_dp = dps_map.pop("request_intercom", None)
@@ -57,10 +60,12 @@ class TuyaLocalLock(TuyaLocalEntity, LockEntity):
                 self._unlock_card_dp,
                 self._unlock_dynpw_dp,
                 self._unlock_fp_dp,
+                self._unlock_offlinepw_dp,
                 self._unlock_pw_dp,
                 self._unlock_tmppw_dp,
                 self._unlock_app_dp,
                 self._unlock_key_dp,
+                self._unlock_ble_dp,
             ):
                 if d:
                     if d.get_value(self._device):
@@ -87,10 +92,12 @@ class TuyaLocalLock(TuyaLocalEntity, LockEntity):
     def changed_by(self):
         for dp, desc in {
             self._unlock_app_dp: "App",
+            self._unlock_ble_dp: "Bluetooth",
             self._unlock_card_dp: "Card",
             self._unlock_dynpw_dp: "Dynamic Password",
             self._unlock_fp_dp: "Finger",
             self._unlock_key_dp: "Key",
+            self._unlock_offlinepw_dp: "Offline Password",
             self._unlock_pw_dp: "Password",
             self._unlock_tmppw_dp: "Temporary Password",
         }.items():
