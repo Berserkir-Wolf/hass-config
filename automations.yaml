@@ -705,3 +705,20 @@
       left_button_name: Light
       right_button_entity: light.office_lamp
       right_button_name: Lamp
+- id: '1688357078253'
+  alias: Garage Lights (Switch toggle all)
+  description: Allows the bottom switch on the garage panel to toggle all lights in
+    the area.
+  trigger:
+  - platform: device
+    device_id: 06ba335d596e242b91bb5ffd677c8d0e
+    domain: homekit_controller
+    type: button4
+    subtype: single_press
+  condition: []
+  action:
+  - service: light.toggle
+    data: {}
+    target:
+      area_id: garage
+  mode: single
