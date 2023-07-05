@@ -1,7 +1,8 @@
 # Configure a default setup of Home Assistant (frontend, api, etc)
 # This gets used for a recovery boot
 default_config:
-  http: # This tells Hass that it should still accept reverse proxy info when it does a recovery boot.
+  # This tells Hass that it should still accept reverse proxy info when it does a recovery boot.
+  http:
     use_x_forwarded_for: true
     trusted_proxies:
       - !secret server_1_ip
@@ -66,7 +67,6 @@ ombi: !include includes/ombi.yaml
 #panel_custom: !include includes/custom_sidebar.yaml
 recorder: !include includes/recorder.yaml
 shell_command: !include includes/shell_commands.yaml
-tplink: !include includes/tplink.yaml
 
 # Root includes (these files do not handle being moved at all - some are edited by the system itself)
 automation: !include automations.yaml
@@ -83,3 +83,4 @@ scene: !include scenes.yaml
 #nzbget: !include includes/nzbget.yaml
 #pi_hole: !include includes/communica_pihole.yaml
 #spotify: !include includes/spotify.yaml #Deprecated 2022.08
+#tplink: !include includes/tplink.yaml #Now configured via UI 2023.07.1
