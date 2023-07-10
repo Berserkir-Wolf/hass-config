@@ -4,7 +4,7 @@ animated_background:
   views:
   - config:
       default_url: https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4
-      entity: weather.home
+      entity: weather.openweathermap
       state_url:
         clear-night:
         - https://cdn.flixel.com/flixel/x9dr8caygivq5secll7i.hd.mp4
@@ -83,9 +83,10 @@ views:
       type: horizontal-stack
     - cards:
       - color_type: card
-        entity: light.bedroom
+        entity: light.bedroom_light
         hold_action:
           action: more-info
+        name: Bedroom
         size: 30px
         tap_action:
           action: toggle
@@ -95,11 +96,12 @@ views:
           action:
           - data:
               brightness_pct: 50
-              entity_id: light.lounge
+              entity_id: light.lounge_light
             service: light.toggle
-        entity: light.lounge
+        entity: light.lounge_light
         hold_action:
           action: more-info
+        name: Lounge
         size: 30px
         tap_action:
           action: toggle
@@ -139,12 +141,17 @@ views:
     type: custom:auto-entities
   - columns: 3
     entities:
-    - entity: light.bedroom
+    - entity: light.bedroom_light
       name: Light
       tap_action:
         action: toggle
     - entity: light.bedroom_lamp
       name: Lamp
+      tap_action:
+        action: toggle
+    - entity: switch.pcth01ha_switch_1
+      name: Heater
+      secondary_info: sensor.pcth01ha_temperature
       tap_action:
         action: toggle
     - entity: media_player.doppler
@@ -162,7 +169,7 @@ views:
         name: PC
         tap_action:
           action: toggle
-      - entity: light.lounge
+      - entity: light.lounge_light
         name: Light
         tap_action:
           action: toggle
@@ -194,6 +201,15 @@ views:
         name: PS4
       - entity: media_player.lounge_dot
       - entity: media_player.living_room_xbox
+      - entity: switch.smart_power_strip_socket_1
+        tap_action:
+          action: toggle
+      - entity: switch.smart_power_strip_socket_2
+        tap_action:
+          action: toggle
+      - entity: switch.smart_power_strip_socket_3
+        tap_action:
+          action: toggle
       show_icon: true
       show_name: true
       show_state: true
@@ -207,7 +223,7 @@ views:
       - entity: media_player.living_room_xbox
         state_not: 'off'
       - entity: media_player.living_room_xbox
-        state: unavailable
+        state_not: unavailable
       type: conditional
     - card:
         entity: media_player.lounge_tv
@@ -225,7 +241,7 @@ views:
         type: custom:mini-media-player
         volume_stateless: true
       conditions:
-      - entity: media_player.lounge_amp_2
+      - entity: media_player.lounge_amp_3
         state_not: 'off'
       type: conditional
     type: vertical-stack
@@ -321,7 +337,7 @@ views:
         tap_action:
           action: toggle
       compact: false
-      entity: light.hall_light
+      entity: light.hall_light_strip
       icon:
         show: true
         tap_action:
@@ -344,20 +360,20 @@ views:
     type: weather-forecast
   - cards:
     - entities:
-      - double_tap_action:
-          action: call-service
-          service: climate.set_hvac_mode
-          service_data:
-            entity_id: climate.kettle
-            hvac_mode: 'off'
-        entity: climate.kettle
-        name: Kettle
-        tap_action:
+      - entity: climate.kettle
+        hold_action:
           action: call-service
           service: climate.set_hvac_mode
           service_data:
             entity_id: climate.kettle
             hvac_mode: heat
+        name: Kettle
+        show_state: false
+        tap_action:
+          action: call-service
+          service: scene.turn_on
+          service_data:
+            entity_id: scene.boil_jug
       - entity: sensor.kettle_temperature
       show_icon: true
       show_name: true
@@ -367,17 +383,17 @@ views:
     type: vertical-stack
   - columns: 3
     entities:
-    - entity: switch.lifx_switch_6402d8_bench
+    - entity: light.garage_switch_bench
       icon: mdi:lightbulb
       name: Workbench
       tap_action:
         action: toggle
-    - entity: switch.lifx_switch_6402d8_overhead
+    - entity: light.garage_switch_overhead
       icon: mdi:lightbulb
       name: Overhead
       tap_action:
         action: toggle
-    - entity: switch.lifx_switch_6402d8_driveway
+    - entity: light.garage_switch_driveway
       icon: mdi:lightbulb
       name: Driveway
       tap_action:
@@ -399,27 +415,34 @@ views:
       - entity: light.spare_room_light
         tap_action:
           action: toggle
+      - entity: switch.biltong_rack
+        tap_action:
+          action: toggle
       show_icon: true
       show_name: true
       show_state: false
       state_color: true
       title: Spare Room
       type: glance
-    - entities:
+    - card:
+        entities:
+        - entity: sensor.biltong_rack_current
+          name: Current
+        - entity: sensor.biltong_rack_current_consumption
+          name: Current Consumption
+        - entity: sensor.biltong_rack_today_s_consumption
+          name: Today's Consumption
+        - entity: sensor.biltong_rack_total_consumption
+          name: Total Consumption
+        - entity: sensor.biltong_approximate_cost
+        - entity: sensor.biltong_rack_voltage
+          name: Voltage
+        show_header_toggle: false
+        type: entities
+      conditions:
       - entity: switch.biltong_rack
-      - entity: sensor.biltong_rack_current
-        name: Current
-      - entity: sensor.biltong_rack_current_consumption
-        name: Current Consumption
-      - entity: sensor.biltong_rack_today_s_consumption
-        name: Today's Consumption
-      - entity: sensor.biltong_rack_total_consumption
-        name: Total Consumption
-      - entity: sensor.biltong_approximate_cost
-      - entity: sensor.biltong_rack_voltage
-        name: Voltage
-      show_header_toggle: false
-      type: entities
+        state: 'on'
+      type: conditional
     - camera_image: camera.biltong
       camera_view: auto
       entity: switch.biltong_rack
