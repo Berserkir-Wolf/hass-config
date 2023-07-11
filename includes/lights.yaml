@@ -34,7 +34,7 @@
 - platform: group
   name: Lounge Lights
   entities:
-    - light.lounge
+    - light.lounge_light
     - light.lounge_lamp
 # Hall Lights
 - platform: group
@@ -45,7 +45,7 @@
 - platform: group
   name: Bedroom Lights
   entities:
-    - light.bedroom
+    - light.bedroom_light
     - light.bedroom_lamp
 # Office Lights
 - platform: group
