@@ -613,7 +613,7 @@
   - service: light.toggle
     data: {}
     target:
-      entity_id: light.bedroom
+      entity_id: light.bedroom_light
   mode: single
 - id: '1665709479272'
   alias: Doppler - Button 2
