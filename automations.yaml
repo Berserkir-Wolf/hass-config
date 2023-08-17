@@ -308,6 +308,16 @@
         target:
           entity_id: switch.subwoofer
         data: {}
+    - conditions:
+      - condition: state
+        entity_id: media_player.lounge_amp_3
+        state: unavailable
+        enabled: true
+      sequence:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.subwoofer
+        data: {}
     default:
     - service: switch.turn_on
       data: {}
