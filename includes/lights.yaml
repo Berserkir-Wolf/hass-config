@@ -23,6 +23,9 @@
     - light.lounge_light
     - light.office_light
     - light.hall_light_strip
+    - light.kitchen_switch_kitchen_light
+    - light.kitchen_switch_dining_light
+    - light.kitchen_switch_pantry_light
 # All Lamps
 - platform: group
   name: All Lamps
