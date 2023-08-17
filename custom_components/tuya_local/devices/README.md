@@ -166,7 +166,7 @@ Whether to persist the value if the device does not return it on every status
 refresh.  Some devices don't return every value on every status poll. In most
 cases, it is better to remember the previous value, but in some cases the
 dp is used to signal an event, so when it is next sent, it should trigger
-automations even if it is the same value as previously sent.  In that case 
+automations even if it is the same value as previously sent.  In that case
 the value needs to go to null in between when the device is not sending it.
 
 ### `force`
@@ -194,7 +194,7 @@ with by specifying the precision explicitly.
 
 ### `mapping`
 
-*Optional.*
+*Optional. Must be a list with each item starting with a `- ` (a dash and a space):*
 This can be used to define a list of additional rules that modify the DP
 to Home Assistant attribute mapping to something other than a one to one
 copy.
@@ -259,6 +259,12 @@ the device type.
 *Optional.*
 
 For base64 and hex types, this specifies how to extract a single numeric value from the binary data.  The value should be a hex bit mask (eg 00FF00 to extract the middle byte of a 3 byte value).  Unlike format, this does not require special handling in the entity platform, as only a single value is being extracted.
+
+### `endianness`
+
+*Optional, default="big"*
+
+For base64 and hex types, this specifies the endianess of the data and mask. Could be "big" or "little".
 
 ## Mapping Rules
 
@@ -564,7 +570,8 @@ Humidifer can also cover dehumidifiers (use class to specify which).
 
 - **switch** (optional, boolean): a dp to control the power state of the fan
 - **mode** (optional, mapping of strings): a dp to control preset modes of the device
-- **humidity** (optional, number):  a dp to control the target humidity of the device
+- **humidity** (optional, number): a dp to control the target humidity of the device
+- **current_humidity** (optional, number): a dp to report the current humidity measured by the device
 
 ### `light`
 - **switch** (optional, boolean): a dp to control the on/off state of the light
@@ -581,15 +588,25 @@ Humidifer can also cover dehumidifiers (use class to specify which).
    Note: If the light mixes in color modes in the same dp, `color_mode` should be used instead.  If the light contains both a separate dp for effects/scenes/presets and a mix of color_modes and effects (commonly scene and music) in the `color_mode` dp, then a separate select entity should be used for the dedicated dp to ensure the effects from `color_mode` are selectable.
 
 ### `lock`
+
+The unlock... dps below are normally integers, but can also be boolean, in which case
+no information will be available about which specific credential was used to unlock the lock.
+
 - **lock** (optional, boolean): a dp to control the lock state: true = locked, false = unlocked
 - **unlock_fingerprint** (optional, integer): a dp to identify the fingerprint used to unlock the lock.
 - **unlock_password** (optional, integer): a dp to identify the password used to unlock the lock.
 - **unlock_temp_pwd** (optional, integer): a dp to identify the temporary password used to unlock the lock.
 - **unlock_dynamic_pwd** (optional, integer): a dp to identify the dynamic password used to unlock the lock.
+- **unlock_offline_pwd** (optional, integer): a dp to identify the offline password used to unlock the lock.
 - **unlock_card** (optional, integer): a dp to identify the card used to unlock the lock.
 - **unlock_app** (optional, integer): a dp to identify the app used to unlock the lock.
+- **unlock_key** (optional, integer): a dp to identify the key used to unlock the lock.
+- **unlock_ble** (optional, integer): a dp to identify the BLE device used to unlock the lock.
+- **unlock_voice** (optional, integer): a dp to identify the voice assistant user used to unlock the lock.
 - **request_unlock** (optional, integer): a dp to signal that a request has been made to unlock, the value should indicate the time remaining for approval.
 - **approve_unlock** (optional, boolean): a dp to unlock the lock in response to a request.
+- **request_intercom** (optional, integer): a dp to signal that a request has been made via intercom to unlock, the value should indicate the time remaining for approval.
+- **approve_intercom** (optional, boolean): a dp to unlock the lock in response to an intercom request.
 - **jammed** (optional, boolean): a dp to signal that the lock is jammed.
 
 ### `number`
@@ -625,7 +642,6 @@ The value "off" will be used for turning off the siren, and will be filtered fro
 - **locate** (optional, boolean): a dp to trigger a locator beep on the vacuum.
 - **power** (optional, boolean): a dp to switch full system power on and off
 - **activate** (optional, boolean): a dp to start and pause the vacuum
-- **battery** (optional, number 0-100): a dp that reports the current battery level (%)
 - **direction_control** (optional, mapping of strings): a dp that is used for directional commands
     These are additional commands that are not part of **status**. They can be sent as general commands from HA.
 - **error** (optional, bitfield): a dp that reports error status.
@@ -643,7 +659,7 @@ The value "off" will be used for turning off the siren, and will be filtered fro
 
 - **min_temperature** (optional, number): a dp that reports the minimum temperature the water heater can be set to, in case this is not a fixed value.
 
-- **max_temperature** (optional, number): a dp that reports the maximum temperature the water heater can be set to, in case this is not a fixed value. 
+- **max_temperature** (optional, number): a dp that reports the maximum temperature the water heater can be set to, in case this is not a fixed value.
 
 - **away_mode** (optional, boolean): a dp to control whether the water heater is in away mode.
 

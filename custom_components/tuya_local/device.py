@@ -4,11 +4,10 @@ API for Tuya Local devices.
 
 import asyncio
 import logging
-import tinytuya
 from threading import Lock
 from time import time
 
-
+import tinytuya
 from homeassistant.const import (
     CONF_HOST,
     CONF_NAME,
@@ -19,17 +18,16 @@ from homeassistant.core import HomeAssistant
 
 from .const import (
     API_PROTOCOL_VERSIONS,
+    CONF_DEVICE_CID,
     CONF_DEVICE_ID,
     CONF_LOCAL_KEY,
     CONF_POLL_ONLY,
     CONF_PROTOCOL_VERSION,
     DOMAIN,
-    CONF_DEVICE_CID,
 )
 from .helpers.config import get_device_id
 from .helpers.device_config import possible_matches
 from .helpers.log import log_json
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -344,8 +342,8 @@ class TuyaLocalDevice(object):
             # that exists on the device to get anything back.  Most switch-like
             # devices have dp 1. Lights generally start from 20.  101 is where
             # vendor specific dps start.  Between them, these three should cover
-            # most devices.
-            self._api.set_dpsUsed({"1": None, "20": None, "101": None})
+            # most devices.  148 covers a doorbell device that didn't have these
+            self._api.set_dpsUsed({"1": None, "20": None, "101": None, "148": None})
             await self.async_refresh()
             cached_state = self._get_cached_state()
 

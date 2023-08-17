@@ -1,6 +1,10 @@
 """
 Setup for different kinds of Tuya light devices
 """
+import logging
+from struct import pack, unpack
+
+import homeassistant.util.color as color_util
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
     ATTR_COLOR_TEMP,
@@ -11,10 +15,6 @@ from homeassistant.components.light import (
     LightEntity,
     LightEntityFeature,
 )
-import homeassistant.util.color as color_util
-
-import logging
-from struct import pack, unpack
 
 from .device import TuyaLocalDevice
 from .helpers.config import async_tuya_setup_platform
@@ -195,7 +195,7 @@ class TuyaLocalLight(TuyaLocalEntity, LightEntity):
                 r = rgbhsv.get("r")
                 g = rgbhsv.get("g")
                 b = rgbhsv.get("b")
-                hs = color_util.color_rgb_to_hs(r, g, b)
+                hs = color_util.color_RGB_to_hs(r, g, b)
             return hs
 
     @property

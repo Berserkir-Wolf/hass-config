@@ -1,9 +1,9 @@
 """
 Setup for different kinds of Tuya alarm control panels.
 """
-from homeassistant.components.alarm_control_panel import (
-    AlarmControlPanelEntity,
-)
+import logging
+
+from homeassistant.components.alarm_control_panel import AlarmControlPanelEntity
 from homeassistant.components.alarm_control_panel.const import (
     AlarmControlPanelEntityFeature as Feature,
 )
@@ -16,8 +16,6 @@ from homeassistant.const import (
     STATE_ALARM_DISARMED,
     STATE_ALARM_TRIGGERED,
 )
-
-import logging
 
 from .device import TuyaLocalDevice
 from .helpers.config import async_tuya_setup_platform
@@ -55,7 +53,7 @@ class TuyaLocalAlarmControlPanel(TuyaLocalEntity, AlarmControlPanelEntity):
 
         self._init_end(dps_map)
         if not self._alarm_state_dp:
-            raise AttributeError(f"{config.name} is missing an alarm_state dp")
+            raise AttributeError(f"{config.config_id} is missing an alarm_state dp")
 
         alarm_states = self._alarm_state_dp.values(device)
         if STATE_ALARM_ARMED_HOME in alarm_states:
