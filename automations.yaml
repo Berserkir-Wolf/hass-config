@@ -13,10 +13,12 @@
       state: home
     alias: Confirm Dyson is out
   action:
-  - data:
+  - service: notify.html5_notifications
+    data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
-    service: notify.html5_notifications
+      ttl: 3600
+      priority: high
   - data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
@@ -731,4 +733,25 @@
     data: {}
     target:
       area_id: garage
+  mode: single
+- id: '1694906150147'
+  alias: Automation - empty the house
+  description: Turn off all lights when the last person leaves the house
+  trigger:
+  - platform: state
+    entity_id:
+    - zone.home
+    to: '0'
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition: []
+  action:
+  - service: light.turn_off
+    data: {}
+    target:
+      entity_id:
+      - light.all_lights
+      - light.all_lamps
   mode: single
