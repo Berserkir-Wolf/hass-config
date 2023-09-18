@@ -13,16 +13,14 @@
       state: home
     alias: Confirm Dyson is out
   action:
-  - service: notify.html5_notifications
-    data:
-      message: Kirstyn just arrived
-      title: Kirstyn's Home
-      ttl: 3600
-      priority: high
   - data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
     service: notify.mobile_app_bnet_a74
+  - service: notify.html5_notifications
+    data:
+      message: Kirstyn just arrived
+      title: Kirstyn's Home
   mode: single
 - id: '1597613199016'
   alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
