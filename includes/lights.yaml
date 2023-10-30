@@ -8,6 +8,7 @@
     - light.bedroom_light
     - light.lounge_light
     - light.office_light
+    - light.spare_room_light
     - light.hall_light_strip
     - light.kitchen_switch_kitchen_light
     - light.kitchen_switch_dining_light
@@ -15,6 +16,8 @@
     - light.garage_switch_bench
     - light.garage_switch_overhead
     - light.garage_switch_driveway
+    - light.lifx_switch_6c31d6_hall_front
+    - light.lifx_switch_6c31d6_porch
 # All Roof Lights
 - platform: group
   name: All Lights
@@ -23,6 +26,9 @@
     - light.lounge_light
     - light.office_light
     - light.hall_light_strip
+    - light.spare_room_light
+    - light.lifx_switch_6c31d6_hall_front
+    - light.lifx_switch_6c31d6_porch
     - light.kitchen_switch_kitchen_light
     - light.kitchen_switch_dining_light
     - light.kitchen_switch_pantry_light
