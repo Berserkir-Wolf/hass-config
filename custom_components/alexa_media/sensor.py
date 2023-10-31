@@ -64,7 +64,13 @@ async def async_setup_platform(hass, config, add_devices_callback, discovery_inf
         "Timer": TimerSensor,
         "Reminder": ReminderSensor,
     }
-    account = config[CONF_EMAIL] if config else discovery_info["config"][CONF_EMAIL]
+    account = None
+    if config:
+        account = config.get(CONF_EMAIL)
+    if account is None and discovery_info:
+        account = discovery_info.get("config", {}).get(CONF_EMAIL)
+    if account is None:
+        raise ConfigEntryNotReady
     include_filter = config.get(CONF_INCLUDE_DEVICES, [])
     exclude_filter = config.get(CONF_EXCLUDE_DEVICES, [])
     account_dict = hass.data[DATA_ALEXAMEDIA]["accounts"][account]
@@ -330,6 +336,8 @@ class AirQualitySensor(SensorEntity, CoordinatorEntity):
 class AlexaMediaNotificationSensor(SensorEntity):
     """Representation of Alexa Media sensors."""
 
+    _unrecorded_attributes = frozenset({"sorted_active", "sorted_all"})
+
     def __init__(
         self,
         client,
@@ -549,8 +557,8 @@ class AlexaMediaNotificationSensor(SensorEntity):
     def _handle_event(self, event):
         """Handle events.
 
-        This will update PUSH_NOTIFICATION_CHANGE events to see if the sensor
-        should be updated.
+        This will update PUSH_ACTIVITY or NOTIFICATION_UPDATE events to see if
+        the sensor should be updated.
         """
         try:
             if not self.enabled:
@@ -564,6 +572,13 @@ class AlexaMediaNotificationSensor(SensorEntity):
             ):
                 _LOGGER.debug("Updating sensor %s", self)
                 self.schedule_update_ha_state(True)
+        if "push_activity" in event:
+            if (
+                event["push_activity"]["key"]["serialNumber"]
+                == self._client.device_serial_number
+            ):
+                _LOGGER.debug("Updating sensor %s", self)
+                self.schedule_update_ha_state(True)
 
     @property
     def hidden(self):
@@ -573,9 +588,7 @@ class AlexaMediaNotificationSensor(SensorEntity):
     @property
     def should_poll(self):
         """Return the polling state."""
-        return not (
-            self.hass.data[DATA_ALEXAMEDIA]["accounts"][self._account]["websocket"]
-        )
+        return not (self.hass.data[DATA_ALEXAMEDIA]["accounts"][self._account]["http2"])
 
     def _process_state(self, value) -> Optional[datetime.datetime]:
         return dt.as_local(value[self._sensor_property]) if value else None

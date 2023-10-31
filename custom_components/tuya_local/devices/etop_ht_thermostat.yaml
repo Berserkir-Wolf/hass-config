@@ -4,6 +4,7 @@ products:
 
 primary_entity:
   entity: climate
+  translation_key: thermostat
   name: Thermostat
   dps:
     - id: 1
@@ -19,7 +20,7 @@ primary_entity:
       name: preset_mode
       mapping:
         - dps_val: manual
-          value: none
+          value: manual
           icon: "mdi:cursor-pointer"
         - dps_val: eco
           value: eco
@@ -98,6 +99,7 @@ secondary_entities:
   - entity: number
     name: "Setpoint min."
     category: config
+    class: temperature
     mode: slider
     dps:
       - id: 26
@@ -114,6 +116,7 @@ secondary_entities:
   - entity: number
     name: "Setpoint max."
     category: config
+    class: temperature
     mode: slider
     dps:
       - id: 19
@@ -151,7 +154,6 @@ secondary_entities:
       - id: 45
         type: bitfield
         name: sensor
-        readonly: true
         mapping:
           - dps_val: 0
             value: false

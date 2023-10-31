@@ -16,11 +16,11 @@
   - data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
-    service: notify.html5_notifications
-  - data:
+    service: notify.mobile_app_bnet_a74
+  - service: notify.html5_notifications
+    data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
-    service: notify.mobile_app_bnet_a74
   mode: single
 - id: '1597613199016'
   alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
@@ -130,9 +130,13 @@
   description: A silly little automation to have HAss wish me happy birthday
   trigger:
   - platform: state
-    entity_id: sensor.birthday_me
+    entity_id:
+    - sensor.birthday_me
     to: '0'
-    for: '"07:00:00"'
+    for:
+      hours: 7
+      minutes: 0
+      seconds: 0
   condition:
   - condition: state
     entity_id: input_boolean.silent_mode
@@ -298,6 +302,16 @@
       - condition: state
         entity_id: media_player.lounge_amp_3
         state: idle
+        enabled: true
+      sequence:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.subwoofer
+        data: {}
+    - conditions:
+      - condition: state
+        entity_id: media_player.lounge_amp_3
+        state: unavailable
         enabled: true
       sequence:
       - service: switch.turn_off
@@ -576,6 +590,22 @@
           entity_id: media_player.lounge_amp_2
         data:
           volume_level: 0.335
+    - conditions:
+      - condition: state
+        entity_id: media_player.lounge_amp_2
+        attribute: media_title
+        state: TV
+        for:
+          hours: 0
+          minutes: 0
+          seconds: 0
+        alias: TV
+      sequence:
+      - service: media_player.volume_set
+        target:
+          entity_id: media_player.lounge_amp_2
+        data:
+          volume_level: 0.27
     default: []
   mode: single
 - id: '1665709420254'
@@ -593,7 +623,7 @@
   - service: light.toggle
     data: {}
     target:
-      entity_id: light.bedroom
+      entity_id: light.bedroom_light
   mode: single
 - id: '1665709479272'
   alias: Doppler - Button 2
@@ -669,4 +699,57 @@
       message: The kettle has finished boiling
     alias: Jug boiled
     enabled: true
+  mode: single
+- id: '1679630068333'
+  alias: 1-NSPanel Configuration
+  description: ''
+  use_blueprint:
+    path: Blackymas/nspanel_blueprint.yaml
+    input:
+      language: ENG
+      nspanel_name: devpanel
+      delay: 4
+      weather: AccuWeather
+      weather_entity: weather.home
+      left_button_entity: light.office_light
+      left_button_name: Light
+      right_button_entity: light.office_lamp
+      right_button_name: Lamp
+- id: '1688357078253'
+  alias: Garage Lights (Switch toggle all)
+  description: Allows the bottom switch on the garage panel to toggle all lights in
+    the area.
+  trigger:
+  - platform: device
+    device_id: 06ba335d596e242b91bb5ffd677c8d0e
+    domain: homekit_controller
+    type: button4
+    subtype: single_press
+  condition: []
+  action:
+  - service: light.toggle
+    data: {}
+    target:
+      area_id: garage
+  mode: single
+- id: '1694906150147'
+  alias: Automation - empty the house
+  description: Turn off all lights when the last person leaves the house
+  trigger:
+  - platform: state
+    entity_id:
+    - zone.home
+    to: '0'
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition: []
+  action:
+  - service: light.turn_off
+    data: {}
+    target:
+      entity_id:
+      - light.all_lights
+      - light.all_lamps
   mode: single

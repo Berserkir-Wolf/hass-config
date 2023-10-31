@@ -5,16 +5,33 @@
     - light.bedroom_lamp
     - light.lounge_lamp
     - light.office_lamp
-    - light.bedroom
-    - light.lounge
+    - light.bedroom_light
+    - light.lounge_light
     - light.office_light
+    - light.spare_room_light
+    - light.hall_light_strip
+    - light.kitchen_switch_kitchen_light
+    - light.kitchen_switch_dining_light
+    - light.kitchen_switch_pantry_light
+    - light.garage_switch_bench
+    - light.garage_switch_overhead
+    - light.garage_switch_driveway
+    - light.lifx_switch_6c31d6_hall_front
+    - light.lifx_switch_6c31d6_porch
 # All Roof Lights
 - platform: group
   name: All Lights
   entities:
-    - light.bedroom
-    - light.lounge
+    - light.bedroom_light
+    - light.lounge_light
     - light.office_light
+    - light.hall_light_strip
+    - light.spare_room_light
+    - light.lifx_switch_6c31d6_hall_front
+    - light.lifx_switch_6c31d6_porch
+    - light.kitchen_switch_kitchen_light
+    - light.kitchen_switch_dining_light
+    - light.kitchen_switch_pantry_light
 # All Lamps
 - platform: group
   name: All Lamps
@@ -26,7 +43,7 @@
 - platform: group
   name: Lounge Lights
   entities:
-    - light.lounge
+    - light.lounge_light
     - light.lounge_lamp
 # Hall Lights
 - platform: group
@@ -37,7 +54,7 @@
 - platform: group
   name: Bedroom Lights
   entities:
-    - light.bedroom
+    - light.bedroom_light
     - light.bedroom_lamp
 # Office Lights
 - platform: group
@@ -45,3 +62,17 @@
   entities:
     - light.office_light
     - light.office_lamp
+# Kitchen Lights
+- platform: group
+  name: Kitchen Lights
+  entities:
+    - light.kitchen_switch_kitchen_light
+    - light.kitchen_switch_dining_light
+    - light.kitchen_switch_pantry_light
+# Garage Lights
+- platform: group
+  name: Garage Lights
+  entities:
+    - light.garage_switch_bench
+    - light.garage_switch_overhead
+    - light.garage_switch_driveway

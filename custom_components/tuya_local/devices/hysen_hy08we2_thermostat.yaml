@@ -1,6 +1,10 @@
-name: Hysen HY08WE-2 thermostat
+name: Hysen HY08WE thermostat
+products:
+  - id: gu4vs8axzlw5ptw3
+    name: HY08WE-4
 primary_entity:
   entity: climate
+  translation_key: thermostat
   dps:
     - id: 1
       type: boolean
@@ -34,13 +38,14 @@ primary_entity:
       name: preset_mode
       mapping:
         - dps_val: Manual
-          value: Manual
+          value: manual
         - dps_val: Program
-          value: Program
+          value: program
         - dps_val: TempProg
-          value: Program Override
+          value: temp_override
+          hidden: true
         - dps_val: Holiday
-          value: Holiday
+          value: away
     - id: 12
       type: bitfield
       name: fault_code
@@ -135,6 +140,7 @@ secondary_entities:
   - entity: number
     name: Holiday temperature
     category: config
+    class: temperature
     dps:
       - id: 105
         type: integer
@@ -213,6 +219,7 @@ secondary_entities:
             value: F
   - entity: number
     name: High temperature protection
+    class: temperature
     category: config
     dps:
       - id: 112
@@ -238,6 +245,7 @@ secondary_entities:
   - entity: number
     name: Low temperature protection
     category: config
+    class: temperature
     dps:
       - id: 113
         type: integer
@@ -262,6 +270,7 @@ secondary_entities:
   - entity: number
     name: High temperature limit
     category: config
+    class: temperature
     dps:
       - id: 114
         type: integer
@@ -286,6 +295,7 @@ secondary_entities:
   - entity: number
     name: Low temperature limit
     category: config
+    class: temperature
     dps:
       - id: 115
         type: integer

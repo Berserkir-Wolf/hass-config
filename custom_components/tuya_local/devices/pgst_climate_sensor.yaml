@@ -1,7 +1,6 @@
 name: Indoor temperature humidity
 primary_entity:
   entity: sensor
-  name: Temperature
   class: temperature
   dps:
     - id: 1
@@ -17,7 +16,6 @@ primary_entity:
       name: unknown_24
 secondary_entities:
   - entity: sensor
-    name: Humidity
     class: humidity
     dps:
       - id: 2
@@ -57,6 +55,7 @@ secondary_entities:
   - entity: number
     name: Maximum temperature
     category: config
+    class: temperature
     icon: "mdi:thermometer-chevron-up"
     dps:
       - id: 10
@@ -69,6 +68,7 @@ secondary_entities:
   - entity: number
     name: Minimum temperature
     category: config
+    class: temperature
     icon: "mdi:thermometer-chevron-down"
     dps:
       - id: 11
@@ -81,7 +81,7 @@ secondary_entities:
   - entity: number
     name: Maximum humidity
     category: config
-    icon: "mdi:water-percent"
+    class: humidity
     dps:
       - id: 12
         type: integer
@@ -93,7 +93,7 @@ secondary_entities:
   - entity: number
     name: Minimum humidity
     category: config
-    icon: "mdi:water-percent"
+    class: humidity
     dps:
       - id: 13
         type: integer

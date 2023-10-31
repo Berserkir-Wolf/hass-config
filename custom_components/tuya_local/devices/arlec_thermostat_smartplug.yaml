@@ -1,13 +1,14 @@
 name: Arlec thermostat smartplug
-product:
+products:
   - id: 1z2w76xtiawhxleg
     name: Arlec PCTH01HA
 primary_entity:
   entity: climate
   dps:
-    - id: 2
+    - id: 9
       type: boolean
       name: hvac_mode
+      icon: "mdi:thermostat-box"
       mapping:
         - dps_val: false
           value: "off"
@@ -21,6 +22,7 @@ primary_entity:
             - dps_val: "colding"
               value: "cool"
             - dps_val: "wet"
+              # There is no humidify/wet mode in HA climate platform
               value: "fan_only"
     - id: 7
       type: string
@@ -96,6 +98,13 @@ primary_entity:
       type: bitfield
       name: fault_code
 secondary_entities:
+  - entity: switch
+    name: Manual Switch
+    dps:
+      - id: 2
+        type: boolean
+        name: switch
+        icon: mdi:light-switch
   - entity: number
     name: Timer
     category: config
@@ -111,16 +120,7 @@ secondary_entities:
         mapping:
           - scale: 60
             step: 60
-  - entity: switch
-    name: Customize mode
-    icon: "mdi:tune"
-    category: config
-    dps:
-      - id: 9
-        type: boolean
-        name: switch
   - entity: sensor
-    name: Current
     class: current
     category: diagnostic
     dps:
@@ -134,7 +134,6 @@ secondary_entities:
         name: calibration
         optional: true
   - entity: sensor
-    name: Power
     class: power
     category: diagnostic
     dps:
@@ -163,7 +162,6 @@ secondary_entities:
         mapping:
           - scale: 10
   - entity: sensor
-    name: Voltage
     class: voltage
     category: diagnostic
     dps:
@@ -198,13 +196,21 @@ secondary_entities:
     dps:
       - id: 29
         type: integer
-        name: value 
+        name: value
         range:
           min: 10
           max: 90
         mapping:
           - scale: 10
             step: 5
+      - id: 20
+        type: string
+        name: unit
+        mapping:
+          - dps_val: c
+            value: C
+          - dps_val: f
+            value: F
   - entity: number
     name: Temperature correction
     category: config
@@ -216,14 +222,24 @@ secondary_entities:
         range:
           min: -9
           max: 9
+      - id: 20
+        type: string
+        name: unit
+        mapping:
+          - dps_val: c
+            value: C
+          - dps_val: f
+            value: F
   - entity: number
     name: Humidity hysteresis
     category: config
+    class: humidity
     icon: "mdi:arrow-collapse-vertical"
     dps:
       - id: 42
         type: integer
         name: value
+        unit: "%"
         range:
           min: 2
           max: 20
@@ -232,11 +248,13 @@ secondary_entities:
   - entity: number
     name: Humidity correction
     category: config
+    class: humidity
     icon: "mdi:pan-vertical"
     dps:
       - id: 47
         type: integer
         name: value
+        unit: "%"
         range:
           min: -9
           max: 9
@@ -268,9 +286,11 @@ secondary_entities:
       - id: 50
         type: bitfield
         name: sensor
+        optional: true
+        persist: false
         mapping:
           - dps_val: 0
             value: false
           - dps_val: null
-            value:: false
+            value: false
           - value: true

@@ -18,13 +18,13 @@ primary_entity:
         - dps_val: "auto"
           value: Program
         - dps_val: "eco"
-          value: ECO
+          value: eco
         - dps_val: "hot"
-          value: Comfort
+          value: comfort
         - dps_val: "cold"
-          value: Anti-Freeze
+          value: away
         - dps_val: "person_infrared_ray"
-          value: Sensor
+          value: activity
         - dps_val: "line_control"
           value: Pilot Wire
     - id: 16
@@ -110,7 +110,6 @@ secondary_entities:
   - entity: number
     name: Calibration offset
     category: config
-    icon: "mdi:thermometer"
     dps:
       - id: 27
         type: integer

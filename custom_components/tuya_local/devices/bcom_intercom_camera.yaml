@@ -12,6 +12,7 @@ primary_entity:
     - id: 136
       name: snapshot
       type: base64
+      persist: false
       optional: true
       mapping:
         - dps_val: ""
@@ -125,7 +126,6 @@ secondary_entities:
           - dps_val: "2"
             value: Continuous
   - entity: button
-    name: Restart
     category: config
     class: restart
     dps:
@@ -139,13 +139,6 @@ secondary_entities:
     dps:
       - id: 231
         type: string
-        name: sensor
-
-  
-            
-
-            
-
-            
+        name: sensor          
 
 

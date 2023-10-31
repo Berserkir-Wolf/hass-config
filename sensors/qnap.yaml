@@ -1,15 +1,17 @@
+# Deprecated with 2023.07.1
+# Now done via UI
 ## QNap NAS
-- platform: qnap
-  host: !secret repea_ip
-  username: !secret repea_username
-  password: !secret repea_password
-  monitored_conditions:
-    - status
-    - system_temp
-    - cpu_temp
-    - cpu_usage
-    - memory_percent_used
-    - network_link_status
-    - drive_smart_status
-    - drive_temp
-    - volume_percentage_used
+#- platform: qnap
+#  host: !secret repea_ip
+#  username: !secret repea_username
+#  password: !secret repea_password
+#  monitored_conditions:
+#    - status
+#    - system_temp
+#    - cpu_temp
+#    - cpu_usage
+#    - memory_percent_used
+#    - network_link_status
+#    - drive_smart_status
+#    - drive_temp
+#    - volume_percentage_used
