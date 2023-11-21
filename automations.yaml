@@ -259,14 +259,6 @@
       after: sunset
       alias: Confirm the sun's not up
     - condition: state
-      entity_id: zone.home
-      state: '0'
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      alias: Confirm nobody's been home for 5 minutes
-    - condition: state
       entity_id: input_boolean.silent_mode
       state: 'off'
   action:
