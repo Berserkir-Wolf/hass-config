@@ -1,0 +1,11 @@
+- name: all_mobiles
+  platform: group
+  services:
+    - service: mobile_app_bnet_a74
+    - service: mobile_app_g8142
+# When calling this service, you need the following additional info in your service call.
+# A service call would look like this:
+#service: notify.all_mobiles
+#data:
+#  message: This is a test message.
+#  title: Test Notification
