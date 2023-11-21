@@ -251,20 +251,37 @@
     entity_id: person.dyson_parkes
     zone: zone.home
     event: enter
-  condition: []
+  condition:
+  - condition: and
+    conditions:
+    - condition: sun
+      before: sunrise
+      after: sunset
+      alias: Confirm the sun's not up
+    - condition: state
+      entity_id: zone.home
+      state: '0'
+      for:
+        hours: 0
+        minutes: 5
+        seconds: 0
+      alias: Confirm nobody's been home for 5 minutes
+    - condition: state
+      entity_id: input_boolean.silent_mode
+      state: 'off'
   action:
   - service: light.turn_on
-    target:
-      area_id:
-      - ebfb50d4d7f14ca58bb27f3b2694979c
     data:
       transition: 2
+    target:
+      entity_id: light.lifx_switch_6c31d6_porch
   - service: light.turn_on
     data:
       transition: 2
       brightness_pct: 100
     target:
       entity_id: light.bedroom
+    enabled: false
   mode: single
 - id: '1623151855818'
   alias: Amp Power - Sync sub with amp
