@@ -1,0 +1,36 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "api": "Choose from Mobile (uses GPS location) or Public (choose a city)."
+        },
+        "data_description": {
+          "api": "Mobile requires API key. See https://github.com/ciejer/metservice-weather/issues/12 for details"
+        },
+        "description": "Set up MetService integration."
+      },
+      "public": {
+        "data": {
+          "location": "Choose your city",
+          "name": "Name of the integration"
+        },
+        "description": "Set up Public API for MetService integration."
+      },
+      "mobile": {
+        "data": {
+          "api_key": "Mobile requires API key. ",
+          "name": "Name of the integration"
+        },
+        "data_description": {
+          "api_key": "See https://github.com/ciejer/metservice-weather/issues/12 for details"
+        },
+        "description": "Set up Mobile API for MetService integration."
+      }
+    },
+    "error": {
+      "invalid_api_key": "[%key:common::config_flow::error::invalid_api_key%]",
+      "unknown_error": "Unknown Error"
+    }
+  }
+}

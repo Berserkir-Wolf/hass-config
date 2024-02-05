@@ -152,7 +152,9 @@
   description: Remind me of upcoming birthdays
   trigger:
   - platform: state
-    entity_id: sensor.birthday_swmbo,sensor.birthday_me
+    entity_id:
+    - sensor.birthday_swmbo
+    - sensor.birthday_me
     to: '1'
   condition: []
   action:
@@ -258,14 +260,6 @@
       before: sunrise
       after: sunset
       alias: Confirm the sun's not up
-    - condition: state
-      entity_id: zone.home
-      state: '0'
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      alias: Confirm nobody's been home for 5 minutes
     - condition: state
       entity_id: input_boolean.silent_mode
       state: 'off'
@@ -579,12 +573,12 @@
       - condition: state
         entity_id: media_player.lounge_amp_2
         attribute: media_title
-        state: VIDEO 1
+        state: SA-CD/CD
         for:
           hours: 0
           minutes: 0
           seconds: 0
-        alias: Xbox SX (VIDEO 1)
+        alias: Xbox SX (SA-CD/CD)
       sequence:
       - service: media_player.volume_set
         target:
@@ -759,9 +753,15 @@
     to: '0'
     for:
       hours: 0
-      minutes: 5
+      minutes: 0
       seconds: 0
-  condition: []
+  condition:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: sensor.bnet_a74_wifi_connection
+      state: Berserkir-Net
+    alias: Confirm phone is not on home wifi
   action:
   - service: light.turn_off
     data: {}
