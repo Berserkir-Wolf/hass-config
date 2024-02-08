@@ -1,9 +1,9 @@
 """Electric Kiwi coordinators."""
+import asyncio
 from collections import OrderedDict
 from datetime import timedelta
 import logging
 
-import async_timeout
 from electrickiwi_api import ElectricKiwiApi
 from electrickiwi_api.exceptions import ApiException, AuthException
 from electrickiwi_api.model import AccountBalance, Hop, HopIntervals
@@ -15,38 +15,28 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 _LOGGER = logging.getLogger(__name__)
 
 ACCOUNT_SCAN_INTERVAL = timedelta(hours=6)
-HOP_SCAN_INTERVAL = timedelta(minutes=15)
+HOP_SCAN_INTERVAL = timedelta(minutes=20)
 
 
-class ElectricKiwiAccountDataCoordinator(DataUpdateCoordinator):
-    """ElectricKiwi Data object."""
+class ElectricKiwiAccountDataCoordinator(DataUpdateCoordinator[AccountBalance]):
+    """ElectricKiwi Account Data object."""
 
     def __init__(self, hass: HomeAssistant, ek_api: ElectricKiwiApi) -> None:
         """Initialize ElectricKiwiAccountDataCoordinator."""
         super().__init__(
             hass,
             _LOGGER,
-            # Name of the data. For logging purposes.
             name="Electric Kiwi Account Data",
-            # Polling interval. Will only be polled if there are subscribers.
             update_interval=ACCOUNT_SCAN_INTERVAL,
         )
         self._ek_api = ek_api
 
     async def _async_update_data(self) -> AccountBalance:
-        """Fetch data from API endpoint.
-
-        This is the place to pre-process the data to lookup tables
-        so entities can quickly look up their data.
-        """
+        """Fetch data from Account balance API endpoint."""
         try:
-            # Note: asyncio.TimeoutError and aiohttp.ClientError are already
-            # handled by the data update coordinator.
-            async with async_timeout.timeout(60):
+            async with asyncio.timeout(60):
                 return await self._ek_api.get_account_balance()
         except AuthException as auth_err:
-            # Raising ConfigEntryAuthFailed will cancel future updates
-            # and start a config flow with SOURCE_REAUTH (async_step_reauth)
             raise ConfigEntryAuthFailed from auth_err
         except ApiException as api_err:
             raise UpdateFailed(
@@ -55,7 +45,7 @@ class ElectricKiwiAccountDataCoordinator(DataUpdateCoordinator):
 
 
 class ElectricKiwiHOPDataCoordinator(DataUpdateCoordinator[Hop]):
-    """ElectricKiwi Data object."""
+    """ElectricKiwi HOP Data object."""
 
     def __init__(self, hass: HomeAssistant, ek_api: ElectricKiwiApi) -> None:
         """Initialize ElectricKiwiAccountDataCoordinator."""
@@ -98,7 +88,7 @@ class ElectricKiwiHOPDataCoordinator(DataUpdateCoordinator[Hop]):
         filters the intervals to remove ones that are not active
         """
         try:
-            async with async_timeout.timeout(60):
+            async with asyncio.timeout(60):
                 if self.hop_intervals is None:
                     hop_intervals: HopIntervals = await self._ek_api.get_hop_intervals()
                     hop_intervals.intervals = OrderedDict(
