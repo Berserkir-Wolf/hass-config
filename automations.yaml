@@ -17,10 +17,12 @@
       message: Kirstyn just arrived
       title: Kirstyn's Home
     service: notify.mobile_app_bnet_a74
+    alias: Mobile notification
   - service: notify.html5_notifications
     data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
+    alias: Browser notification
   mode: single
 - id: '1597613199016'
   alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
@@ -57,17 +59,20 @@
       message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
         }} is available.
       title: Update Available
-  - service: notify.discord
+    alias: Browser notification
+  - service: notify.homeassistant
     data:
       message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
         }} is available.
       title: Update Available!
       target:
       - '819351502640381952'
+    alias: Discord notification
   - service: notify.facebook_text
     data:
       message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
         }} is available.
+    alias: Facebook notification
   mode: single
 - id: '1603249243832'
   alias: Github - Commit Changes
@@ -177,29 +182,6 @@
     data: {}
   mode: single
   initial_state: false
-- id: '1611959876984'
-  alias: Notification - BTC Value
-  description: Notify me if BTC goes above a certain value
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.exchange_rate_1_btc
-    above: '85000'
-  condition:
-  - condition: not
-    conditions:
-    - condition: state
-      entity_id: input_boolean.silent_mode
-      state: 'on'
-  action:
-  - service: notify.mobile_app_g8142
-    data:
-      message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
-      title: BTC Value
-  - service: notify.discord
-    data:
-      message: BTC just went up to ${{ states.sensor.exchange_rate_1_btc.state }}
-      target: '819351502640381952'
-  mode: single
 - id: '1618826864131'
   alias: Notification - Welcome Home Sir
   description: ''
@@ -349,10 +331,12 @@
       message: 'Kirstyn just left '
       title: Kirstyn's gone
     service: notify.html5_notifications
+    alias: Browser notification
   - data:
       message: Kirstyn just left
       title: Kirstyn's gone
     service: notify.mobile_app_bnet_a74
+    alias: Mobile notification
   mode: single
   initial_state: false
 - id: '1638231245218'
@@ -378,7 +362,8 @@
       message: Updates available in {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs')
         | int > 1 %}s{% endif %} {% for repo in states.sensor.hacs.attributes.repositories
         %} {{ repo.name }} {% endfor %}
-  - service: notify.discord
+    alias: Facebook notification
+  - service: notify.homeassistant
     data:
       message: 'Updates available in {{ states(''sensor.hacs'') }} HACS repo{% if
         states(''sensor.hacs'') | int > 1 %}s{% endif %}\: {% for repo in states.sensor.hacs.attributes.repositories
@@ -387,6 +372,7 @@
       title: HACS Updates available
       target:
       - '819351502640381952'
+    alias: Discord notification
   mode: single
 - id: '1638232674502'
   alias: Notification - HACS Updates Installed
@@ -463,30 +449,6 @@
       media_content_id: /media/Music
   mode: single
   initial_state: false
-- id: '1650799270361'
-  alias: Doppler - Audio
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: input_button.alarm
-    to: 'on'
-  - platform: state
-    entity_id: input_button.alarm
-    to: 'off'
-  condition: []
-  action:
-  - service: media_player.select_source
-    data:
-      source: Doppler-f073b00a
-    target:
-      entity_id: media_player.spotify_sky_girl14
-  - service: media_player.play_media
-    data:
-      media_content_id: spotify:playlist:1ybvvEY140z6firMaSmopx
-      media_content_type: spotify://track
-    target:
-      entity_id: media_player.spotify_sky_girl14
-  mode: single
 - id: '1651206195438'
   alias: Notification - HAssOS Update Available
   description: ''
@@ -509,17 +471,20 @@
       message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
         'latest_version') }} is available.
       title: Update Available
-  - service: notify.discord
+    alias: Browser notification
+  - service: notify.homeassistant
     data:
       message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
         'latest_version') }} is available.
       title: Update Available!
       target:
       - '819351502640381952'
+    alias: Discord notification
   - service: notify.facebook_text
     data:
       message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
         'latest_version') }} is available.
+    alias: Facebook notification
   mode: single
 - id: '1655351847580'
   alias: Amp Volume - Change Input
