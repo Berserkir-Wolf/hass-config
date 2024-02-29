@@ -43,7 +43,6 @@ class ElectricKiwiAccountDataCoordinator(DataUpdateCoordinator[AccountBalance]):
                 f"Error communicating with EK API: {api_err}"
             ) from api_err
 
-
 class ElectricKiwiHOPDataCoordinator(DataUpdateCoordinator[Hop]):
     """ElectricKiwi HOP Data object."""
 
@@ -100,6 +99,31 @@ class ElectricKiwiHOPDataCoordinator(DataUpdateCoordinator[Hop]):
 
                     self.hop_intervals = hop_intervals
                 return await self._ek_api.get_hop()
+        except AuthException as auth_err:
+            raise ConfigEntryAuthFailed from auth_err
+        except ApiException as api_err:
+            raise UpdateFailed(
+                f"Error communicating with EK API: {api_err}"
+            ) from api_err
+
+class ElectricKiwiUsageDataCoordinator(DataUpdateCoordinator[AccountUsage]):
+    """ElectricKiwi Account Usage object."""
+
+    def __init__(self, hass: HomeAssistant, ek_api: ElectricKiwiApi) -> None:
+        """Initialize ElectricKiwiUsageDataCoordinator."""
+        super().__init__(
+            hass,
+            _LOGGER,
+            name="Electric Kiwi Usage Data",
+            update_interval=ACCOUNT_SCAN_INTERVAL,
+        )
+        self._ek_api = ek_api
+
+    async def _async_update_data(self) -> AccountUsage:
+        """Fetch data from Account Usage API endpoint."""
+        try:
+            async with asyncio.timeout(60):
+                return await self._ek_api.read_consumption_summary()
         except AuthException as auth_err:
             raise ConfigEntryAuthFailed from auth_err
         except ApiException as api_err:

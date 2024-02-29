@@ -40,6 +40,9 @@
       "total_current_balance": {
         "name": "Total current balance"
       },
+      "average_power_usage": {
+        "name": "Average power usage"
+      },
       "next_billing_date": {
         "name": "Next billing date"
       },
