@@ -140,12 +140,12 @@ views:
           action:
           - data:
               brightness_pct: 50
-              entity_id: light.laundry_switch_toilet_light
+              entity_id: light.laundry_lights
             service: light.toggle
-        entity: light.laundry_switch_toilet_light
+        entity: light.laundry_lights
         hold_action:
           action: more-info
-        name: Toilet
+        name: Laundry
         size: 30px
         tap_action:
           action: toggle
@@ -279,49 +279,62 @@ views:
       type: conditional
     type: vertical-stack
   - cards:
-    - columns: 2
-      entities:
+    - cards:
       - entity: light.kitchen_switch_kitchen_light
-        hold_action:
-          action: more-info
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
         tap_action:
           action: toggle
+        type: button
       - entity: light.kitchen_switch_dining_light
-        hold_action:
-          action: more-info
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
         tap_action:
           action: toggle
-      show_icon: true
-      show_name: true
-      show_state: true
-      title: Kitchen
-      type: glance
+        type: button
+      type: horizontal-stack
+    title: Kitchen
     type: vertical-stack
-  - entities:
+  - cards:
     - entity: light.kitchen_switch_pantry_light
       hold_action:
         action: more-info
+      icon_height: 30px
+      show_icon: true
+      show_name: true
+      show_state: false
       tap_action:
         action: toggle
-    - entity: sensor.kettle_temperature
-    - double_tap_action:
+      type: button
+    - entity: climate.kettle
+      hold_action:
         action: call-service
         service: climate.set_hvac_mode
         service_data:
           entity_id: climate.kettle
           hvac_mode: 'off'
-      entity: climate.kettle
-      hold_action:
-        action: more-info
-      name: Kettle
+      icon_height: 30px
+      show_icon: true
+      show_name: true
       show_state: false
       tap_action:
         action: call-service
         service: scene.turn_on
         service_data:
           entity_id: scene.boil_jug
+      type: button
+    - detail: 1
+      entity: sensor.kettle_temperature
+      graph: none
+      icon: mdi:water-thermometer
+      name: Kettle
+      type: sensor
     title: Pantry
-    type: glance
+    type: horizontal-stack
   - columns: 3
     entities:
     - entity: light.bedroom_light
@@ -493,46 +506,25 @@ views:
       type: horizontal-stack
     title: Laundry
     type: vertical-stack
-  - columns: 3
-    entities:
-    - entity: light.garage_switch_bench
-      name: Workbench
-      tap_action:
-        action: toggle
-    - entity: light.garage_switch_overhead
-      name: Overhead
-      tap_action:
-        action: toggle
-    - entity: light.garage_switch_driveway
-      name: Driveway
-      tap_action:
-        action: toggle
-    - entity: sensor.state_garageap
-      icon: mdi:access-point
-      name: Garage AP
-    - entity: media_player.garage_dot
-    - entity: media_player.garage_speaker
-    - entity: camera.garage_high
-    show_icon: true
-    show_name: true
-    show_state: true
-    state_color: true
-    title: Garage
-    type: glance
   - cards:
-    - entities:
+    - cards:
       - entity: light.spare_room_light
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
         tap_action:
           action: toggle
+        type: button
       - entity: switch.biltong_rack
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
         tap_action:
           action: toggle
-      show_icon: true
-      show_name: true
-      show_state: false
-      state_color: true
-      title: Spare Room
-      type: glance
+        type: button
+      type: horizontal-stack
     - card:
         entities:
         - entity: sensor.biltong_rack_current
@@ -562,6 +554,7 @@ views:
       tap_action:
         action: none
       type: picture-entity
+    title: Spare Room
     type: vertical-stack
   - cards:
     - columns: 4
