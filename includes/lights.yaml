@@ -18,6 +18,8 @@
     - light.garage_switch_driveway
     - light.lifx_switch_6c31d6_hall_front
     - light.lifx_switch_6c31d6_porch
+    - light.laundry_switch_laundry_light
+    - light.laundry_switch_toilet_light
 # All Roof Lights
 - platform: group
   name: All Lights
@@ -32,6 +34,8 @@
     - light.kitchen_switch_kitchen_light
     - light.kitchen_switch_dining_light
     - light.kitchen_switch_pantry_light
+    - light.laundry_switch_laundry_light
+    - light.laundry_switch_toilet_light
 # All Lamps
 - platform: group
   name: All Lamps
@@ -76,3 +80,9 @@
     - light.garage_switch_bench
     - light.garage_switch_overhead
     - light.garage_switch_driveway
+# Laundry Lights
+- platform: group
+  name: Laundry Lights
+  entities:
+    - light.laundry_switch_laundry_light
+    - light.laundry_switch_toilet_light
