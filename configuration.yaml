@@ -11,10 +11,13 @@ default_config:
 
 ## Simple Components
 # Used for geolocation functions.
-map:
+## Deprecated in 2024.04.00, integration now configurable via UI.
+#map:
+
 # Used for sunrise/sunset times.
 sun:
-# Allows for remote WOL of network devices.
+
+  # Allows for remote WOL of network devices.
 wake_on_lan:
 
 ## Complex Components
