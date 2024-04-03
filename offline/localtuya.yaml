@@ -1,4 +1,4 @@
-host: 192.168.1.x
+host: 192.168.10.x
 device_id: xxxxx
 local_key: xxxxx
 friendly_name: Tuya Device
