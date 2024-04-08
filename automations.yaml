@@ -734,4 +734,19 @@
       entity_id:
       - light.all_lights
       - light.all_lamps
+    alias: Turn off "All Lights" and "All Lamps"
+  - if:
+    - condition: template
+      value_template: '  {% if not is_state(''select.front_door_recording_mode'',
+        ''Detections'') %}true{% endif %}'
+      alias: Confirm if the Front Camera is not set to Motion
+    then:
+    - service: select.select_option
+      metadata: {}
+      data:
+        option: Detections
+      target:
+        entity_id: select.front_door_recording_mode
+      alias: Set Front Door Camera back to record on motion
+    alias: Set the Front Door camera to Motion if it's not
   mode: single
