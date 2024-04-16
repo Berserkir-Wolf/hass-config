@@ -750,3 +750,33 @@
       alias: Set Front Door Camera back to record on motion
     alias: Set the Front Door camera to Motion if it's not
   mode: single
+- id: '1713308537578'
+  alias: Notification - Motion
+  description: Send a notification if motion is detected by cameras and nobody is
+    home
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 4b8020c3a743f4a57e058fb2d8e87739
+    entity_id: 1ac1eaf9e3b055f0ae32cb5f4348b008
+    domain: binary_sensor
+    alias: Motion seen by front door camera
+  - type: motion
+    platform: device
+    device_id: 3767f0dd4723463ba3dd2a5d28a40396
+    entity_id: da889bbcac8acd6dd94656d2ee5b87b3
+    domain: binary_sensor
+    alias: Motion seen by back yard camera
+    enabled: false
+  condition:
+  - condition: state
+    entity_id: zone.home
+    state: '0'
+    alias: Confirm nobody is home
+  action:
+  - data:
+      message: Motion detected at Front Door
+      title: Motion Detected
+    service: notify.mobile_app_bnet_a74
+    alias: Notify Oppo A74
+  mode: single
