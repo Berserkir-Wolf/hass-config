@@ -21,7 +21,11 @@ primary_entity:
               hidden: true
             - dps_val: CF
               value: heat
-            - value: heat
+            - dps_val: [EC, AF]
+              value: heat
+              hidden: true
+            - dps_val: ST
+              value: "off"
               hidden: true
     - id: 2
       type: integer
@@ -81,16 +85,14 @@ primary_entity:
       name: custom_program
 secondary_entities:
   - entity: lock
-    name: Child lock
-    icon: "mdi:hand-back-right-off"
+    translation_key: child_lock
     category: config
     dps:
       - id: 7
         type: boolean
         name: lock
   - entity: select
-    name: Timer
-    icon: "mdi:timer"
+    translation_key: timer
     category: config
     dps:
       - id: 19
@@ -157,7 +159,6 @@ secondary_entities:
         name: sensor
         unit: min
   - entity: binary_sensor
-    name: Fault
     class: problem
     category: diagnostic
     dps:

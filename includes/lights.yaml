@@ -1,6 +1,7 @@
 # All Lights
 - platform: group
   name: Every Light
+  unique_id: light.every_light
   entities:
     - light.bedroom_lamp
     - light.lounge_lamp
@@ -18,9 +19,12 @@
     - light.garage_switch_driveway
     - light.lifx_switch_6c31d6_hall_front
     - light.lifx_switch_6c31d6_porch
+    - light.laundry_switch_laundry_light
+    - light.laundry_switch_toilet_light
 # All Roof Lights
 - platform: group
   name: All Lights
+  unique_id: light.all_lights
   entities:
     - light.bedroom_light
     - light.lounge_light
@@ -32,9 +36,12 @@
     - light.kitchen_switch_kitchen_light
     - light.kitchen_switch_dining_light
     - light.kitchen_switch_pantry_light
+    - light.laundry_switch_laundry_light
+    - light.laundry_switch_toilet_light
 # All Lamps
 - platform: group
   name: All Lamps
+  unique_id: light.all_lamps
   entities:
     - light.bedroom_lamp
     - light.lounge_lamp
@@ -42,29 +49,35 @@
 # Lounge Lights
 - platform: group
   name: Lounge Lights
+  unique_id: light.lounge_lights
   entities:
     - light.lounge_light
     - light.lounge_lamp
 # Hall Lights
 - platform: group
   name: Hall Lights
+  unique_id: light.hall_lights
   entities:
     - light.smart_rgb_light_strip
+    - light.lifx_switch_6c31d6_hall_front
 # Bedroom Lights
 - platform: group
   name: Bedroom Lights
+  unique_id: light.bedroom_lights
   entities:
     - light.bedroom_light
     - light.bedroom_lamp
 # Office Lights
 - platform: group
   name: Office Lights
+  unique_id: light.office_lights
   entities:
     - light.office_light
     - light.office_lamp
 # Kitchen Lights
 - platform: group
   name: Kitchen Lights
+  unique_id: light.kitchen_lights
   entities:
     - light.kitchen_switch_kitchen_light
     - light.kitchen_switch_dining_light
@@ -72,7 +85,15 @@
 # Garage Lights
 - platform: group
   name: Garage Lights
+  unique_id: light.garage_lights
   entities:
     - light.garage_switch_bench
     - light.garage_switch_overhead
     - light.garage_switch_driveway
+# Laundry Lights
+- platform: group
+  name: Laundry Lights
+  unique_id: light.laundry_lights
+  entities:
+    - light.laundry_switch_laundry_light
+    - light.laundry_switch_toilet_light

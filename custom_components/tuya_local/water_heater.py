@@ -1,6 +1,7 @@
 """
 Setup for different kinds of Tuya water heater devices
 """
+
 import logging
 
 from homeassistant.components.water_heater import (
@@ -36,7 +37,7 @@ def validate_temp_unit(unit):
     try:
         return UnitOfTemperature(unit)
     except ValueError:
-        return None
+        _LOGGER.warning("%s is not a valid temperature unit", unit)
 
 
 class TuyaLocalWaterHeater(TuyaLocalEntity, WaterHeaterEntity):
@@ -136,9 +137,8 @@ class TuyaLocalWaterHeater(TuyaLocalEntity, WaterHeaterEntity):
     @property
     def current_temperature(self):
         """Return the current temperature."""
-        if self._current_temperature_dps is None:
-            return None
-        return self._current_temperature_dps.get_value(self._device)
+        if self._current_temperature_dps:
+            return self._current_temperature_dps.get_value(self._device)
 
     @property
     def target_temperature(self):
@@ -214,7 +214,7 @@ class TuyaLocalWaterHeater(TuyaLocalEntity, WaterHeaterEntity):
 
         if self._temperature_dps:
             r = self._temperature_dps.range(self._device)
-            return r.get("min")
+            return r[0]
 
     @property
     def max_temp(self):
@@ -225,7 +225,7 @@ class TuyaLocalWaterHeater(TuyaLocalEntity, WaterHeaterEntity):
 
         if self._temperature_dps:
             r = self._temperature_dps.range(self._device)
-            return r.get("max")
+            return r[1]
 
     async def async_turn_on(self):
         """

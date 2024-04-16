@@ -70,14 +70,19 @@ views:
   cards:
   - cards:
     - cards:
-      - color_type: label-card
+      - color_type: card
         entity: light.all_lights
         name: Lights
         size: 30px
         type: custom:button-card
-      - color_type: label-card
+      - color_type: card
         entity: light.all_lamps
         name: Lamps
+        size: 30px
+        type: custom:button-card
+      - color_type: card
+        entity: light.lifx_switch_6c31d6_porch
+        name: Porch
         size: 30px
         type: custom:button-card
       type: horizontal-stack
@@ -87,6 +92,15 @@ views:
         hold_action:
           action: more-info
         name: Bedroom
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
+      - color_type: card
+        entity: light.kitchen_switch_kitchen_light
+        hold_action:
+          action: more-info
+        name: Kitchen
         size: 30px
         tap_action:
           action: toggle
@@ -121,6 +135,21 @@ views:
         tap_action:
           action: toggle
         type: custom:button-card
+      - color_type: card
+        double_tap_action:
+          action:
+          - data:
+              brightness_pct: 50
+              entity_id: light.laundry_lights
+            service: light.toggle
+        entity: light.laundry_lights
+        hold_action:
+          action: more-info
+        name: Laundry
+        size: 30px
+        tap_action:
+          action: toggle
+        type: custom:button-card
       type: horizontal-stack
     type: vertical-stack
     view_layout:
@@ -134,33 +163,13 @@ views:
       include:
       - entity_id: update.*
         state: 'on'
+      - entity_id: sensor.hacs
+        state: '! 0'
     show_empty: false
     sort:
       ignore_case: true
       method: none
     type: custom:auto-entities
-  - columns: 3
-    entities:
-    - entity: light.bedroom_light
-      name: Light
-      tap_action:
-        action: toggle
-    - entity: light.bedroom_lamp
-      name: Lamp
-      tap_action:
-        action: toggle
-    - entity: switch.pcth01ha_switch_1
-      name: Heater
-      secondary_info: sensor.pcth01ha_temperature
-      tap_action:
-        action: toggle
-    - entity: media_player.doppler
-    show_icon: true
-    show_name: true
-    show_state: true
-    state_color: true
-    title: Bedroom
-    type: glance
   - cards:
     - columns: 3
       entities:
@@ -177,7 +186,7 @@ views:
         name: Lamp
         tap_action:
           action: toggle
-      - entity: media_player.lounge_amp
+      - entity: media_player.lounge_dot
       - double_tap_action:
           action: call-service
           data:
@@ -197,10 +206,6 @@ views:
       - entity: switch.subwoofer
         tap_action:
           action: toggle
-      - entity: media_player.lounge_ps4
-        name: PS4
-      - entity: media_player.lounge_dot
-      - entity: media_player.living_room_xbox
       - entity: switch.smart_power_strip_socket_1
         tap_action:
           action: toggle
@@ -216,15 +221,6 @@ views:
       state_color: true
       title: Living Room
       type: glance
-    - card:
-        entity: media_player.living_room_xbox
-        type: media-control
-      conditions:
-      - entity: media_player.living_room_xbox
-        state_not: 'off'
-      - entity: media_player.living_room_xbox
-        state_not: unavailable
-      type: conditional
     - card:
         entity: media_player.lounge_tv
         type: media-control
@@ -243,8 +239,125 @@ views:
       conditions:
       - entity: media_player.lounge_amp_3
         state_not: 'off'
+      - entity: media_player.lounge_amp_3
+        state_not: unknown
+      - entity: media_player.lounge_amp_3
+        state_not: unavailable
+      type: conditional
+    - card:
+        entities:
+        - entity: media_player.lounge_ps4
+          name: PS4
+        - entity: switch.lounge_ps5_power
+        - entity: media_player.living_room_xbox
+        show_icon: true
+        show_name: true
+        show_state: true
+        state_color: true
+        type: glance
+      conditions:
+      - condition: state
+        entity: media_player.2020_2021_uhd_android_tv
+        state: 'on'
+      type: conditional
+    - card:
+        entity: media_player.living_room_xbox
+        type: media-control
+      conditions:
+      - entity: media_player.living_room_xbox
+        state_not: 'off'
+      - entity: media_player.living_room_xbox
+        state_not: unavailable
+      type: conditional
+    - card:
+        entity: sensor.lounge_ps5_activity
+        state_color: true
+        type: entity
+      conditions:
+      - entity: switch.lounge_ps5_power
+        state: 'on'
       type: conditional
     type: vertical-stack
+  - cards:
+    - cards:
+      - entity: light.kitchen_switch_kitchen_light
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
+        tap_action:
+          action: toggle
+        type: button
+      - entity: light.kitchen_switch_dining_light
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
+        tap_action:
+          action: toggle
+        type: button
+      type: horizontal-stack
+    title: Kitchen
+    type: vertical-stack
+  - cards:
+    - entity: light.kitchen_switch_pantry_light
+      hold_action:
+        action: more-info
+      icon_height: 30px
+      show_icon: true
+      show_name: true
+      show_state: false
+      tap_action:
+        action: toggle
+      type: button
+    - entity: climate.kettle
+      hold_action:
+        action: call-service
+        service: climate.set_hvac_mode
+        service_data:
+          entity_id: climate.kettle
+          hvac_mode: 'off'
+      icon_height: 30px
+      show_icon: true
+      show_name: true
+      show_state: false
+      tap_action:
+        action: call-service
+        service: scene.turn_on
+        service_data:
+          entity_id: scene.boil_jug
+      type: button
+    - detail: 1
+      entity: sensor.kettle_temperature
+      graph: none
+      icon: mdi:water-thermometer
+      name: Kettle
+      type: sensor
+    title: Pantry
+    type: horizontal-stack
+  - columns: 3
+    entities:
+    - entity: light.bedroom_light
+      name: Light
+      tap_action:
+        action: toggle
+    - entity: light.bedroom_lamp
+      name: Lamp
+      tap_action:
+        action: toggle
+    - entity: switch.bedroom_heater
+      name: Heater
+      secondary_info: sensor.bedroom_heater_temperature
+      tap_action:
+        action: toggle
+    - entity: media_player.doppler
+    - entity: sensor.bedroom_heater_temperature
+    show_icon: true
+    show_name: true
+    show_state: true
+    state_color: true
+    title: Bedroom
+    type: glance
   - cards:
     - columns: 3
       entities:
@@ -253,9 +366,9 @@ views:
         name: Gaming Rig
         tap_action:
           action: toggle
-      - entity: switch.wol_spare
-        icon: mdi:desktop-classic
-        name: Spare PC
+      - entity: switch.office_fan_manual_switch
+        icon: mdi:fan
+        name: Office Fan
         tap_action:
           action: toggle
       - entity: sensor.brother_mfc_9340cdw
@@ -317,113 +430,101 @@ views:
           action: toggle
       type: glance
     - card:
-        type: entities
-      filter:
-        include:
-        - entity_id: switch.preven_*
-        - entity_id: binary_sensor.preven*
-        - entity_id: sensor.preven_*
-      sort:
-        method: entity_id
-        numeric: true
-      type: custom:auto-entities
+        card:
+          type: entities
+        filter:
+          include:
+          - entity_id: switch.preven_*
+          - entity_id: binary_sensor.preven*
+          - entity_id: sensor.preven_*
+        sort:
+          method: entity_id
+          numeric: true
+        type: custom:auto-entities
+      conditions:
+      - condition: state
+        entity: light.office_lights
+        state: 'on'
+      type: conditional
     type: vertical-stack
   - cards:
-    - action_button:
-        icon: mdi:power
-        mode: toggle
-        show: true
-        show_spinner: true
-        tap_action:
-          action: toggle
-      compact: false
-      entity: light.hall_light_strip
-      icon:
-        show: true
-        tap_action:
-          action: more-info
-        use_state_color: true
-      show_name: true
-      show_state: true
-      slider:
-        background: gradient
-        direction: left-right
-        force_square: false
-        show_track: false
-        toggle_on_click: false
-        use_percentage_bg_opacity: true
-        use_state_color: true
-      type: custom:slider-button-card
-    title: Hallway
-    type: vertical-stack
-  - entity: weather.home
-    type: weather-forecast
-  - cards:
-    - entities:
-      - entity: climate.kettle
-        hold_action:
-          action: call-service
-          service: climate.set_hvac_mode
-          service_data:
-            entity_id: climate.kettle
-            hvac_mode: heat
-        name: Kettle
+    - cards:
+      - action_button:
+          icon: mdi:power
+          mode: toggle
+          show: true
+          show_spinner: true
+          tap_action:
+            action: toggle
+        compact: true
+        entity: light.hall_light_strip
+        icon:
+          show: true
+          tap_action:
+            action: more-info
+          use_state_color: true
+        show_name: true
+        show_state: true
+        slider:
+          background: gradient
+          direction: left-right
+          force_square: false
+          show_track: false
+          toggle_on_click: false
+          use_percentage_bg_opacity: true
+          use_state_color: true
+        type: custom:slider-button-card
+      - entity: light.lifx_switch_6c31d6_hall_front
+        icon_height: 30px
+        show_icon: true
+        show_name: true
         show_state: false
         tap_action:
-          action: call-service
-          service: scene.turn_on
-          service_data:
-            entity_id: scene.boil_jug
-      - entity: sensor.kettle_temperature
-      show_icon: true
-      show_name: true
-      show_state: true
-      title: Kitchen
-      type: glance
+          action: toggle
+        type: button
+      type: horizontal-stack
+    title: Hallway
     type: vertical-stack
-  - columns: 3
-    entities:
-    - entity: light.garage_switch_bench
-      icon: mdi:lightbulb
-      name: Workbench
-      tap_action:
-        action: toggle
-    - entity: light.garage_switch_overhead
-      icon: mdi:lightbulb
-      name: Overhead
-      tap_action:
-        action: toggle
-    - entity: light.garage_switch_driveway
-      icon: mdi:lightbulb
-      name: Driveway
-      tap_action:
-        action: toggle
-    - entity: sensor.state_garageap
-      icon: mdi:access-point
-      name: Garage AP
-    - entity: media_player.garage_dot
-    - entity: media_player.garage_speaker
-    - entity: camera.garage_high
-    show_icon: true
-    show_name: true
-    show_state: true
-    state_color: true
-    title: Garage
-    type: glance
   - cards:
-    - entities:
+    - cards:
+      - entity: light.laundry_switch_laundry_light
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
+        tap_action:
+          action: toggle
+        type: button
+      - entity: light.laundry_switch_toilet_light
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
+        tap_action:
+          action: toggle
+        type: button
+      type: horizontal-stack
+    title: Laundry
+    type: vertical-stack
+  - cards:
+    - cards:
       - entity: light.spare_room_light
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
         tap_action:
           action: toggle
+        type: button
       - entity: switch.biltong_rack
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
         tap_action:
           action: toggle
-      show_icon: true
-      show_name: true
-      show_state: false
-      state_color: true
-      title: Spare Room
-      type: glance
+        type: button
+      type: horizontal-stack
     - card:
         entities:
         - entity: sensor.biltong_rack_current
@@ -453,6 +554,48 @@ views:
       tap_action:
         action: none
       type: picture-entity
+    title: Spare Room
+    type: vertical-stack
+  - cards:
+    - columns: 4
+      entities:
+      - entity: light.garage_switch_bench
+        name: Workbench
+        tap_action:
+          action: toggle
+      - entity: light.garage_switch_overhead
+        name: Overhead
+        tap_action:
+          action: toggle
+      - entity: light.garage_switch_driveway
+        name: Driveway
+        tap_action:
+          action: toggle
+      - entity: camera.garage_high
+      show_icon: true
+      show_name: true
+      show_state: true
+      state_color: true
+      title: Garage
+      type: glance
+    - card:
+        entities:
+        - entity: sensor.state_garageap
+          icon: mdi:access-point
+          name: Garage AP
+        - entity: media_player.garage_dot
+        - entity: media_player.garage_speaker
+          name: Garage Soundbar
+        show_icon: true
+        show_name: true
+        show_state: true
+        state_color: true
+        type: glance
+      conditions:
+      - condition: state
+        entity: light.garage_lights
+        state: 'on'
+      type: conditional
     type: vertical-stack
   icon: mdi:home
   path: home
@@ -653,7 +796,8 @@ views:
         type: custom:secondaryinfo-entity-row
       type: entities
     - entities:
-      - entity: device_tracker.deskswitch
+      - entity: sensor.state_deskswitch
+        icon: mdi:lan-connect
       - entity: sensor.state_officeap
         icon: mdi:access-point-network
       - entity: sensor.state_loungeswitch
@@ -764,8 +908,8 @@ views:
     unique: false
   - cards:
     - entities:
-      - entity: sensor.sonarr_shows
       - entity: sensor.sonarr_upcoming
+      - entity: sensor.sonarr_queue
       show_header_toggle: false
       title: Sonarr
       type: entities
@@ -1476,9 +1620,8 @@ views:
     filter:
       include:
       - entity_id: sensor.repea*
-    sort: name
+    sort: domain
     type: custom:auto-entities
-    unique: false
   - cards:
     - entity: switch.wol_inevi
       icon_height: 30px
@@ -1491,15 +1634,63 @@ views:
     - card:
         type: entities
       filter:
+        exclude:
+        - state: unavailable
         include:
         - entity_id: update.inevi_*
         - entity_id: binary_sensor.inevi_*
         - entity_id: sensor.inevi_*
       sort:
-        method: entity_id
+        method: domain
         numeric: true
+        reverse: true
       type: custom:auto-entities
     title: TrueNAS - inevi.table.berserkir.net
+    type: vertical-stack
+  - cards:
+    - entity: switch.hass_chassis
+      icon_height: 30px
+      name: automa.table.berserkir.net
+      show_icon: true
+      show_name: true
+      tap_action:
+        action: more-info
+      type: button
+    - card:
+        type: entities
+      filter:
+        exclude:
+        - entity_id: sensor.hass_repo
+        - state: unavailable
+        include:
+        - entity_id: sensor.hass_*
+      sort:
+        method: domain
+        numeric: true
+      type: custom:auto-entities
+    title: HAss iPMI
+    type: vertical-stack
+  - cards:
+    - entity: switch.adap_chassis
+      icon_height: 30px
+      name: adap.table.berserkir.net
+      show_icon: true
+      show_name: true
+      tap_action:
+        action: more-info
+      type: button
+    - card:
+        type: entities
+      filter:
+        exclude:
+        - state: unavailable
+        include:
+        - entity_id: sensor.adap_*
+      sort:
+        method: domain
+        numeric: true
+      type: custom:auto-entities
+    title: Adap iPMI
     type: vertical-stack
   icon: mdi:nas
   path: nas
@@ -1642,6 +1833,13 @@ views:
       type: custom:uptime-card
     columns: 3
     type: grid
+  - card:
+      type: entities
+    filter:
+      exclude: []
+      include:
+      - integration: electric_kiwi
+    type: custom:auto-entities
   icon: mdi:shield-crown
   theme: Backend-selected
   title: Admin Tools

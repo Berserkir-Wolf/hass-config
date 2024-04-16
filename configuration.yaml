@@ -10,10 +10,9 @@ default_config:
       - !secret server_3_ip
 
 ## Simple Components
-# Used for geolocation functions.
-map:
 # Used for sunrise/sunset times.
 sun:
+
 # Allows for remote WOL of network devices.
 wake_on_lan:
 
@@ -33,6 +32,7 @@ homeassistant:
 tts:
   - platform: google_translate
     service_name: google_say
+
 # HTTP (sets allowed proxies, reverse proxy options)
 http:
   use_x_forwarded_for: true
@@ -40,11 +40,16 @@ http:
     - !secret server_1_ip
     - !secret server_2_ip
     - !secret server_3_ip
+
 ## Frontend config - sets up support for themes
 frontend:
   themes: !include_dir_merge_named themes
 
 ## Includes
+# Root includes (these files do not handle being moved at all - some are edited by the system itself)
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
 # All Files in Folder (save each type in the relevant directory)
 group: !include_dir_merge_list groups
 notify: !include_dir_merge_list notify
@@ -67,19 +72,15 @@ ombi: !include includes/ombi.yaml
 #panel_custom: !include includes/custom_sidebar.yaml
 recorder: !include includes/recorder.yaml
 shell_command: !include includes/shell_commands.yaml
-
-# Root includes (these files do not handle being moved at all - some are edited by the system itself)
-automation: !include automations.yaml
-script: !include scripts.yaml
-scene: !include scenes.yaml
 #################################################################
 ## Testing functions
 #camera: !include individuals/unifi_video.yaml
 #influxdb: !include individuals/influxdb.yaml #disabled for system load
-#
+
 #################################################################
 ## Deprecated YAML functions
 #google: !include includes/google.yaml ##Deprecated 2022.08
+#map: #Now configured via UI 2024.04.00
 #nzbget: !include includes/nzbget.yaml
 #pi_hole: !include includes/communica_pihole.yaml
 #spotify: !include includes/spotify.yaml #Deprecated 2022.08

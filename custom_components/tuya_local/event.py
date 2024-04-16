@@ -1,6 +1,7 @@
 """
 Implementation of Tuya events
 """
+
 import logging
 
 from homeassistant.components.event import EventDeviceClass, EventEntity
@@ -60,5 +61,5 @@ class TuyaLocalEvent(TuyaLocalEntity, EventEntity):
             if value is not None:
                 self._trigger_event(
                     value,
-                    self.extra_state_attributes(),
+                    self.extra_state_attributes,
                 )
