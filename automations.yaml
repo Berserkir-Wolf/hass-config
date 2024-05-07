@@ -74,26 +74,6 @@
         }} is available.
     alias: Facebook notification
   mode: single
-- id: '1603249243832'
-  alias: Github - Commit Changes
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: input_boolean.git_commit
-    from: 'off'
-    to: 'on'
-  condition: []
-  action:
-  - service: shell_command.commit_changes
-    data: {}
-  - service: input_text.set_value
-    data:
-      value: Committed from UI without a message
-    entity_id: input_text.git_message
-  - service: input_boolean.turn_off
-    data: {}
-    entity_id: input_boolean.git_commit
-  mode: single
 - id: '1603311446063'
   alias: Github - Convert Lovelace json to yaml and commit
   description: ''
@@ -317,28 +297,6 @@
       target:
         entity_id: switch.subwoofer
   mode: single
-- id: '1635829545674'
-  alias: Notification - SWMBO Leaves
-  description: ''
-  trigger:
-  - entity_id: person.kirstyn_rolfe
-    from: home
-    platform: state
-    to: not_home
-  condition: []
-  action:
-  - data:
-      message: 'Kirstyn just left '
-      title: Kirstyn's gone
-    service: notify.html5_notifications
-    alias: Browser notification
-  - data:
-      message: Kirstyn just left
-      title: Kirstyn's gone
-    service: notify.mobile_app_bnet_a74
-    alias: Mobile notification
-  mode: single
-  initial_state: false
 - id: '1638231245218'
   alias: Notification - HACS Updates Available
   description: ''
@@ -647,35 +605,6 @@
     alias: Printer status via lounge dot
     enabled: true
   mode: single
-- id: '1670119294104'
-  alias: Notification - Kettle boiled
-  description: Talks through the speakers to notify if the jug has boiled
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.kettle_temperature
-    above: 98
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 1
-  condition:
-  - condition: state
-    entity_id: input_boolean.silent_mode
-    state: 'off'
-  - condition: time
-    before: '23:00:00'
-    after: 08:00:00
-    alias: Not nighttime
-  action:
-  - service: notify.alexa_media_dyson_s_echo_dot
-    data:
-      data:
-        type: tts
-        target: media_player.dyson_s_echo_dot
-      message: The kettle has finished boiling
-    alias: Jug boiled
-    enabled: true
-  mode: single
 - id: '1679630068333'
   alias: 1-NSPanel Configuration
   description: ''
@@ -779,4 +708,35 @@
       title: Motion Detected
     service: notify.mobile_app_bnet_a74
     alias: Notify Oppo A74
+  mode: single
+- id: '1714359343699'
+  alias: Notification - Rack UPS has lost power
+  description: ''
+  trigger:
+  - alias: Input Voltage drops
+    type: voltage
+    platform: device
+    device_id: 58a59dd95bfaeda8f7edc53ca2980388
+    entity_id: 85b741fd9ea2e80d5f9f59b95620ad86
+    domain: sensor
+    below: 120
+  condition:
+  - alias: Confirm NOT
+    condition: not
+    conditions:
+    - condition: zone
+      entity_id: person.dyson_parkes
+      zone: zone.home
+      alias: Check Dyson isn't home
+  action:
+  - service: notify.html5_notifications
+    data:
+      message: The rack UPS has lost power
+      title: Power Failure
+    alias: Browser notification
+  - data:
+      message: The rack UPS has lost power
+      title: Power Failure
+    service: notify.mobile_app_bnet_a74
+    alias: Mobile notification
   mode: single
