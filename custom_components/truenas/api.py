@@ -1,14 +1,18 @@
 """TrueNAS API."""
+
 from logging import getLogger
 from threading import Lock
 from typing import Any
 
 from requests import get as requests_get, post as requests_post
 from voluptuous import Optional
+from urllib3 import disable_warnings
+from urllib3.exceptions import InsecureRequestWarning
 
 from homeassistant.core import HomeAssistant
 
 _LOGGER = getLogger(__name__)
+disable_warnings(InsecureRequestWarning)
 
 
 # ---------------------------
@@ -84,6 +88,7 @@ class TrueNASAPI(object):
                     headers=headers,
                     params=params,
                     verify=self._ssl_verify,
+                    timeout=10,
                 )
 
             elif method == "post":
@@ -92,6 +97,7 @@ class TrueNASAPI(object):
                     headers=headers,
                     json=params,
                     verify=self._ssl_verify,
+                    timeout=10,
                 )
 
             if response.status_code == 200:
@@ -115,7 +121,11 @@ class TrueNASAPI(object):
                 errorcode,
             )
 
-            if errorcode != 500 and service != "reporting/get_data":
+            if (
+                errorcode != 500
+                and service != "reporting/get_data"
+                and service != "reporting/netdata_get_data"
+            ):
                 self._connected = False
 
             self._error = errorcode
