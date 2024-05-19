@@ -647,7 +647,7 @@
     to: '0'
     for:
       hours: 0
-      minutes: 0
+      minutes: 30
       seconds: 0
   condition:
   - condition: not
@@ -656,6 +656,7 @@
       entity_id: sensor.bnet_a74_wifi_connection
       state: Berserkir-Net
     alias: Confirm phone is not on home wifi
+    enabled: false
   action:
   - service: light.turn_off
     data: {}
