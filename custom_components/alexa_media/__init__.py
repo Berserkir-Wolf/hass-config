@@ -624,8 +624,8 @@ async def setup_alexa(hass, config_entry, login_obj: AlexaLogin):
                     _LOGGER.debug("Loading config entry for %s", component)
                     config_entry.async_create_task(
                         hass,
-                        hass.config_entries.async_forward_entry_setup(
-                            config_entry, component
+                        hass.config_entries.async_forward_entry_setups(
+                            config_entry, [component]
                         )
                     )
                 else:
@@ -1098,7 +1098,7 @@ async def setup_alexa(hass, config_entry, login_obj: AlexaLogin):
                         hass.data[DATA_ALEXAMEDIA]["accounts"][email]["excluded"].keys()
                     )
                 ):
-                    _LOGGER.debug("Discovered new media_player %s", serial)
+                    _LOGGER.debug("Discovered new media_player %s", hide_serial(serial))
                     (
                         hass.data[DATA_ALEXAMEDIA]["accounts"][email]["new_devices"]
                     ) = True
