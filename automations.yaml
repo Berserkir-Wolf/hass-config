@@ -741,3 +741,51 @@
     service: notify.mobile_app_bnet_a74
     alias: Mobile notification
   mode: single
+- id: '1720685093544'
+  alias: Front door light motion trigger
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 4b8020c3a743f4a57e058fb2d8e87739
+    entity_id: 1ac1eaf9e3b055f0ae32cb5f4348b008
+    domain: binary_sensor
+    alias: Motion detected on front door camera
+  condition:
+  - condition: state
+    entity_id: input_boolean.front_door_motion_light
+    state: 'on'
+    alias: Check motion triggering is active
+  action:
+  - service: light.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.lifx_switch_6c31d6_porch
+    alias: Turn on porch light
+  mode: single
+- id: '1720685277657'
+  alias: Light - activate porch motion trigger
+  description: ''
+  trigger:
+  - platform: device
+    device_id: 11a829db81b9e8ab2c8def0bfcdbca8d
+    domain: homekit_controller
+    type: button2
+    subtype: long_press
+    alias: Hall button 2 long-pressed
+  - platform: device
+    device_id: 11a829db81b9e8ab2c8def0bfcdbca8d
+    domain: homekit_controller
+    type: button2
+    subtype: double_press
+    alias: Hall button 2 double-pressed
+  condition: []
+  action:
+  - service: input_boolean.toggle
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.front_door_motion_light
+    alias: Toggle front door motion triggering
+  mode: single
