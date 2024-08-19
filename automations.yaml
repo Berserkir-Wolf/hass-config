@@ -377,36 +377,6 @@
         data: {}
     default: []
   mode: single
-- id: '1641896084660'
-  alias: Media - Play all music
-  description: Shuffles all music from system /media/Music folder
-  trigger:
-  - platform: sun
-    event: sunrise
-    offset: '0'
-  condition:
-  - condition: not
-    conditions:
-    - condition: state
-      entity_id: input_boolean.silent_mode
-      state: ''
-  action:
-  - service: media_player.clear_playlist
-    target:
-      entity_id: media_player.vlc_telnet
-  - service: media_player.shuffle_set
-    target:
-      entity_id: media_player.vlc_telnet
-    data:
-      shuffle: true
-  - service: media_player.play_media
-    target:
-      entity_id: media_player.vlc_telnet
-    data:
-      media_content_type: music
-      media_content_id: /media/Music
-  mode: single
-  initial_state: false
 - id: '1651206195438'
   alias: Notification - HAssOS Update Available
   description: ''
