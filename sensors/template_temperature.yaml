@@ -1,4 +1,4 @@
-# This is a template that gives me a dedicated sensor for kettle temperature, rather than just an attribute.
+# This is a template that gives me a dedicated sensor for temperatures and humidities, rather than just an attribute.
 - platform: template
   sensors:
     bedroom_temperature:

@@ -1,4 +1,4 @@
-# This file generates the extra sensors for The smart switches
+# This file generates extra sensors for cost of power from smart switches
 - platform: template
   sensors:
     biltong_approximate_cost:
