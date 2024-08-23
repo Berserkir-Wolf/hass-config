@@ -655,30 +655,51 @@
   description: Send a notification if motion is detected by cameras and nobody is
     home
   trigger:
-  - type: motion
-    platform: device
-    device_id: 4b8020c3a743f4a57e058fb2d8e87739
-    entity_id: 1ac1eaf9e3b055f0ae32cb5f4348b008
-    domain: binary_sensor
-    alias: Motion seen by front door camera
-  - type: motion
-    platform: device
-    device_id: 3767f0dd4723463ba3dd2a5d28a40396
-    entity_id: da889bbcac8acd6dd94656d2ee5b87b3
-    domain: binary_sensor
-    alias: Motion seen by back yard camera
-    enabled: false
+  - platform: state
+    entity_id: binary_sensor.front_door_motion
+    from: 'off'
+    to: 'on'
+    alias: Motion at Front Door
   condition:
   - condition: state
     entity_id: zone.home
     state: '0'
     alias: Confirm nobody is home
   action:
+  - entity_id: camera.front_door_high
+    data:
+      filename: '{{ snapshot_create_file_path }}'
+    action: camera.snapshot
+    alias: Create motion snapshot
   - data:
       message: Motion detected at Front Door
       title: Motion Detected
-    service: notify.mobile_app_bnet_a74
     alias: Notify Oppo A74
+    action: notify.mobile_app_bnet_a74
+    enabled: false
+  - device_id: e9f5ed78657f507d268be05f2ba5119d
+    domain: mobile_app
+    type: notify
+    title: '{{ notification_title }}'
+    message: '{{ notification_message }}'
+    data: '{% set android_data = {"image": "%s"} | format(snapshot_access_file_path)
+      %} {% set ios_data = {"attachment": {"url": "%s", "content_type": "JPEG"}} |
+      format(snapshot_access_file_path) %} {{ ios_data if is_ios else android_data
+      }}'
+    alias: Notify Oppo A74 - Mobile
+  variables:
+    motion_sensor: binary_sensor.front_door_motion
+    motion_sensor_name: '{{ states[motion_sensor].name }}'
+    camera: camera.front_door_high
+    notify_device: e9f5ed78657f507d268be05f2ba5119d
+    is_ios: false
+    notification_title: Motion detected!
+    notification_message: '{{ motion_sensor_name }} detected movement!'
+    delay: 6
+    snapshot_create_file_path: /config/www/tmp/snapshot_{{ states[camera].object_id
+      }}.jpg
+    snapshot_access_file_path: '{{ snapshot_create_file_path | replace(''/config/www'',''/local'')
+      }}'
   mode: single
 - id: '1714359343699'
   alias: Notification - Rack UPS has lost power
