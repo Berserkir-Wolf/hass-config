@@ -16,6 +16,7 @@ deps
 excluded_files
 tts
 zones
+www/tmp/
 
 # Specific file ignores
 .config_entries.json
