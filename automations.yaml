@@ -16,13 +16,13 @@
   - data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
-    service: notify.mobile_app_bnet_a74
     alias: Mobile notification
-  - service: notify.html5_notifications
-    data:
+    action: notify.mobile_app_bnet_reno12
+  - data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
     alias: Browser notification
+    action: notify.html5_notifications
   mode: single
 - id: '1597613199016'
   alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
@@ -250,6 +250,8 @@
       hours: 0
       minutes: 0
       seconds: 1
+  - platform: homeassistant
+    event: start
   condition: []
   action:
   - choose:
@@ -258,44 +260,44 @@
         entity_id: media_player.lounge_amp_3
         state: 'off'
       sequence:
-      - service: switch.turn_off
-        target:
+      - target:
           entity_id: switch.subwoofer
         data: {}
+        action: switch.turn_off
     - conditions:
       - condition: state
         state: standby
         entity_id: media_player.lounge_amp_3
       sequence:
-      - service: switch.turn_off
-        target:
+      - target:
           entity_id: switch.subwoofer
         data: {}
+        action: switch.turn_off
     - conditions:
       - condition: state
         entity_id: media_player.lounge_amp_3
         state: idle
         enabled: true
       sequence:
-      - service: switch.turn_off
-        target:
+      - target:
           entity_id: switch.subwoofer
         data: {}
+        action: switch.turn_off
     - conditions:
       - condition: state
         entity_id: media_player.lounge_amp_3
         state: unavailable
         enabled: true
       sequence:
-      - service: switch.turn_off
-        target:
+      - target:
           entity_id: switch.subwoofer
         data: {}
+        action: switch.turn_off
     default:
-    - service: switch.turn_on
-      data: {}
+    - data: {}
       target:
         entity_id: switch.subwoofer
+      action: switch.turn_on
   mode: single
 - id: '1638231245218'
   alias: Notification - HACS Updates Available
@@ -620,34 +622,34 @@
       minutes: 30
       seconds: 0
   condition:
-  - condition: not
+  - alias: Confirm phone is not on home wifi
+    condition: not
     conditions:
     - condition: state
-      entity_id: sensor.bnet_a74_wifi_connection
+      entity_id: sensor.bnet_reno12_wifi_connection
       state: Berserkir-Net
-    alias: Confirm phone is not on home wifi
     enabled: false
   action:
-  - service: light.turn_off
-    data: {}
+  - data: {}
     target:
       entity_id:
       - light.all_lights
       - light.all_lamps
     alias: Turn off "All Lights" and "All Lamps"
+    action: light.turn_off
   - if:
     - condition: template
       value_template: '  {% if not is_state(''select.front_door_recording_mode'',
         ''Detections'') %}true{% endif %}'
       alias: Confirm if the Front Camera is not set to Motion
     then:
-    - service: select.select_option
-      metadata: {}
+    - metadata: {}
       data:
         option: Detections
       target:
         entity_id: select.front_door_recording_mode
       alias: Set Front Door Camera back to record on motion
+      action: select.select_option
     alias: Set the Front Door camera to Motion if it's not
   mode: single
 - id: '1713308537578'
@@ -677,6 +679,16 @@
     alias: Notify Oppo A74
     action: notify.mobile_app_bnet_a74
     enabled: false
+  - device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+    domain: mobile_app
+    type: notify
+    title: '{{ notification_title }}'
+    message: '{{ notification_message }}'
+    data: '{% set android_data = {"image": "%s"} | format(snapshot_access_file_path)
+      %} {% set ios_data = {"attachment": {"url": "%s", "content_type": "JPEG"}} |
+      format(snapshot_access_file_path) %} {{ ios_data if is_ios else android_data
+      }}'
+    alias: Notify Oppo Reno12 - Mobile
   - device_id: e9f5ed78657f507d268be05f2ba5119d
     domain: mobile_app
     type: notify
@@ -687,6 +699,7 @@
       format(snapshot_access_file_path) %} {{ ios_data if is_ios else android_data
       }}'
     alias: Notify Oppo A74 - Mobile
+    enabled: false
   variables:
     motion_sensor: binary_sensor.front_door_motion
     motion_sensor_name: '{{ states[motion_sensor].name }}'
@@ -721,16 +734,16 @@
       zone: zone.home
       alias: Check Dyson isn't home
   action:
-  - service: notify.html5_notifications
-    data:
-      message: The rack UPS has lost power
-      title: Power Failure
-    alias: Browser notification
   - data:
       message: The rack UPS has lost power
       title: Power Failure
-    service: notify.mobile_app_bnet_a74
+    alias: Browser notification
+    action: notify.html5_notifications
+  - data:
+      message: The rack UPS has lost power
+      title: Power Failure
     alias: Mobile notification
+    action: notify.mobile_app_bnet_reno12
   mode: single
 - id: '1720685093544'
   alias: Front door light motion trigger
