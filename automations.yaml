@@ -54,25 +54,30 @@
     entity_id: input_boolean.silent_mode
     state: 'off'
   action:
-  - service: notify.html5_notifications
-    data:
-      message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
-        }} is available.
-      title: Update Available
-    alias: Browser notification
-  - service: notify.homeassistant
-    data:
+  - data:
       message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
         }} is available.
       title: Update Available!
       target:
       - '819351502640381952'
     alias: Discord notification
-  - service: notify.facebook_text
-    data:
+    action: notify.homeassistant
+  - data:
       message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
         }} is available.
     alias: Facebook notification
+    action: notify.facebook_text
+  - device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+    domain: mobile_app
+    type: notify
+    title: '{{ notification_title }}'
+    message: '{{ notification_message }}'
+    alias: Notify Oppo Reno12 - Mobile
+    enabled: true
+  variables:
+    notification_title: Home Assistant Update Available!
+    notification_message: '        Home Assistant {{ state_attr(''update.home_assistant_core_update'',
+      ''latest_version'') }} is available.'
   mode: single
 - id: '1603311446063'
   alias: Github - Convert Lovelace json to yaml and commit
@@ -653,7 +658,7 @@
     alias: Set the Front Door camera to Motion if it's not
   mode: single
 - id: '1713308537578'
-  alias: Notification - Motion
+  alias: Motion - Front Door Camera
   description: Send a notification if motion is detected by cameras and nobody is
     home
   trigger:
@@ -662,23 +667,31 @@
     from: 'off'
     to: 'on'
     alias: Motion at Front Door
-  condition:
-  - condition: state
-    entity_id: zone.home
-    state: '0'
-    alias: Confirm nobody is home
+  condition: []
   action:
   - entity_id: camera.front_door_high
     data:
       filename: '{{ snapshot_create_file_path }}'
     action: camera.snapshot
     alias: Create motion snapshot
-  - data:
-      message: Motion detected at Front Door
-      title: Motion Detected
-    alias: Notify Oppo A74
-    action: notify.mobile_app_bnet_a74
-    enabled: false
+  - alias: Turn on porch light if motion activation is on and it's dark
+    if:
+    - condition: state
+      entity_id: input_boolean.front_door_motion_light
+      state: 'on'
+    - type: is_on
+      condition: device
+      device_id: 4b8020c3a743f4a57e058fb2d8e87739
+      entity_id: 0bcb583a926e88bf9ae0c5af59a7a149
+      domain: binary_sensor
+      alias: Front Door camera is dark
+    then:
+    - action: light.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: light.lifx_switch_6c31d6_porch
+      alias: Turn on porch light
   - device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
     domain: mobile_app
     type: notify
@@ -689,17 +702,54 @@
       format(snapshot_access_file_path) %} {{ ios_data if is_ios else android_data
       }}'
     alias: Notify Oppo Reno12 - Mobile
-  - device_id: e9f5ed78657f507d268be05f2ba5119d
-    domain: mobile_app
-    type: notify
-    title: '{{ notification_title }}'
-    message: '{{ notification_message }}'
-    data: '{% set android_data = {"image": "%s"} | format(snapshot_access_file_path)
-      %} {% set ios_data = {"attachment": {"url": "%s", "content_type": "JPEG"}} |
-      format(snapshot_access_file_path) %} {{ ios_data if is_ios else android_data
-      }}'
-    alias: Notify Oppo A74 - Mobile
     enabled: false
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: zone.home
+        state: '0'
+        alias: Confirm nobody is home
+      - condition: state
+        entity_id: input_boolean.silent_mode
+        state: 'off'
+      sequence:
+      - device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+        domain: mobile_app
+        type: notify
+        title: '{{ notification_title }}'
+        message: '{{ notification_message }}'
+        data: '{% set android_data = {"image": "%s"} | format(snapshot_access_file_path)
+          %} {% set ios_data = {"attachment": {"url": "%s", "content_type": "JPEG"}}
+          | format(snapshot_access_file_path) %} {{ ios_data if is_ios else android_data
+          }}'
+        alias: Notify Oppo Reno12 - Mobile
+      alias: Notify if nobody is home and dnd is off
+    - conditions:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: zone.home
+          state: '0'
+          alias: Confirm nobody is home
+        alias: Confirm home has someone in it
+      - condition: state
+        entity_id: input_boolean.motion_notifications
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.silent_mode
+        state: 'off'
+      sequence:
+      - device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+        domain: mobile_app
+        type: notify
+        title: '{{ notification_title }}'
+        message: '{{ notification_message }}'
+        data: '{% set android_data = {"image": "%s"} | format(snapshot_access_file_path)
+          %} {% set ios_data = {"attachment": {"url": "%s", "content_type": "JPEG"}}
+          | format(snapshot_access_file_path) %} {{ ios_data if is_ios else android_data
+          }}'
+        alias: Notify Oppo Reno12 - Mobile
+      alias: Notify if notifications are on and house isn't silent
   variables:
     motion_sensor: binary_sensor.front_door_motion
     motion_sensor_name: '{{ states[motion_sensor].name }}'
@@ -793,3 +843,868 @@
       entity_id: input_boolean.front_door_motion_light
     alias: Toggle front door motion triggering
   mode: single
+- id: '1726543997412'
+  alias: Notification - System Updates
+  description: ''
+  trigger:
+  - id: new
+    platform: state
+    entity_id:
+    - update.home_assistant_core_update
+    - update.home_assistant_operating_system_update
+    - update.home_assistant_supervisor_update
+    to: 'on'
+  - id: started
+    platform: state
+    entity_id:
+    - update.home_assistant_core_update
+    - update.home_assistant_operating_system_update
+    - update.home_assistant_supervisor_update
+    attribute: in_progress
+    from: false
+    to: true
+  - id: done
+    platform: state
+    entity_id:
+    - update.home_assistant_core_update
+    - update.home_assistant_operating_system_update
+    - update.home_assistant_supervisor_update
+    from: 'on'
+    to: 'off'
+  - id: install
+    platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: install-update
+  - id: install_ios
+    platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      actionName: install-update
+  - id: skip
+    platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: skip-update
+  - id: skip_ios
+    platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      actionName: skip-update
+  - id: core_check
+    platform: template
+    value_template: "{% set ns = namespace(core=none) %} {% for u in integration_entities('hassio')
+      | select('in', update_entities)\n        if (device_attr(u, 'identifiers') |
+      first)[1] == 'core' %}\n    {% set ns.core = u %}\n{% endfor %} {% if run_config_check
+      and ns.core is string and expand(ns.core) | first | attr('state') == 'on' %}\n
+      \ {% for e in expand(integration_entities('hassio')) | selectattr('attributes.device_class',
+      'eq', 'running')\n        if (device_attr(e.entity_id, 'identifiers') | first)[1]
+      == 'core_check_config' %}\n      {{ e.state == 'off' and e.last_changed > expand(ns.core)
+      | first | attr('last_changed') }}\n  {% endfor %}\n{% else %}\n  {{ false }}\n{%
+      endif %}"
+  - id: ha_start
+    platform: homeassistant
+    event: start
+  - platform: template
+    value_template: "{{ states.update | selectattr('state', 'eq', 'on') | list | count
+      > 0\n  and reminder_hours > 0 and now().hour % reminder_hours == 0\n  and now().minute
+      == 0 and now().second == 0 }}"
+  - id: sticky_ios
+    platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: URI
+  action:
+  - choose:
+    - alias: Install update action
+      conditions:
+      - condition: template
+        value_template: '{{ trigger.id in [''install'', ''install_ios''] }}'
+      sequence:
+      - variables:
+          entity_id: "update.{{ trigger.event.data.tag\n  if trigger.event.data.tag
+            is string and trigger.event.data.tag != ''\n  else trigger.event.data.action_data.tag
+            }}"
+      - data:
+          entity_id: '{{ entity_id }}'
+          backup: '{% set ids = device_attr(entity_id, ''identifiers'') | first %}
+            {{ take_backup and ids[0] == ''hassio'' and ids[1] not in [''supervisor'',
+            ''OS''] }}'
+        action: update.install
+    - alias: Skip update action
+      conditions:
+      - condition: template
+        value_template: '{{ trigger.id in [''skip'', ''skip_ios''] }}'
+      sequence:
+        data:
+          entity_id: "update.{{ trigger.event.data.tag\n  if trigger.event.data.tag
+            is string and trigger.event.data.tag != ''\n  else trigger.event.data.action_data.tag
+            }}"
+        action: update.skip
+    - alias: Update completed
+      conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''done'' }}'
+      sequence:
+      - variables:
+          entity_id: '{{ trigger.entity_id }}'
+      - variables:
+          message: clear_notification
+          data:
+            tag: '{{ entity_id[7:] }}'
+      - choose: []
+        default:
+        - variables:
+            data: '{{ dict(data, action_data={''tag'': data.tag}) }}'
+        - choose:
+            alias: Send to first mobile device if specified
+            conditions:
+            - condition: template
+              value_template: '{{ not not mobile_app_device }}'
+            sequence:
+              device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+              domain: mobile_app
+              type: notify
+              title: '{{ title | default('''') }}'
+              message: "{{ message if device_attr(mobile_app_device, 'manufacturer')
+                != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+              data: "{{ data if\n      device_attr(mobile_app_device, 'manufacturer')
+                != 'Apple' or data.icon_url is not string\n    else dict(data, image=data.icon_url)
+                }}"
+        - choose:
+          - alias: Send to second mobile device if specified
+            conditions:
+            - condition: template
+              value_template: '{{ not not mobile_app_device_2 }}'
+            sequence:
+              device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+              domain: mobile_app
+              type: notify
+              title: '{{ title | default('''') }}'
+              message: "{{ message if device_attr(mobile_app_device_2, 'manufacturer')
+                != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+              data: "{{ data if\n      device_attr(mobile_app_device_2, 'manufacturer')
+                != 'Apple' or data.icon_url is not string\n    else dict(data, image=data.icon_url)
+                }}"
+      - alias: Dismiss from HA if replicating there
+        choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ send_to_ha }}'
+          sequence:
+            data:
+              notification_id: '{{ entity_id[7:] }}'
+            action: persistent_notification.dismiss
+    - alias: On startup, dismiss core and os notifications as they occurred while
+        off
+      conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''ha_start'' }}'
+      sequence:
+      - alias: Dismiss core update notification if off
+        choose:
+          conditions:
+          - condition: template
+            value_template: '{{ core_update_entity != '''' and expand(core_update_entity)
+              | first | attr(''state'') == ''off'' }}'
+          sequence:
+          - variables:
+              entity_id: '{{ core_update_entity }}'
+          - variables:
+              message: clear_notification
+              data:
+                tag: '{{ entity_id[7:] }}'
+          - choose: []
+            default:
+            - variables:
+                data: '{{ dict(data, action_data={''tag'': data.tag}) }}'
+            - choose:
+                alias: Send to first mobile device if specified
+                conditions:
+                - condition: template
+                  value_template: '{{ not not mobile_app_device }}'
+                sequence:
+                  device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+                  domain: mobile_app
+                  type: notify
+                  title: '{{ title | default('''') }}'
+                  message: "{{ message if device_attr(mobile_app_device, 'manufacturer')
+                    != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+                  data: "{{ data if\n      device_attr(mobile_app_device, 'manufacturer')
+                    != 'Apple' or data.icon_url is not string\n    else dict(data,
+                    image=data.icon_url) }}"
+            - choose:
+              - alias: Send to second mobile device if specified
+                conditions:
+                - condition: template
+                  value_template: '{{ not not mobile_app_device_2 }}'
+                sequence:
+                  device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+                  domain: mobile_app
+                  type: notify
+                  title: '{{ title | default('''') }}'
+                  message: "{{ message if device_attr(mobile_app_device_2, 'manufacturer')
+                    != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+                  data: "{{ data if\n      device_attr(mobile_app_device_2, 'manufacturer')
+                    != 'Apple' or data.icon_url is not string\n    else dict(data,
+                    image=data.icon_url) }}"
+          - alias: Dismiss from HA if replicating there
+            choose:
+            - conditions:
+              - condition: template
+                value_template: '{{ send_to_ha }}'
+              sequence:
+                data:
+                  notification_id: '{{ entity_id[7:] }}'
+                action: persistent_notification.dismiss
+      - alias: Dismiss os update notification if off
+        choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ os_update_entity != '''' and expand(os_update_entity)
+              | first | attr(''state'') == ''off'' }}'
+          sequence:
+          - variables:
+              entity_id: '{{ os_update_entity }}'
+          - variables:
+              message: clear_notification
+              data:
+                tag: '{{ entity_id[7:] }}'
+          - choose: []
+            default:
+            - variables:
+                data: '{{ dict(data, action_data={''tag'': data.tag}) }}'
+            - choose:
+                alias: Send to first mobile device if specified
+                conditions:
+                - condition: template
+                  value_template: '{{ not not mobile_app_device }}'
+                sequence:
+                  device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+                  domain: mobile_app
+                  type: notify
+                  title: '{{ title | default('''') }}'
+                  message: "{{ message if device_attr(mobile_app_device, 'manufacturer')
+                    != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+                  data: "{{ data if\n      device_attr(mobile_app_device, 'manufacturer')
+                    != 'Apple' or data.icon_url is not string\n    else dict(data,
+                    image=data.icon_url) }}"
+            - choose:
+              - alias: Send to second mobile device if specified
+                conditions:
+                - condition: template
+                  value_template: '{{ not not mobile_app_device_2 }}'
+                sequence:
+                  device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+                  domain: mobile_app
+                  type: notify
+                  title: '{{ title | default('''') }}'
+                  message: "{{ message if device_attr(mobile_app_device_2, 'manufacturer')
+                    != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+                  data: "{{ data if\n      device_attr(mobile_app_device_2, 'manufacturer')
+                    != 'Apple' or data.icon_url is not string\n    else dict(data,
+                    image=data.icon_url) }}"
+          - alias: Dismiss from HA if replicating there
+            choose:
+            - conditions:
+              - condition: template
+                value_template: '{{ send_to_ha }}'
+              sequence:
+                data:
+                  notification_id: '{{ entity_id[7:] }}'
+                action: persistent_notification.dismiss
+    - alias: New update available
+      conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''new'' }}'
+      sequence:
+      - variables:
+          entity_id: '{{ trigger.entity_id }}'
+      - variables:
+          ids: '{{ device_attr(entity_id, ''identifiers'') | first }}'
+          changelog_action:
+            action: URI
+            title: Changelog
+            uri: "{% set version = state_attr(entity_id, 'latest_version') %} {{ state_attr(entity_id,
+              'release_url')\n    | default(changelog_urls[entity_id] | default(''),
+              true)\n    | regex_replace('(/CHANGELOG.md)$', '\\\\1#' ~ version |
+              regex_replace('[^-\\\\w]'))\n    | default(None, true) }}"
+          include_core_check: '{{ run_config_check and ids[0] == ''hassio'' and ids[1]
+            == ''core'' }}'
+          core_check_complete: "{% set ns = namespace(core=none) %} {% for u in integration_entities('hassio')
+            | select('in', update_entities)\n        if (device_attr(u, 'identifiers')
+            | first)[1] == 'core' %}\n    {% set ns.core = u %}\n{% endfor %} {% if
+            run_config_check and ns.core is string and expand(ns.core) | first | attr('state')
+            == 'on' %}\n  {% for e in expand(integration_entities('hassio')) | selectattr('attributes.device_class',
+            'eq', 'running')\n        if (device_attr(e.entity_id, 'identifiers')
+            | first)[1] == 'core_check_config' %}\n      {{ e.state == 'off' and e.last_changed
+            > expand(ns.core) | first | attr('last_changed') }}\n  {% endfor %}\n{%
+            else %}\n  {{ false }}\n{% endif %}"
+          title: '{{ state_attr(entity_id, ''friendly_name'') }}'
+          message: "{% set summary = state_attr(entity_id, 'release_summary') %} Newest
+            version is {{ state_attr(entity_id, 'latest_version') }}<br> Installed
+            version is {{ state_attr(entity_id, 'installed_version') }} {% if include_core_check
+            %}\n  <br>Config check has {{ 'completed, check addon logs for status.'\n
+            \   if core_check_complete else 'started, should be done soon.' }}\n{%
+            endif %} {{ '<br>' ~ summary if summary is string }}"
+          url: "{% set url = device_attr(entity_id, 'configuration_url') %} {% set
+            ids = device_attr(entity_id, 'identifiers') | first %} {% if url is string
+            %}\n  {{ url | regex_replace('^homeassistant://') }}\n{% elif ids[0] ==
+            'hassio' and ids[1] in ['supervisor', 'OS'] %}\n  /hassio/system\n{% elif
+            run_config_check and ids[0] == 'hassio' and ids[1] == 'core' %}\n  /hassio/addon/core_check_config/logs\n{%
+            else %}\n  /config\n{% endif %}"
+          data:
+            tag: '{{ entity_id[7:] }}'
+            channel: Updates
+            group: Updates
+            notification_icon: mdi:package-up
+            icon_url: '{{ state_attr(entity_id, ''entity_picture'') | default('''',
+              true) }}'
+            url: '{{ url }}'
+            clickAction: '{{ url }}'
+            sticky: 'true'
+            actions: "{{ ([changelog_action] if changelog_action.uri is string else
+              []) + [update_action] +\n  ([] if ids[0] == 'hassio' and ids[1] == 'supervisor'
+              else [skip_action]) }}"
+      - choose:
+        - alias: Only send to mobile devices if within provided time range
+          conditions:
+            condition: time
+            after: 00:00:00
+            before: 00:00:00
+          sequence:
+          - choose: []
+            default:
+            - variables:
+                data: '{{ dict(data, action_data={''tag'': data.tag}) }}'
+            - choose:
+                alias: Send to first mobile device if specified
+                conditions:
+                - condition: template
+                  value_template: '{{ not not mobile_app_device }}'
+                sequence:
+                  device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+                  domain: mobile_app
+                  type: notify
+                  title: '{{ title | default('''') }}'
+                  message: "{{ message if device_attr(mobile_app_device, 'manufacturer')
+                    != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+                  data: "{{ data if\n      device_attr(mobile_app_device, 'manufacturer')
+                    != 'Apple' or data.icon_url is not string\n    else dict(data,
+                    image=data.icon_url) }}"
+            - choose:
+              - alias: Send to second mobile device if specified
+                conditions:
+                - condition: template
+                  value_template: '{{ not not mobile_app_device_2 }}'
+                sequence:
+                  device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+                  domain: mobile_app
+                  type: notify
+                  title: '{{ title | default('''') }}'
+                  message: "{{ message if device_attr(mobile_app_device_2, 'manufacturer')
+                    != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+                  data: "{{ data if\n      device_attr(mobile_app_device_2, 'manufacturer')
+                    != 'Apple' or data.icon_url is not string\n    else dict(data,
+                    image=data.icon_url) }}"
+      - alias: Send to HA if replicating there
+        choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ send_to_ha }}'
+          sequence:
+            data:
+              notification_id: '{{ entity_id[7:] }}'
+              title: '{{ title }}'
+              message: "{{ '%s\\n\\n### More info\\n- [Open](%s)' % (message | replace('<br>',
+                '\\n'), data.url) ~\n  ('\\n- [Changelog](%s)' % changelog_action.uri
+                if changelog_action.uri is string else '') }}"
+            action: persistent_notification.create
+      - alias: Stop if this isn't core or we're not running a config check
+        condition: '{{ include_core_check }}'
+      - alias: Start config check addon
+        data:
+          addon: core_check_config
+        action: hassio.addon_start
+    - alias: Emulate sticky on IOS by recreating the notification
+      conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''sticky_ios'' }}'
+      - condition: template
+        value_template: '{{ trigger.event.data.action_data is mapping and trigger.event.data.action_data.tag
+          is string }}'
+      - condition: template
+        value_template: '{{ is_state(''update.'' ~ trigger.event.data.action_data.tag,
+          ''on'') }}'
+      sequence:
+      - variables:
+          entity_id: "update.{{ trigger.event.data.tag\n  if trigger.event.data.tag
+            is string and trigger.event.data.tag != ''\n  else trigger.event.data.action_data.tag
+            }}"
+      - variables:
+          ids: '{{ device_attr(entity_id, ''identifiers'') | first }}'
+          changelog_action:
+            action: URI
+            title: Changelog
+            uri: "{% set version = state_attr(entity_id, 'latest_version') %} {{ state_attr(entity_id,
+              'release_url')\n    | default(changelog_urls[entity_id] | default(''),
+              true)\n    | regex_replace('(/CHANGELOG.md)$', '\\\\1#' ~ version |
+              regex_replace('[^-\\\\w]'))\n    | default(None, true) }}"
+          include_core_check: '{{ run_config_check and ids[0] == ''hassio'' and ids[1]
+            == ''core'' }}'
+          core_check_complete: "{% set ns = namespace(core=none) %} {% for u in integration_entities('hassio')
+            | select('in', update_entities)\n        if (device_attr(u, 'identifiers')
+            | first)[1] == 'core' %}\n    {% set ns.core = u %}\n{% endfor %} {% if
+            run_config_check and ns.core is string and expand(ns.core) | first | attr('state')
+            == 'on' %}\n  {% for e in expand(integration_entities('hassio')) | selectattr('attributes.device_class',
+            'eq', 'running')\n        if (device_attr(e.entity_id, 'identifiers')
+            | first)[1] == 'core_check_config' %}\n      {{ e.state == 'off' and e.last_changed
+            > expand(ns.core) | first | attr('last_changed') }}\n  {% endfor %}\n{%
+            else %}\n  {{ false }}\n{% endif %}"
+          title: '{{ state_attr(entity_id, ''friendly_name'') }}'
+          message: "{% set summary = state_attr(entity_id, 'release_summary') %} Newest
+            version is {{ state_attr(entity_id, 'latest_version') }}<br> Installed
+            version is {{ state_attr(entity_id, 'installed_version') }} {% if include_core_check
+            %}\n  <br>Config check has {{ 'completed, check addon logs for status.'\n
+            \   if core_check_complete else 'started, should be done soon.' }}\n{%
+            endif %} {{ '<br>' ~ summary if summary is string }}"
+          url: "{% set url = device_attr(entity_id, 'configuration_url') %} {% set
+            ids = device_attr(entity_id, 'identifiers') | first %} {% if url is string
+            %}\n  {{ url | regex_replace('^homeassistant://') }}\n{% elif ids[0] ==
+            'hassio' and ids[1] in ['supervisor', 'OS'] %}\n  /hassio/system\n{% elif
+            run_config_check and ids[0] == 'hassio' and ids[1] == 'core' %}\n  /hassio/addon/core_check_config/logs\n{%
+            else %}\n  /config\n{% endif %}"
+          data:
+            tag: '{{ entity_id[7:] }}'
+            channel: Updates
+            group: Updates
+            notification_icon: mdi:package-up
+            icon_url: '{{ state_attr(entity_id, ''entity_picture'') | default('''',
+              true) }}'
+            url: '{{ url }}'
+            clickAction: '{{ url }}'
+            sticky: 'true'
+            actions: "{{ ([changelog_action] if changelog_action.uri is string else
+              []) + [update_action] +\n  ([] if ids[0] == 'hassio' and ids[1] == 'supervisor'
+              else [skip_action]) }}"
+      - choose: []
+        default:
+        - variables:
+            data: '{{ dict(data, action_data={''tag'': data.tag}) }}'
+        - choose:
+            alias: Send to first mobile device if specified
+            conditions:
+            - condition: template
+              value_template: '{{ not not mobile_app_device }}'
+            sequence:
+              device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+              domain: mobile_app
+              type: notify
+              title: '{{ title | default('''') }}'
+              message: "{{ message if device_attr(mobile_app_device, 'manufacturer')
+                != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+              data: "{{ data if\n      device_attr(mobile_app_device, 'manufacturer')
+                != 'Apple' or data.icon_url is not string\n    else dict(data, image=data.icon_url)
+                }}"
+        - choose:
+          - alias: Send to second mobile device if specified
+            conditions:
+            - condition: template
+              value_template: '{{ not not mobile_app_device_2 }}'
+            sequence:
+              device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+              domain: mobile_app
+              type: notify
+              title: '{{ title | default('''') }}'
+              message: "{{ message if device_attr(mobile_app_device_2, 'manufacturer')
+                != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+              data: "{{ data if\n      device_attr(mobile_app_device_2, 'manufacturer')
+                != 'Apple' or data.icon_url is not string\n    else dict(data, image=data.icon_url)
+                }}"
+      - alias: Send to HA if replicating there
+        choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ send_to_ha }}'
+          sequence:
+            data:
+              notification_id: '{{ entity_id[7:] }}'
+              title: '{{ title }}'
+              message: "{{ '%s\\n\\n### More info\\n- [Open](%s)' % (message | replace('<br>',
+                '\\n'), data.url) ~\n  ('\\n- [Changelog](%s)' % changelog_action.uri
+                if changelog_action.uri is string else '') }}"
+            action: persistent_notification.create
+    - alias: Core check addon completed
+      conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''core_check'' }}'
+      sequence:
+      - variables:
+          entity_id: '{{ core_update_entity }}'
+      - variables:
+          ids: '{{ device_attr(entity_id, ''identifiers'') | first }}'
+          changelog_action:
+            action: URI
+            title: Changelog
+            uri: "{% set version = state_attr(entity_id, 'latest_version') %} {{ state_attr(entity_id,
+              'release_url')\n    | default(changelog_urls[entity_id] | default(''),
+              true)\n    | regex_replace('(/CHANGELOG.md)$', '\\\\1#' ~ version |
+              regex_replace('[^-\\\\w]'))\n    | default(None, true) }}"
+          include_core_check: '{{ run_config_check and ids[0] == ''hassio'' and ids[1]
+            == ''core'' }}'
+          core_check_complete: "{% set ns = namespace(core=none) %} {% for u in integration_entities('hassio')
+            | select('in', update_entities)\n        if (device_attr(u, 'identifiers')
+            | first)[1] == 'core' %}\n    {% set ns.core = u %}\n{% endfor %} {% if
+            run_config_check and ns.core is string and expand(ns.core) | first | attr('state')
+            == 'on' %}\n  {% for e in expand(integration_entities('hassio')) | selectattr('attributes.device_class',
+            'eq', 'running')\n        if (device_attr(e.entity_id, 'identifiers')
+            | first)[1] == 'core_check_config' %}\n      {{ e.state == 'off' and e.last_changed
+            > expand(ns.core) | first | attr('last_changed') }}\n  {% endfor %}\n{%
+            else %}\n  {{ false }}\n{% endif %}"
+          title: '{{ state_attr(entity_id, ''friendly_name'') }}'
+          message: "{% set summary = state_attr(entity_id, 'release_summary') %} Newest
+            version is {{ state_attr(entity_id, 'latest_version') }}<br> Installed
+            version is {{ state_attr(entity_id, 'installed_version') }} {% if include_core_check
+            %}\n  <br>Config check has {{ 'completed, check addon logs for status.'\n
+            \   if core_check_complete else 'started, should be done soon.' }}\n{%
+            endif %} {{ '<br>' ~ summary if summary is string }}"
+          url: "{% set url = device_attr(entity_id, 'configuration_url') %} {% set
+            ids = device_attr(entity_id, 'identifiers') | first %} {% if url is string
+            %}\n  {{ url | regex_replace('^homeassistant://') }}\n{% elif ids[0] ==
+            'hassio' and ids[1] in ['supervisor', 'OS'] %}\n  /hassio/system\n{% elif
+            run_config_check and ids[0] == 'hassio' and ids[1] == 'core' %}\n  /hassio/addon/core_check_config/logs\n{%
+            else %}\n  /config\n{% endif %}"
+          data:
+            tag: '{{ entity_id[7:] }}'
+            channel: Updates
+            group: Updates
+            notification_icon: mdi:package-up
+            icon_url: '{{ state_attr(entity_id, ''entity_picture'') | default('''',
+              true) }}'
+            url: '{{ url }}'
+            clickAction: '{{ url }}'
+            sticky: 'true'
+            actions: "{{ ([changelog_action] if changelog_action.uri is string else
+              []) + [update_action] +\n  ([] if ids[0] == 'hassio' and ids[1] == 'supervisor'
+              else [skip_action]) }}"
+      - choose:
+        - alias: Only send to mobile devices if within provided time range
+          conditions:
+            condition: time
+            after: 00:00:00
+            before: 00:00:00
+          sequence:
+          - choose: []
+            default:
+            - variables:
+                data: '{{ dict(data, action_data={''tag'': data.tag}) }}'
+            - choose:
+                alias: Send to first mobile device if specified
+                conditions:
+                - condition: template
+                  value_template: '{{ not not mobile_app_device }}'
+                sequence:
+                  device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+                  domain: mobile_app
+                  type: notify
+                  title: '{{ title | default('''') }}'
+                  message: "{{ message if device_attr(mobile_app_device, 'manufacturer')
+                    != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+                  data: "{{ data if\n      device_attr(mobile_app_device, 'manufacturer')
+                    != 'Apple' or data.icon_url is not string\n    else dict(data,
+                    image=data.icon_url) }}"
+            - choose:
+              - alias: Send to second mobile device if specified
+                conditions:
+                - condition: template
+                  value_template: '{{ not not mobile_app_device_2 }}'
+                sequence:
+                  device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+                  domain: mobile_app
+                  type: notify
+                  title: '{{ title | default('''') }}'
+                  message: "{{ message if device_attr(mobile_app_device_2, 'manufacturer')
+                    != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+                  data: "{{ data if\n      device_attr(mobile_app_device_2, 'manufacturer')
+                    != 'Apple' or data.icon_url is not string\n    else dict(data,
+                    image=data.icon_url) }}"
+      - alias: Send to HA if replicating there
+        choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ send_to_ha }}'
+          sequence:
+            data:
+              notification_id: '{{ entity_id[7:] }}'
+              title: '{{ title }}'
+              message: "{{ '%s\\n\\n### More info\\n- [Open](%s)' % (message | replace('<br>',
+                '\\n'), data.url) ~\n  ('\\n- [Changelog](%s)' % changelog_action.uri
+                if changelog_action.uri is string else '') }}"
+            action: persistent_notification.create
+    - alias: Update started
+      conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''started'' }}'
+      sequence:
+      - variables:
+          entity_id: '{{ trigger.entity_id }}'
+      - variables:
+          ids: '{{ device_attr(entity_id, ''identifiers'') | first }}'
+          changelog_action:
+            action: URI
+            title: Changelog
+            uri: "{% set version = state_attr(entity_id, 'latest_version') %} {{ state_attr(entity_id,
+              'release_url')\n    | default(changelog_urls[entity_id] | default(''),
+              true)\n    | regex_replace('(/CHANGELOG.md)$', '\\\\1#' ~ version |
+              regex_replace('[^-\\\\w]'))\n    | default(None, true) }}"
+          include_core_check: '{{ run_config_check and ids[0] == ''hassio'' and ids[1]
+            == ''core'' }}'
+          core_check_complete: "{% set ns = namespace(core=none) %} {% for u in integration_entities('hassio')
+            | select('in', update_entities)\n        if (device_attr(u, 'identifiers')
+            | first)[1] == 'core' %}\n    {% set ns.core = u %}\n{% endfor %} {% if
+            run_config_check and ns.core is string and expand(ns.core) | first | attr('state')
+            == 'on' %}\n  {% for e in expand(integration_entities('hassio')) | selectattr('attributes.device_class',
+            'eq', 'running')\n        if (device_attr(e.entity_id, 'identifiers')
+            | first)[1] == 'core_check_config' %}\n      {{ e.state == 'off' and e.last_changed
+            > expand(ns.core) | first | attr('last_changed') }}\n  {% endfor %}\n{%
+            else %}\n  {{ false }}\n{% endif %}"
+          title: '{{ state_attr(entity_id, ''friendly_name'') }}'
+          message: "{% set summary = state_attr(entity_id, 'release_summary') %} Newest
+            version is {{ state_attr(entity_id, 'latest_version') }}<br> Installed
+            version is {{ state_attr(entity_id, 'installed_version') }} {% if include_core_check
+            %}\n  <br>Config check has {{ 'completed, check addon logs for status.'\n
+            \   if core_check_complete else 'started, should be done soon.' }}\n{%
+            endif %} {{ '<br>' ~ summary if summary is string }}"
+          url: "{% set url = device_attr(entity_id, 'configuration_url') %} {% set
+            ids = device_attr(entity_id, 'identifiers') | first %} {% if url is string
+            %}\n  {{ url | regex_replace('^homeassistant://') }}\n{% elif ids[0] ==
+            'hassio' and ids[1] in ['supervisor', 'OS'] %}\n  /hassio/system\n{% elif
+            run_config_check and ids[0] == 'hassio' and ids[1] == 'core' %}\n  /hassio/addon/core_check_config/logs\n{%
+            else %}\n  /config\n{% endif %}"
+          data:
+            tag: '{{ entity_id[7:] }}'
+            channel: Updates
+            group: Updates
+            notification_icon: mdi:package-up
+            icon_url: '{{ state_attr(entity_id, ''entity_picture'') | default('''',
+              true) }}'
+            url: '{{ url }}'
+            clickAction: '{{ url }}'
+            sticky: 'true'
+            actions: "{{ ([changelog_action] if changelog_action.uri is string else
+              []) + [update_action] +\n  ([] if ids[0] == 'hassio' and ids[1] == 'supervisor'
+              else [skip_action]) }}"
+      - variables:
+          message: Updating...
+          data: '{{ dict(data, actions=[changelog_action] if changelog_action.uri
+            is string else []) }}'
+      - choose:
+        - alias: Only send to mobile devices if within provided time range
+          conditions:
+            condition: time
+            after: 00:00:00
+            before: 00:00:00
+          sequence:
+          - choose: []
+            default:
+            - variables:
+                data: '{{ dict(data, action_data={''tag'': data.tag}) }}'
+            - choose:
+                alias: Send to first mobile device if specified
+                conditions:
+                - condition: template
+                  value_template: '{{ not not mobile_app_device }}'
+                sequence:
+                  device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+                  domain: mobile_app
+                  type: notify
+                  title: '{{ title | default('''') }}'
+                  message: "{{ message if device_attr(mobile_app_device, 'manufacturer')
+                    != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+                  data: "{{ data if\n      device_attr(mobile_app_device, 'manufacturer')
+                    != 'Apple' or data.icon_url is not string\n    else dict(data,
+                    image=data.icon_url) }}"
+            - choose:
+              - alias: Send to second mobile device if specified
+                conditions:
+                - condition: template
+                  value_template: '{{ not not mobile_app_device_2 }}'
+                sequence:
+                  device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+                  domain: mobile_app
+                  type: notify
+                  title: '{{ title | default('''') }}'
+                  message: "{{ message if device_attr(mobile_app_device_2, 'manufacturer')
+                    != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+                  data: "{{ data if\n      device_attr(mobile_app_device_2, 'manufacturer')
+                    != 'Apple' or data.icon_url is not string\n    else dict(data,
+                    image=data.icon_url) }}"
+      - alias: Send to HA if replicating there
+        choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ send_to_ha }}'
+          sequence:
+            data:
+              notification_id: '{{ entity_id[7:] }}'
+              title: '{{ title }}'
+              message: "{{ '%s\\n\\n### More info\\n- [Open](%s)' % (message | replace('<br>',
+                '\\n'), data.url) ~\n  ('\\n- [Changelog](%s)' % changelog_action.uri
+                if changelog_action.uri is string else '') }}"
+            action: persistent_notification.create
+    - alias: Send reminders if enabled
+      conditions:
+      - condition: template
+        value_template: '{{ reminder_hours > 0 }}'
+      sequence:
+      - alias: Get all pending, unstarted updates
+        variables:
+          updates: "{{ states.update\n    | selectattr('state', 'eq', 'on')\n    |
+            rejectattr('attributes.in_progress', 'true')\n    | map(attribute='entity_id')
+            | list }}"
+      - alias: Loop over updates and send reminder
+        repeat:
+          count: '{{ updates | count }}'
+          sequence:
+          - variables:
+              entity_id: '{{ updates[repeat.index - 1] }}'
+          - variables:
+              ids: '{{ device_attr(entity_id, ''identifiers'') | first }}'
+              changelog_action:
+                action: URI
+                title: Changelog
+                uri: "{% set version = state_attr(entity_id, 'latest_version') %}
+                  {{ state_attr(entity_id, 'release_url')\n    | default(changelog_urls[entity_id]
+                  | default(''), true)\n    | regex_replace('(/CHANGELOG.md)$', '\\\\1#'
+                  ~ version | regex_replace('[^-\\\\w]'))\n    | default(None, true)
+                  }}"
+              include_core_check: '{{ run_config_check and ids[0] == ''hassio'' and
+                ids[1] == ''core'' }}'
+              core_check_complete: "{% set ns = namespace(core=none) %} {% for u in
+                integration_entities('hassio') | select('in', update_entities)\n        if
+                (device_attr(u, 'identifiers') | first)[1] == 'core' %}\n    {% set
+                ns.core = u %}\n{% endfor %} {% if run_config_check and ns.core is
+                string and expand(ns.core) | first | attr('state') == 'on' %}\n  {%
+                for e in expand(integration_entities('hassio')) | selectattr('attributes.device_class',
+                'eq', 'running')\n        if (device_attr(e.entity_id, 'identifiers')
+                | first)[1] == 'core_check_config' %}\n      {{ e.state == 'off' and
+                e.last_changed > expand(ns.core) | first | attr('last_changed') }}\n
+                \ {% endfor %}\n{% else %}\n  {{ false }}\n{% endif %}"
+              title: '{{ state_attr(entity_id, ''friendly_name'') }}'
+              message: "{% set summary = state_attr(entity_id, 'release_summary')
+                %} Newest version is {{ state_attr(entity_id, 'latest_version') }}<br>
+                Installed version is {{ state_attr(entity_id, 'installed_version')
+                }} {% if include_core_check %}\n  <br>Config check has {{ 'completed,
+                check addon logs for status.'\n    if core_check_complete else 'started,
+                should be done soon.' }}\n{% endif %} {{ '<br>' ~ summary if summary
+                is string }}"
+              url: "{% set url = device_attr(entity_id, 'configuration_url') %} {%
+                set ids = device_attr(entity_id, 'identifiers') | first %} {% if url
+                is string %}\n  {{ url | regex_replace('^homeassistant://') }}\n{%
+                elif ids[0] == 'hassio' and ids[1] in ['supervisor', 'OS'] %}\n  /hassio/system\n{%
+                elif run_config_check and ids[0] == 'hassio' and ids[1] == 'core'
+                %}\n  /hassio/addon/core_check_config/logs\n{% else %}\n  /config\n{%
+                endif %}"
+              data:
+                tag: '{{ entity_id[7:] }}'
+                channel: Updates
+                group: Updates
+                notification_icon: mdi:package-up
+                icon_url: '{{ state_attr(entity_id, ''entity_picture'') | default('''',
+                  true) }}'
+                url: '{{ url }}'
+                clickAction: '{{ url }}'
+                sticky: 'true'
+                actions: "{{ ([changelog_action] if changelog_action.uri is string
+                  else []) + [update_action] +\n  ([] if ids[0] == 'hassio' and ids[1]
+                  == 'supervisor' else [skip_action]) }}"
+          - choose:
+              alias: Only send to mobile devices if within provided time range
+              conditions:
+                condition: time
+                after: 00:00:00
+                before: 00:00:00
+              sequence:
+              - choose: []
+                default:
+                - variables:
+                    data: '{{ dict(data, action_data={''tag'': data.tag}) }}'
+                - choose:
+                    alias: Send to first mobile device if specified
+                    conditions:
+                    - condition: template
+                      value_template: '{{ not not mobile_app_device }}'
+                    sequence:
+                      device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+                      domain: mobile_app
+                      type: notify
+                      title: '{{ title | default('''') }}'
+                      message: "{{ message if device_attr(mobile_app_device, 'manufacturer')
+                        != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+                      data: "{{ data if\n      device_attr(mobile_app_device, 'manufacturer')
+                        != 'Apple' or data.icon_url is not string\n    else dict(data,
+                        image=data.icon_url) }}"
+                - choose:
+                  - alias: Send to second mobile device if specified
+                    conditions:
+                    - condition: template
+                      value_template: '{{ not not mobile_app_device_2 }}'
+                    sequence:
+                      device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+                      domain: mobile_app
+                      type: notify
+                      title: '{{ title | default('''') }}'
+                      message: "{{ message if device_attr(mobile_app_device_2, 'manufacturer')
+                        != 'Apple'\n    else message | replace('<br>', '\\n') }}"
+                      data: "{{ data if\n      device_attr(mobile_app_device_2, 'manufacturer')
+                        != 'Apple' or data.icon_url is not string\n    else dict(data,
+                        image=data.icon_url) }}"
+          - alias: Send to HA if replicating there
+            choose:
+              conditions:
+              - condition: template
+                value_template: '{{ send_to_ha }}'
+              sequence:
+                data:
+                  notification_id: '{{ entity_id[7:] }}'
+                  title: '{{ title }}'
+                  message: "{{ '%s\\n\\n### More info\\n- [Open](%s)' % (message |
+                    replace('<br>', '\\n'), data.url) ~\n  ('\\n- [Changelog](%s)'
+                    % changelog_action.uri if changelog_action.uri is string else
+                    '') }}"
+                action: persistent_notification.create
+  mode: parallel
+  max: 100
+  trigger_variables:
+    _reminder_hours: '3'
+    reminder_hours: '{{ _reminder_hours | default(0) | int(0) }}'
+    run_config_check: false
+    update_entities:
+    - update.home_assistant_core_update
+    - update.home_assistant_operating_system_update
+    - update.home_assistant_supervisor_update
+  variables:
+    mobile_app_device: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+    _mobile_app_device_2: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+    mobile_app_device_2: '{{ _mobile_app_device_2 if _mobile_app_device_2 != mobile_app_device
+      }}'
+    send_to_ha: false
+    _changelog_urls: none
+    changelog_urls: '{{ _changelog_urls if _changelog_urls is mapping else {} }}'
+    take_backup: false
+    core_update_entity: "{% for u in integration_entities('hassio') | select('search',
+      '^update[.]')\n        if (device_attr(u, 'identifiers') | first)[1] == 'core'
+      %}\n    {{ u }}\n{% endfor %}"
+    os_update_entity: "{% for u in integration_entities('hassio') | select('search',
+      '^update[.]')\n        if (device_attr(u, 'identifiers') | first)[1] == 'OS'
+      %}\n    {{ u }}\n{% endfor %}"
+    skip_action:
+      action: skip-update
+      title: Skip
+      destructive: true
+      authenticationRequired: true
+    update_action:
+      action: install-update
+      title: Update
+      destructive: true
+      authenticationRequired: true
