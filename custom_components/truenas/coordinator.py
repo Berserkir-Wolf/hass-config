@@ -1120,7 +1120,7 @@ class TrueNASCoordinator(DataUpdateCoordinator[None]):
     # ---------------------------
     def get_app(self) -> None:
         """Get Apps from TrueNAS."""
-        if not self._is_scale:
+        if self._is_scale:
             return
 
         self.ds["app"] = parse_api(
