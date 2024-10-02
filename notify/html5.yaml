@@ -1,9 +1,13 @@
 ###########################################
 # HTML5 Notifications
 ###########################################
-  - platform: html5
-    name: HTML5_Notifications    
-    vapid_pub_key: !secret vapid_pub_key
-    vapid_prv_key: !secret vapid_prv_key
-    vapid_email: !secret vapid_email
+#
+# The HTML5 YAML method has been deprecated as of 2024.10
+# This is now configured via the UI, under integrations.
+#
+#  - platform: html5
+#    name: HTML5_Notifications
+#    vapid_pub_key: !secret vapid_pub_key
+#    vapid_prv_key: !secret vapid_prv_key
+#    vapid_email: !secret vapid_email
 
