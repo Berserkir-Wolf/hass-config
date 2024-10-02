@@ -448,11 +448,11 @@
           seconds: 0
         alias: PC (BD/DVD)
       sequence:
-      - service: media_player.volume_set
-        target:
+      - target:
           entity_id: media_player.lounge_amp_2
         data:
           volume_level: 0.73
+        action: media_player.volume_set
     - conditions:
       - condition: state
         entity_id: media_player.lounge_amp_2
@@ -464,11 +464,11 @@
           seconds: 0
         alias: PS5 (GAME)
       sequence:
-      - service: media_player.volume_set
-        target:
+      - target:
           entity_id: media_player.lounge_amp_2
         data:
           volume_level: 0.27
+        action: media_player.volume_set
     - conditions:
       - condition: state
         entity_id: media_player.lounge_amp_2
@@ -480,11 +480,11 @@
           seconds: 0
         alias: Xbox SX (SA-CD/CD)
       sequence:
-      - service: media_player.volume_set
-        target:
+      - target:
           entity_id: media_player.lounge_amp_2
         data:
           volume_level: 0.335
+        action: media_player.volume_set
     - conditions:
       - condition: state
         entity_id: media_player.lounge_amp_2
@@ -496,11 +496,11 @@
           seconds: 0
         alias: Xbox One (VIDEO 2)
       sequence:
-      - service: media_player.volume_set
-        target:
+      - target:
           entity_id: media_player.lounge_amp_2
         data:
           volume_level: 0.335
+        action: media_player.volume_set
     - conditions:
       - condition: state
         entity_id: media_player.lounge_amp_2
@@ -512,11 +512,11 @@
           seconds: 0
         alias: TV
       sequence:
-      - service: media_player.volume_set
-        target:
+      - target:
           entity_id: media_player.lounge_amp_2
         data:
-          volume_level: 0.27
+          volume_level: 0.55
+        action: media_player.volume_set
     default: []
   mode: single
 - id: '1665709420254'
