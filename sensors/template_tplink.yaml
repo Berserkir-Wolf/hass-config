@@ -1,6 +1,0 @@
-# This file generates the extra sensors for The smart switches
-- platform: template
-  sensors:
-    biltong_approximate_cost:
-      value_template: "${{ (((states('sensor.biltong_rack_total_consumption'))|float) * ('0.1779'|float))|round(3) }}"
-      friendly_name: "Biltong Approximate Cost"

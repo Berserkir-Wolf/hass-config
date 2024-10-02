@@ -107,7 +107,7 @@ secondary_entities:
           min: 0
           max: 60
   - entity: sensor
-    name: Time remaining
+    translation_key: time_remaining
     class: duration
     category: diagnostic
     dps:
@@ -235,6 +235,7 @@ secondary_entities:
           - mask: "FF00000000000000"
   - entity: select
     name: Watering delay
+    translation_key: timer
     category: config
     dps:
       - id: 113
@@ -242,7 +243,7 @@ secondary_entities:
         type: string
         mapping:
           - dps_val: 0
-            value: 0h
+            value: cancel
           - dps_val: 24
             value: 24h
           - dps_val: 48

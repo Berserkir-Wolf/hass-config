@@ -1,0 +1,15 @@
+# This file generates extra sensors for cost of power from smart switches
+- platform: template
+  sensors:
+    biltong_approximate_cost:
+      value_template: "${{ (((states('sensor.biltong_rack_total_consumption'))|float) * ((states('input_number.power_rate'))|float))|round(3) }}"
+      friendly_name: "Biltong Approximate Cost"
+    biltong_approximate_cost_today:
+      value_template: "${{ (((states('sensor.biltong_rack_today_s_consumption'))|float) * ((states('input_number.power_rate'))|float))|round(3) }}"
+      friendly_name: "Biltong Cost Today"
+    subwoofer_approximate_cost:
+      value_template: "${{ (((states('sensor.subwoofer_total_consumption'))|float) * ((states('input_number.power_rate'))|float))|round(3) }}"
+      friendly_name: "Subwoofer Approximate Cost"
+    subwoofer_approximate_cost_today:
+      value_template: "${{ (((states('sensor.subwoofer_today_s_consumption'))|float) * ((states('input_number.power_rate'))|float))|round(3) }}"
+      friendly_name: "Subwoofer Cost Today"

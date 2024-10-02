@@ -246,22 +246,25 @@ secondary_entities:
         unit: "%"
         class: measurement
   - entity: select
-    name: Mopping
-    icon: "mdi:cup-water"
+    translation_key: mopping
     category: config
     dps:
       - id: 10
         type: string
         name: option
+        optional: true
         mapping:
           - dps_val: closed
-            value: "Off"
+            value: "off"
           - dps_val: low
-            value: Low
+            value: low
           - dps_val: middle
-            value: Medium
+            value: medium
           - dps_val: high
-            value: High
+            value: high
+          - dps_val: null
+            value: "off"
+            hidden: true
   - entity: button
     name: Reset map
     category: config

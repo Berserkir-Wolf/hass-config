@@ -61,21 +61,27 @@ secondary_entities:
           - dps_val: false
             icon: "mdi:led-off"
   - entity: switch
-    name: Sleep
+    translation_key: sleep
     class: switch
-    icon: "mdi:power-sleep"
     dps:
       - id: 101
         name: switch
         type: boolean
   - entity: sensor
     name: Air quality
-    class: aqi
+    class: enum
     category: diagnostic
     dps:
       - id: 22
         type: string
         name: sensor
+        mapping:
+          - dps_val: "bad"
+            value: "Bad"
+          - dps_val: "fair"
+            value: "Fair"
+          - dps_val: "good"
+            value: "Good"
   - entity: sensor
     name: Prefilter life
     category: diagnostic

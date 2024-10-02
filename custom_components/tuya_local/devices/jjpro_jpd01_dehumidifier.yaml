@@ -82,15 +82,13 @@ secondary_entities:
           - dps_val: "3"
             value: 100
   - entity: switch
-    name: Ionizer
-    icon: "mdi:leaf"
+    translation_key: ionizer
     dps:
       - id: 5
         type: boolean
         name: switch
   - entity: switch
-    name: Sleep
-    icon: "mdi:weather-night"
+    translation_key: sleep
     dps:
       - id: 102
         type: boolean
@@ -103,17 +101,6 @@ secondary_entities:
         name: sensor
         unit: C
         class: measurement
-  - entity: sensor
-    name: Current humidity
-    class: humidity
-    deprecated: humidifier
-    category: diagnostic
-    dps:
-      - id: 104
-        type: integer
-        name: sensor
-        class: measurement
-        unit: "%"
   - entity: binary_sensor
     translation_key: tank_full
     category: diagnostic

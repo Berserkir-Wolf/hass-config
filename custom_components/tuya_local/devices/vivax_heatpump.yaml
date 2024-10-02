@@ -74,9 +74,6 @@ primary_entity:
           value: eco
         - dps_val: false
           value: comfort
-    - id: 12
-      type: boolean
-      name: aux_heat
     - id: 18
       type: integer
       name: current_humidity
@@ -193,8 +190,7 @@ secondary_entities:
         type: boolean
         name: switch
   - entity: light
-    name: Display
-    icon: "mdi:numeric"
+    translation_key: display
     category: config
     dps:
       - id: 13
@@ -222,9 +218,8 @@ secondary_entities:
         name: switch
   # Boolean dps 16 = Beep and 109 = Sleep documented but missing from log
   - entity: switch
-    name: Sleep
+    translation_key: sleep
     category: config
-    icon: "mdi:power-sleep"
     dps:
       - id: 109
         type: boolean

@@ -58,11 +58,15 @@ primary_entity:
       name: feature_flags
     - id: 110
       type: boolean
-      name: swing_2
+      name: swing_mode
+      mapping:
+        - dps_val: true
+          value: "vertical"
+        - dps_val: false
+          value: "off"
 secondary_entities:
   - entity: switch
-    name: Ioniser
-    icon: "mdi:creation"
+    translation_key: ionizer
     dps:
       - id: 11
         type: boolean
@@ -79,8 +83,7 @@ secondary_entities:
             value: false
           - value: true
   - entity: switch
-    name: Sleep
-    icon: "mdi:power-sleep"
+    translation_key: sleep
     dps:
       - id: 103
         type: boolean

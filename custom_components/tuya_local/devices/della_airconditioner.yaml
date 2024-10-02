@@ -89,9 +89,8 @@ secondary_entities:
         name: switch
         type: boolean
   - entity: light
-    name: Backlight
+    translation_key: backlight
     category: config
-    icon: "mdi:television-ambient-light"
     dps:
       - id: 13
         name: switch
@@ -125,9 +124,8 @@ secondary_entities:
         unit: kWh
         class: total_increasing
   - entity: switch
-    name: Sleep
+    translation_key: sleep
     category: config
-    icon: "mdi:power-sleep"
     dps:
       - id: 102
         name: switch
@@ -146,8 +144,7 @@ secondary_entities:
         name: switch
         type: boolean
   - entity: switch
-    name: iHealth
-    icon: "mdi:creation"
+    translation_key: uv_sterilization
     dps:
       - id: 106
         name: switch

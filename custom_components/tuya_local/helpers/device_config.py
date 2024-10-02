@@ -135,6 +135,12 @@ class TuyaDeviceConfig:
         for conf in self._config.get("secondary_entities", {}):
             yield TuyaEntityConfig(self, conf)
 
+    def all_entities(self):
+        """Iterate through all entities for this device."""
+        yield self.primary_entity
+        for e in self.secondary_entities():
+            yield e
+
     def matches(self, dps):
         required_dps = self._get_required_dps()
 
@@ -200,7 +206,7 @@ class TuyaDeviceConfig:
         if "updated_at" in keys:
             keys.remove("updated_at")
         total = len(keys)
-        if not self._entity_match_analyse(
+        if total < 1 or not self._entity_match_analyse(
             self.primary_entity,
             keys,
             matched,
@@ -359,6 +365,10 @@ class TuyaDpsConfig:
     @property
     def force(self):
         return self._config.get("force", False)
+
+    @property
+    def sensitive(self):
+        return self._config.get("sensitive", False)
 
     @property
     def format(self):
@@ -657,6 +667,7 @@ class TuyaDpsConfig:
 
         result = val
         scale = self.scale(device)
+        replaced = False
 
         mapping = self._find_map_for_dps(val)
         if mapping:
@@ -712,21 +723,21 @@ class TuyaDpsConfig:
                 result = result / scale
                 replaced = True
 
-            if self.rawtype == "unixtime" and isinstance(result, int):
-                try:
-                    result = datetime.fromtimestamp(result)
-                    replaced = True
-                except Exception:
-                    _LOGGER.warning("Invalid timestamp %d", result)
+        if self.rawtype == "unixtime" and isinstance(result, int):
+            try:
+                result = datetime.fromtimestamp(result)
+                replaced = True
+            except Exception:
+                _LOGGER.warning("Invalid timestamp %d", result)
 
-            if replaced:
-                _LOGGER.debug(
-                    "%s: Mapped dps %s value from %s to %s",
-                    self._entity._device.name,
-                    self.id,
-                    val,
-                    result,
-                )
+        if replaced:
+            _LOGGER.debug(
+                "%s: Mapped dps %s value from %s to %s",
+                self._entity._device.name,
+                self.id,
+                val,
+                result,
+            )
 
         return result
 

@@ -24,6 +24,7 @@ primary_entity:
     - id: 2
       name: temperature
       type: integer
+      unit: C
       range:
         min: 16
         max: 32
@@ -113,21 +114,15 @@ primary_entity:
       type: integer
 secondary_entities:
   - entity: switch
-    name: Sleep
-    icon: "mdi:power-sleep"
+    translation_key: sleep
     dps:
       - id: 101
         name: switch
         type: boolean
   - entity: light
-    name: Display
+    translation_key: display
     category: config
     dps:
       - id: 104
         name: switch
         type: boolean
-        mapping:
-          - dps_val: true
-            icon: "mdi:led-on"
-          - dps_val: false
-            icon: "mdi:led-off"

@@ -8,15 +8,23 @@ primary_entity:
     - id: 1
       type: boolean
       name: power
+      optional: true
+      mapping:
+        - dps_val: null
+          value: false
+          hidden: true
     - id: 2
       type: boolean
       name: activate
+      optional: true
     - id: 3
       type: boolean
       name: charge
+      optional: true
     - id: 4
       type: string
       name: command
+      optional: true
       mapping:
         - dps_val: smart
           value: smart
@@ -72,6 +80,7 @@ primary_entity:
     - id: 12
       type: string
       name: direction_control
+      optional: true
       mapping:
         - dps_val: forward
           value: forward
@@ -118,24 +127,22 @@ secondary_entities:
         name: sensor
         unit: "%"
         class: measurement
-  - entity: sensor
-    name: Water tank
-    category: diagnostic
-    class: enum
-    icon: "mdi:cup-water"
+  - entity: select
+    translation_key: mopping
+    category: config
     dps:
       - id: 10
         type: string
-        name: sensor
+        name: option
         mapping:
           - dps_val: closed
-            value: Closed
+            value: "off"
           - dps_val: low
-            value: Low
+            value: low
           - dps_val: middle
-            value: Medium
+            value: medium
           - dps_val: high
-            value: High
+            value: high
   - entity: sensor
     name: Side brush lifetime
     category: diagnostic
@@ -173,6 +180,19 @@ secondary_entities:
         name: sensor
         unit: min
         optional: true
+  - entity: number
+    name: Volume
+    category: config
+    icon: "mdi:volume-high"
+    dps:
+      - id: 26
+        type: integer
+        name: value
+        optional: true
+        unit: "%"
+        range:
+          min: 0
+          max: 100
   - entity: sensor
     name: Total cleaning area
     icon: "mdi:texture-box"
