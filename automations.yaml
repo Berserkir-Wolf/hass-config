@@ -1,28 +1,23 @@
 - id: '1584476995764'
   alias: Notification - SWMBO Arrives
   description: ''
-  trigger:
+  triggers:
   - entity_id: person.kirstyn_rolfe
-    platform: state
     to: home
-  condition:
+    trigger: state
+  conditions:
   - condition: not
     conditions:
     - condition: state
       entity_id: person.dyson_parkes
       state: home
     alias: Confirm Dyson is out
-  action:
+  actions:
   - data:
       message: Kirstyn just arrived
       title: Kirstyn's Home
     alias: Mobile notification
     action: notify.mobile_app_bnet_reno12
-  - data:
-      message: Kirstyn just arrived
-      title: Kirstyn's Home
-    alias: Browser notification
-    action: notify.html5_notifications
   mode: single
 - id: '1597613199016'
   alias: 'Lovelace: convert lovelace.json to lovelace-ui.yaml'
@@ -608,8 +603,8 @@
     type: button4
     subtype: single_press
   condition: []
-  action:
-  - service: light.toggle
+  actions:
+  - action: light.toggle
     data: {}
     target:
       area_id: garage
