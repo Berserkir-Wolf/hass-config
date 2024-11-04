@@ -762,15 +762,15 @@
 - id: '1714359343699'
   alias: Notification - Rack UPS has lost power
   description: ''
-  trigger:
+  triggers:
   - alias: Input Voltage drops
     type: voltage
-    platform: device
     device_id: 58a59dd95bfaeda8f7edc53ca2980388
     entity_id: 85b741fd9ea2e80d5f9f59b95620ad86
     domain: sensor
     below: 120
-  condition:
+    trigger: device
+  conditions:
   - alias: Confirm NOT
     condition: not
     conditions:
@@ -778,12 +778,12 @@
       entity_id: person.dyson_parkes
       zone: zone.home
       alias: Check Dyson isn't home
-  action:
+  actions:
   - data:
       message: The rack UPS has lost power
       title: Power Failure
     alias: Browser notification
-    action: notify.html5_notifications
+    action: notify.html5
   - data:
       message: The rack UPS has lost power
       title: Power Failure
