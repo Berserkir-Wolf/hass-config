@@ -35,40 +35,41 @@
 - id: '1602904795038'
   alias: Notification - HAss Update Available
   description: ''
-  trigger:
-  - platform: state
-    entity_id:
+  triggers:
+  - entity_id:
     - update.home_assistant_core_update
     to: 'on'
     for:
       hours: 0
       minutes: 0
       seconds: 0
-  condition:
+    trigger: state
+  conditions:
   - condition: state
     entity_id: input_boolean.silent_mode
     state: 'off'
-  action:
-  - data:
-      message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
-        }} is available.
-      title: Update Available!
-      target:
-      - '819351502640381952'
-    alias: Discord notification
-    action: notify.homeassistant
-  - data:
-      message: Home Assistant {{ state_attr('update.home_assistant_core_update', 'latest_version')
-        }} is available.
-    alias: Facebook notification
-    action: notify.facebook_text
-  - device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
-    domain: mobile_app
-    type: notify
-    title: '{{ notification_title }}'
-    message: '{{ notification_message }}'
-    alias: Notify Oppo Reno12 - Mobile
-    enabled: true
+  actions:
+  - parallel:
+    - data:
+        message: Home Assistant {{ state_attr('update.home_assistant_core_update',
+          'latest_version') }} is available.
+        title: Update Available!
+        target:
+        - '819351502640381952'
+      alias: Discord notification
+      action: notify.homeassistant
+    - data:
+        message: Home Assistant {{ state_attr('update.home_assistant_core_update',
+          'latest_version') }} is available.
+      alias: Facebook notification
+      action: notify.facebook_text
+    - device_id: 11ecfffb8a3d3e8cb0640a1f7d3ec024
+      domain: mobile_app
+      type: notify
+      title: '{{ notification_title }}'
+      message: '{{ notification_message }}'
+      alias: Notify Oppo Reno12 - Mobile
+      enabled: true
   variables:
     notification_title: Home Assistant Update Available!
     notification_message: '        Home Assistant {{ state_attr(''update.home_assistant_core_update'',
@@ -302,37 +303,38 @@
 - id: '1638231245218'
   alias: Notification - HACS Updates Available
   description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.hacs
+  triggers:
+  - entity_id: sensor.hacs
     above: '0'
-  condition:
+    trigger: numeric_state
+  conditions:
   - condition: state
     entity_id: input_boolean.silent_mode
     state: 'off'
-  action:
-  - service: persistent_notification.create
-    data:
-      notification_id: hacs_updates
-      title: HACS Update
-      message: Updates available in {{ states('sensor.hacs') }} [HACS repo{% if states('sensor.hacs')
-        | int > 1 %}s{% endif %}](/hacs)
-  - service: notify.facebook_text
-    data:
-      message: Updates available in {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs')
-        | int > 1 %}s{% endif %} {% for repo in states.sensor.hacs.attributes.repositories
-        %} {{ repo.name }} {% endfor %}
-    alias: Facebook notification
-  - service: notify.homeassistant
-    data:
-      message: 'Updates available in {{ states(''sensor.hacs'') }} HACS repo{% if
-        states(''sensor.hacs'') | int > 1 %}s{% endif %}\: {% for repo in states.sensor.hacs.attributes.repositories
-        %} {{repo.name }}, {{repo.installed_version}} -> {{repo.available_version}}
-        {% endfor %}'
-      title: HACS Updates available
-      target:
-      - '819351502640381952'
-    alias: Discord notification
+  actions:
+  - parallel:
+    - data:
+        notification_id: hacs_updates
+        title: HACS Update
+        message: Updates available in {{ states('sensor.hacs') }} [HACS repo{% if
+          states('sensor.hacs') | int > 1 %}s{% endif %}](/hacs)
+      action: persistent_notification.create
+    - data:
+        message: Updates available in {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs')
+          | int > 1 %}s{% endif %} {% for repo in states.sensor.hacs.attributes.repositories
+          %} {{ repo.name }} {% endfor %}
+      alias: Facebook notification
+      action: notify.facebook_text
+    - data:
+        message: 'Updates available in {{ states(''sensor.hacs'') }} HACS repo{% if
+          states(''sensor.hacs'') | int > 1 %}s{% endif %}\: {% for repo in states.sensor.hacs.attributes.repositories
+          %} {{repo.name }}, {{repo.installed_version}} -> {{repo.available_version}}
+          {% endfor %}'
+        title: HACS Updates available
+        target:
+        - '819351502640381952'
+      alias: Discord notification
+      action: notify.homeassistant
   mode: single
 - id: '1638232674502'
   alias: Notification - HACS Updates Installed
@@ -382,39 +384,40 @@
 - id: '1651206195438'
   alias: Notification - HAssOS Update Available
   description: ''
-  trigger:
-  - platform: state
-    entity_id:
+  triggers:
+  - entity_id:
     - update.home_assistant_operating_system_update
     to: 'on'
     for:
       hours: 0
       minutes: 0
       seconds: 1
-  condition:
+    trigger: state
+  conditions:
   - condition: state
     entity_id: input_boolean.silent_mode
     state: 'off'
-  action:
-  - service: notify.html5_notifications
-    data:
-      message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
-        'latest_version') }} is available.
-      title: Update Available
-    alias: Browser notification
-  - service: notify.homeassistant
-    data:
-      message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
-        'latest_version') }} is available.
-      title: Update Available!
-      target:
-      - '819351502640381952'
-    alias: Discord notification
-  - service: notify.facebook_text
-    data:
-      message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
-        'latest_version') }} is available.
-    alias: Facebook notification
+  actions:
+  - parallel:
+    - data:
+        message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
+          'latest_version') }} is available.
+        title: Update Available
+      alias: Browser notification
+      action: notify.html5_notifications
+    - data:
+        message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
+          'latest_version') }} is available.
+        title: Update Available!
+        target:
+        - '819351502640381952'
+      alias: Discord notification
+      action: notify.homeassistant
+    - data:
+        message: Home Assistant OS {{ state_attr('update.home_assistant_operating_system_update',
+          'latest_version') }} is available.
+      alias: Facebook notification
+      action: notify.facebook_text
   mode: single
 - id: '1655351847580'
   alias: Amp Volume - Change Input
@@ -779,16 +782,18 @@
       zone: zone.home
       alias: Check Dyson isn't home
   actions:
-  - data:
-      message: The rack UPS has lost power
-      title: Power Failure
-    alias: Browser notification
-    action: notify.html5
-  - data:
-      message: The rack UPS has lost power
-      title: Power Failure
-    alias: Mobile notification
-    action: notify.mobile_app_bnet_reno12
+  - parallel:
+    - data:
+        message: The rack UPS has lost power
+        title: Power Failure
+      alias: Browser notification
+      action: notify.html5
+    - data:
+        message: The rack UPS has lost power
+        title: Power Failure
+      alias: Mobile notification
+      action: notify.mobile_app_bnet_reno12
+    alias: Run notifications in parallel
   mode: single
 - id: '1720685093544'
   alias: Front door light motion trigger
