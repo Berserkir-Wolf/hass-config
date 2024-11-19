@@ -300,55 +300,6 @@
         entity_id: switch.subwoofer
       action: switch.turn_on
   mode: single
-- id: '1638231245218'
-  alias: Notification - HACS Updates Available
-  description: ''
-  triggers:
-  - entity_id: sensor.hacs
-    above: '0'
-    trigger: numeric_state
-  conditions:
-  - condition: state
-    entity_id: input_boolean.silent_mode
-    state: 'off'
-  actions:
-  - parallel:
-    - data:
-        notification_id: hacs_updates
-        title: HACS Update
-        message: Updates available in {{ states('sensor.hacs') }} [HACS repo{% if
-          states('sensor.hacs') | int > 1 %}s{% endif %}](/hacs)
-      action: persistent_notification.create
-    - data:
-        message: Updates available in {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs')
-          | int > 1 %}s{% endif %} {% for repo in states.sensor.hacs.attributes.repositories
-          %} {{ repo.name }} {% endfor %}
-      alias: Facebook notification
-      action: notify.facebook_text
-    - data:
-        message: 'Updates available in {{ states(''sensor.hacs'') }} HACS repo{% if
-          states(''sensor.hacs'') | int > 1 %}s{% endif %}\: {% for repo in states.sensor.hacs.attributes.repositories
-          %} {{repo.name }}, {{repo.installed_version}} -> {{repo.available_version}}
-          {% endfor %}'
-        title: HACS Updates available
-        target:
-        - '819351502640381952'
-      alias: Discord notification
-      action: notify.homeassistant
-  mode: single
-- id: '1638232674502'
-  alias: Notification - HACS Updates Installed
-  description: Dismiss persistent_notification for hacs updates
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.hacs
-    below: '1'
-  condition: []
-  action:
-  - service: persistent_notification.dismiss
-    data:
-      notification_id: hacs_updates
-  mode: single
 - id: '1639688722323'
   alias: Amp Power - Sync sub with amp (on startup)
   description: ''
