@@ -16,7 +16,7 @@ primary_entity:
       name: command
       mapping:
         - dps_val: standby
-          value: standby
+          value: stop
         - dps_val: smart
           value: smart
         - dps_val: wall_follow
@@ -67,6 +67,10 @@ primary_entity:
     - id: 15
       type: string
       name: clean_record
+    - id: 18
+      type: bitfield
+      name: error
+      hidden: true
     - id: 19
       type: string
       optional: true

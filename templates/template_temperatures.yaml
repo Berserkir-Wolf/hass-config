@@ -1,0 +1,25 @@
+# This is a template that gives me dedicated sensors for temperatures and humidities, rather than just an attribute.
+sensor:
+  - name: Bedroom Temperature
+    unique_id: bedroom_temperature_2
+    state: "{{ (state_attr('climate.bedroom_heater', 'current_temperature')) }}"
+    unit_of_measurement: "°C"
+
+  - name: Average Temperature
+    unique_id: average_house_temperature
+    state: >
+      {% set bedroom = states('sensor.bedroom_temperature') | float %}
+      {% set office = states('sensor.office_temperature') | float %}
+
+      {{ ((bedroom + office) / 2) | round(1, default=0) }}
+    unit_of_measurement: "°C"
+
+  - name: Office Temperature
+    unique_id: office_temperature
+    state: "{{ (state_attr('climate.office_fans', 'current_temperature')) }}"
+    unit_of_measurement: "°C"
+
+  - name: Office Humidity
+    unique_id: office_humidity
+    state: "{{ (state_attr('climate.office_fans', 'current_humidity')) }}"
+    unit_of_measurement: "%"

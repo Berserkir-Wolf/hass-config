@@ -37,11 +37,11 @@
                 "description": "[Siga estas instruções para encontrar o ID do seu dispositivo e a chave local.](https://github.com/make-all/tuya-local#finding-your-device-id-and-local-key)",
                 "data": {
                     "host": "Endereço IP ou nome do host",
-                    "device_id": "Device ID",
+                    "device_id": "Device ID (ou device_id do gateway para dispositivos conectados via gateway)",
                     "local_key": "Chave Local",
                     "protocol_version": "Versão do protocolo (tente auto se não souber)",
                     "poll_only": "Pesquisar (tente isto se o seu dispositivo não funcionar totalmente)",
-                    "device_cid": "Sub device ID (para dispositivos conectados via gateway)"
+                    "device_cid": "node_id ou uuid do sub-dispoitivo (para dispositivos conectados via gateway)"
                 }
             },
             "select_type": {
@@ -87,8 +87,7 @@
                     "host": "Endereço IP ou nome do host",
                     "local_key": "Chave Local",
                     "protocol_version": "Versão do protocolo (tente auto se não souber)",
-                    "poll_only": "Pesquisar (tente isto se o seu dispositivo não funcionar totalmente)",
-                    "device_cid": "Sub device ID (para dispositivos conectados via gateway)"
+                    "poll_only": "Pesquisar (tente isto se o seu dispositivo não funcionar totalmente)"
                 }
             }
         },
@@ -131,7 +130,7 @@
             },
             "casdon_oven_fault": {
                 "state_attributes": {
-                    "fault_message": {
+                    "description": {
                         "state": {
                             "e1": "E1: Proteção contra superaquecimento da câmara (excede 290°C)",
                             "e2": "E2: Proteção contra superaquecimento da bandeja de evaporação (excede 200°C)",
@@ -144,6 +143,14 @@
                         }
                     }
                 }
+            }
+        },
+        "button": {
+            "factory_reset": {
+                "name": "Redefinição de fábrica"
+            },
+            "filter_reset": {
+                "name": "Redefinição do filtro"
             }
         },
         "climate": {
@@ -371,6 +378,9 @@
         "number": {
             "timer": {
                 "name": "Cronômetro"
+            },
+            "timer_x": {
+                "name": "Cronômetro {x}"
             }
         },
         "select": {
@@ -525,6 +535,75 @@
             }
         },
         "sensor": {
+            "status": {
+                "name": "Status",
+                "state": {
+                    "available": "Disponível",
+                    "plugged_in": "Conectado",
+                    "fault_unplugged": "Falha (desconectado)",
+                    "charging": "Carregando",
+                    "waiting": "Aguardando",
+                    "charged": "Carregado",
+                    "fault": "Falha",
+                    "paused": "Pausado",
+                    "waiting_for_authorization": "Aguardando autorização",
+                    "standby": "Em espera",
+                    "heating": "Aquecimento",
+                    "cooling": "Resfriamento",
+                    "keeping_warm": "Mantendo quente",
+                    "no_water": "Sem água",
+                    "boiling": "Fervendo",
+                    "reserve_only": "Apenas reserva",
+                    "unknown": "Desconhecido",
+                    "idle": "Inativo",
+                    "auto": "Automático",
+                    "manual": "Manual",
+                    "rain_delay": "Atraso de chuva",
+                    "off": "Desligado",
+                    "cooking": "Cozinhando",
+                    "done": "Concluído",
+                    "door_open": "Porta aberta",
+                    "setting": "Configuração",
+                    "pre_heating": "Pré-aquecimento",
+                    "scheduled": "Agendado",
+                    "at_temperature": "Na te",
+                    "done_stage_1": "Concluído estágio 1",
+                    "done_stage_2": "Concluído estágio 2",
+                    "done_stage_3": "Concluído estágio 3",
+                    "done_stage_4": "Concluído estágio 4",
+                    "done_stage_5": "Concluído estágio 5",
+                    "done_stage_6": "Concluído estágio 6",
+                    "done_stage_7": "Concluído estágio 7",
+                    "done_stage_8": "Concluído estágio 8",
+                    "done_stage_9": "Concluído estágio 9",
+                    "done_stage_10": "Concluído estágio 10",
+                    "no_food": "Sem comida",
+                    "jammed": "Encravado",
+                    "blocked": "Bloqueado",
+                    "feeding": "Alimentando",
+                    "feeding_complete": "Alimentação",
+                    "caking": "Aglomerando",
+                    "cleaning": "Limpeza",
+                    "sleep": "Dormir",
+                    "sterilizing": "Esterili",
+                    "deodorizing": "Desodorizando",
+                    "occupied": "Ocupado",
+                    "normal": "Normal",
+                    "low": "Baixo",
+                    "high": "Alto",
+                    "unwashed": "Não lavado",
+                    "pre_washing": "Pré-lavagem",
+                    "washing": "Lavagem",
+                    "rinsing": "Enxágue",
+                    "drying": "Secagem",
+                    "air_purging": "Purificação do ar",
+                    "anti_freeze": "Antigelo",
+                    "close": "Fechar",
+                    "monitor": "Monitora",
+                    "working": "Trabalhando",
+                    "warning": "Aviso"
+                }
+            },
             "time_remaining": {
                 "name": "Tempo restante"
             },
@@ -538,6 +617,18 @@
                     "done": "Concluído",
                     "pause": "Pausa no cozimento"
                 }
+            },
+            "energy_produced": {
+                "name": "Energia produzida"
+            },
+            "energy_consumed": {
+                "name": "Energia consumida"
+            },
+            "energy_produced_x": {
+                "name": "Energia produzida {x}"
+            },
+            "energy_consumed_x": {
+                "name": "Energia consumida {x}"
             }
         },
         "switch": {

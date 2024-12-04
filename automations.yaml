@@ -300,55 +300,6 @@
         entity_id: switch.subwoofer
       action: switch.turn_on
   mode: single
-- id: '1638231245218'
-  alias: Notification - HACS Updates Available
-  description: ''
-  triggers:
-  - entity_id: sensor.hacs
-    above: '0'
-    trigger: numeric_state
-  conditions:
-  - condition: state
-    entity_id: input_boolean.silent_mode
-    state: 'off'
-  actions:
-  - parallel:
-    - data:
-        notification_id: hacs_updates
-        title: HACS Update
-        message: Updates available in {{ states('sensor.hacs') }} [HACS repo{% if
-          states('sensor.hacs') | int > 1 %}s{% endif %}](/hacs)
-      action: persistent_notification.create
-    - data:
-        message: Updates available in {{ states('sensor.hacs') }} HACS repo{% if states('sensor.hacs')
-          | int > 1 %}s{% endif %} {% for repo in states.sensor.hacs.attributes.repositories
-          %} {{ repo.name }} {% endfor %}
-      alias: Facebook notification
-      action: notify.facebook_text
-    - data:
-        message: 'Updates available in {{ states(''sensor.hacs'') }} HACS repo{% if
-          states(''sensor.hacs'') | int > 1 %}s{% endif %}\: {% for repo in states.sensor.hacs.attributes.repositories
-          %} {{repo.name }}, {{repo.installed_version}} -> {{repo.available_version}}
-          {% endfor %}'
-        title: HACS Updates available
-        target:
-        - '819351502640381952'
-      alias: Discord notification
-      action: notify.homeassistant
-  mode: single
-- id: '1638232674502'
-  alias: Notification - HACS Updates Installed
-  description: Dismiss persistent_notification for hacs updates
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.hacs
-    below: '1'
-  condition: []
-  action:
-  - service: persistent_notification.dismiss
-    data:
-      notification_id: hacs_updates
-  mode: single
 - id: '1639688722323'
   alias: Amp Power - Sync sub with amp (on startup)
   description: ''
@@ -1708,3 +1659,123 @@
       title: Update
       destructive: true
       authenticationRequired: true
+- id: '1733259126926'
+  alias: AirCon Automation
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.hour_of_power
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: sensor.hour_of_power
+        state: 'True'
+      sequence:
+      - choose:
+        - conditions:
+          - condition: numeric_state
+            entity_id: climate.lounge_air_conditioner
+            attribute: current_temperature
+            above: 24
+          sequence:
+          - alias: Set lounge AC to 18, cool, medium fan
+            action: sensibo.full_state
+            metadata: {}
+            target:
+              entity_id: climate.lounge_air_conditioner
+            data:
+              mode: cool
+              target_temperature: 18
+              fan_mode: medium
+          alias: When lounge is above 24 degrees
+        - conditions:
+          - condition: numeric_state
+            entity_id: climate.lounge_air_conditioner
+            attribute: current_temperature
+            below: 18
+          sequence:
+          - alias: Set lounge AC to 22, heat, medium fan
+            action: sensibo.full_state
+            metadata: {}
+            target:
+              entity_id: climate.lounge_air_conditioner
+            data:
+              mode: heat
+              target_temperature: 22
+              fan_mode: medium
+          alias: When lounge is below 18 degrees
+      alias: Hour of Power starts
+    - conditions:
+      - condition: state
+        entity_id: sensor.hour_of_power
+        state: 'False'
+      sequence:
+      - choose:
+        - conditions:
+          - condition: numeric_state
+            entity_id: zone.home
+            below: 1
+          sequence:
+          - action: sensibo.full_state
+            metadata: {}
+            data:
+              mode: 'off'
+            target:
+              entity_id: climate.lounge_air_conditioner
+            alias: Turn off AC
+          alias: Nobody is Home
+        - conditions:
+          - condition: numeric_state
+            entity_id: zone.home
+            above: 0
+            alias: Somebody is home
+          sequence:
+          - choose:
+            - conditions:
+              - condition: numeric_state
+                entity_id: climate.lounge_air_conditioner
+                attribute: current_temperature
+                above: 24
+              sequence:
+              - alias: Set lounge AC to 18, cool, medium fan
+                action: sensibo.full_state
+                metadata: {}
+                target:
+                  entity_id: climate.lounge_air_conditioner
+                data:
+                  mode: cool
+                  target_temperature: 18
+                  fan_mode: low
+              alias: When lounge is above 24 degrees, set lounge AC to 18, cool, medium
+                fan
+            - conditions:
+              - condition: numeric_state
+                entity_id: climate.lounge_air_conditioner
+                attribute: current_temperature
+                below: 18
+              sequence:
+              - alias: Set lounge AC to 22, heat, low fan
+                action: sensibo.full_state
+                metadata: {}
+                target:
+                  entity_id: climate.lounge_air_conditioner
+                data:
+                  mode: heat
+                  target_temperature: 22
+                  fan_mode: low
+              alias: When lounge is below 18 degrees, set lounge AC to 22, heat, low
+                fan
+            - conditions: []
+              sequence:
+              - action: climate.set_fan_mode
+                metadata: {}
+                data:
+                  fan_mode: low
+                target:
+                  entity_id: climate.lounge_air_conditioner
+              alias: Turn AC fan down
+      alias: Hour of Power ends
+  mode: single

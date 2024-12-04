@@ -55,11 +55,13 @@ group: !include_dir_merge_list groups
 notify: !include_dir_merge_list notify
 sensor: !include_dir_merge_list sensors
 switch: !include_dir_merge_list switches
+#template: !include_dir_merge_list templates
 zone: !include_dir_merge_list zones
 
 # Single Files / Direct includes (All saved in the includes directory)
 anniversaries: !include includes/anniversaries.yaml
 #coinbase: !include includes/coinbase.yaml
+emulated_hue: !include includes/emulated_hue.yaml
 #hdhomerun: !include includes/hdhomerun.yaml
 input_select: !include includes/input_select.yaml
 input_boolean: !include includes/input_boolean.yaml
@@ -71,6 +73,7 @@ light: !include includes/lights.yaml
 ombi: !include includes/ombi.yaml
 #panel_custom: !include includes/custom_sidebar.yaml
 recorder: !include includes/recorder.yaml
+#schedule: !include includes/input_schedule.yaml
 shell_command: !include includes/shell_commands.yaml
 #################################################################
 ## Testing functions

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any, cast
 from collections.abc import Callable
 import datetime
-import pytz
+from homeassistant.util import dt as dt_util
 
 from .const import (
     FIELD_DESCRIPTION,
@@ -31,7 +31,7 @@ from homeassistant.const import (
     UnitOfSpeed,
 )
 from homeassistant.helpers.typing import StateType
-
+AUCKLAND_TIMEZONE = dt_util.get_time_zone("Pacific/Auckland")
 
 @dataclass
 class WeatherRequiredKeysMixin:
@@ -62,9 +62,13 @@ current_condition_sensor_descriptions_public = [
         key=FIELD_DESCRIPTION,
         name="Weather Description",
         icon="mdi:note-text",
-        value_fn=lambda data, _: cast(str, data[0:254]),
-        # Description can be very long, so truncate to 254 characters
+        value_fn=lambda data, _: (
+            f"{data[:252]}..." if isinstance(data, str) and len(data) > 255 else (data if data else "No description")
+        ),
+        # Description can be very long, so truncate to 252 characters and append '...' if necessary
+        attr_fn=lambda data: {"full_description": data} if isinstance(data, str) and data else {},
     ),
+
     WeatherSensorEntityDescription(
         key=FIELD_HUMIDITY,
         name="Relative Humidity",
@@ -165,7 +169,8 @@ current_condition_sensor_descriptions_public = [
         key="weather_warnings",
         name="MetService Weather Warnings",
         icon="mdi:alert",
-        value_fn=lambda data, _: cast(str, data),
+        value_fn=lambda data, _: (data[:250] + '...') if data and len(data) > 255 else (data or "No warnings"),
+        attr_fn=lambda data: {"warnings": data} if data else {},
     ),
     WeatherSensorEntityDescription(
         key="fire_season",
@@ -196,31 +201,37 @@ current_condition_sensor_descriptions_public = [
         name="Next High Tide",
         icon="mdi:beach",
         device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data, _: datetime.datetime.fromisoformat(
+        value_fn=lambda data, _: (
             [
-                a
+                dt_util.parse_datetime(a["time"])
                 for a in data
                 if a["type"] == "HIGH"
-                and datetime.datetime.fromisoformat(a["time"])
-                > datetime.datetime.now(pytz.timezone("Pacific/Auckland"))
-            ][0]["time"]
+                and dt_util.parse_datetime(a["time"]) is not None
+                and dt_util.parse_datetime(a["time"]) > dt_util.now(AUCKLAND_TIMEZONE)
+            ][0]
+            if data
+            else None
         )
         if isinstance(data, list)
         else None,
+
     ),
+
     WeatherSensorEntityDescription(
         key="tides_low",
         name="Next Low Tide",
         icon="mdi:beach",
         device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data, _: datetime.datetime.fromisoformat(
+        value_fn=lambda data, _: (
             [
-                a
+                dt_util.parse_datetime(a["time"])
                 for a in data
                 if a["type"] == "LOW"
-                and datetime.datetime.fromisoformat(a["time"])
-                > datetime.datetime.now(pytz.timezone("Pacific/Auckland"))
-            ][0]["time"]
+                and dt_util.parse_datetime(a["time"]) is not None
+                and dt_util.parse_datetime(a["time"]) > dt_util.now(AUCKLAND_TIMEZONE)
+            ][0]
+            if data
+            else None
         )
         if isinstance(data, list)
         else None,
@@ -241,8 +252,11 @@ current_condition_sensor_descriptions_mobile = [
         key=FIELD_DESCRIPTION,
         name="Weather Description",
         icon="mdi:note-text",
-        value_fn=lambda data, _: cast(str, data[0:254]),
-        # Description can be very long, so truncate to 254 characters
+        value_fn=lambda data, _: (
+            f"{data[:252]}..." if isinstance(data, str) and len(data) > 255 else (data if data else "No description")
+        ),
+        # Description can be very long, so truncate to 252 characters and append '...' if necessary
+        attr_fn=lambda data: {"full_description": data} if isinstance(data, str) and data else {},
     ),
     WeatherSensorEntityDescription(
         key=FIELD_HUMIDITY,
@@ -355,7 +369,8 @@ current_condition_sensor_descriptions_mobile = [
         key="weather_warnings",
         name="MetService Weather Warnings",
         icon="mdi:alert",
-        value_fn=lambda data, _: cast(str, data),
+        value_fn=lambda data, _: (data[:250] + '...') if data and len(data) > 255 else (data or "No warnings"),
+        attr_fn=lambda data: {"warnings": data} if data else {},
     ),
     WeatherSensorEntityDescription(
         key="fire_season",
@@ -374,14 +389,16 @@ current_condition_sensor_descriptions_mobile = [
         name="Next High Tide",
         icon="mdi:beach",
         device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data, _: datetime.datetime.fromisoformat(
+        value_fn=lambda data, _: (
             [
-                a
+                dt_util.parse_datetime(a["time"])
                 for a in data
                 if a["type"] == "HIGH"
-                and datetime.datetime.fromisoformat(a["time"])
-                > datetime.datetime.now(pytz.timezone("Pacific/Auckland"))
-            ][0]["time"]
+                and dt_util.parse_datetime(a["time"]) is not None
+                and dt_util.parse_datetime(a["time"]) > dt_util.now(AUCKLAND_TIMEZONE)
+            ][0]
+            if data
+            else None
         )
         if isinstance(data, list)
         else None,
@@ -391,14 +408,17 @@ current_condition_sensor_descriptions_mobile = [
         name="Next Low Tide",
         icon="mdi:beach",
         device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data, _: datetime.datetime.fromisoformat(
+
+        value_fn=lambda data, _: (
             [
-                a
+                dt_util.parse_datetime(a["time"])
                 for a in data
                 if a["type"] == "LOW"
-                and datetime.datetime.fromisoformat(a["time"])
-                > datetime.datetime.now(pytz.timezone("Pacific/Auckland"))
-            ][0]["time"]
+                and dt_util.parse_datetime(a["time"]) is not None
+                and dt_util.parse_datetime(a["time"]) > dt_util.now(AUCKLAND_TIMEZONE)
+            ][0]
+            if data
+            else None
         )
         if isinstance(data, list)
         else None,

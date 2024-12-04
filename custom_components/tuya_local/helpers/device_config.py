@@ -167,8 +167,8 @@ class TuyaDeviceConfig:
         return len(missing_dps) == 0 and len(incorrect_type_dps) == 0
 
     def _get_all_dps(self):
-        all_dps_list = [d for d in self.primary_entity.dps()]
-        all_dps_list += [d for dev in self.secondary_entities() for d in dev.dps()]
+        all_dps_list = []
+        all_dps_list += [d for dev in self.all_entities() for d in dev.dps()]
         return all_dps_list
 
     def _get_required_dps(self):
@@ -206,15 +206,10 @@ class TuyaDeviceConfig:
         if "updated_at" in keys:
             keys.remove("updated_at")
         total = len(keys)
-        if total < 1 or not self._entity_match_analyse(
-            self.primary_entity,
-            keys,
-            matched,
-            dps,
-        ):
+        if total < 1:
             return 0
 
-        for e in self.secondary_entities():
+        for e in self.all_entities():
             if not self._entity_match_analyse(e, keys, matched, dps):
                 return 0
 
@@ -243,6 +238,11 @@ class TuyaEntityConfig:
     def translation_only_key(self):
         """The translation key for this entity, not used for unique_id"""
         return self._config.get("translation_only_key")
+
+    @property
+    def translation_placeholders(self):
+        """The translation placeholders for this entity."""
+        return self._config.get("translation_placeholders", {})
 
     def unique_id(self, device_uid):
         """Return a suitable unique_id for this entity."""
@@ -280,7 +280,13 @@ class TuyaEntityConfig:
         if own_name:
             return f"{self.entity}_{slugify(own_name)}"
         if self.translation_key:
-            return f"{self.entity}_{self.translation_key}"
+            slug = f"{self.entity}_{self.translation_key}"
+            for key, value in self.translation_placeholders.items():
+                if key in slug:
+                    slug = slug.replace(key, slugify(value))
+                else:
+                    slug = f"{slug}_{value}"
+            return slug
         return self.entity
 
     @property
@@ -348,6 +354,7 @@ class TuyaDpsConfig:
             "bitfield": int,
             "json": str,
             "base64": str,
+            "utf16b64": str,
             "hex": str,
             "unixtime": int,
         }
@@ -496,16 +503,12 @@ class TuyaDpsConfig:
     def values(self, device):
         """Return the possible values a dps can take."""
         if "mapping" not in self._config.keys():
-            _LOGGER.debug(
-                "No mapping for dpid %s (%s), unable to determine valid values",
-                self.id,
-                self.name,
-            )
             return []
         val = []
         for m in self._config["mapping"]:
             if self.should_show_mapping(m, device):
                 val.append(m["value"])
+
             # If there is mirroring without override, include mirrored values
             elif "value_mirror" in m:
                 r_dps = self._entity.find_dps(m["value_mirror"])
@@ -521,7 +524,6 @@ class TuyaDpsConfig:
 
             cond = self._active_condition(m, device)
             if cond and "mapping" in cond:
-                _LOGGER.debug("Considering conditional mappings")
                 c_val = []
                 for m2 in cond["mapping"]:
                     if self.should_show_mapping(m2, device):
@@ -533,16 +535,8 @@ class TuyaDpsConfig:
                             c_val = c_val + r_dps.values(device)
                 # if given, the conditional mapping is an override
                 if c_val:
-                    _LOGGER.debug(
-                        "Overriding %s values %s with %s",
-                        self.name,
-                        val,
-                        c_val,
-                    )
-
                     val = c_val
                     break
-        _LOGGER.debug("%s values: %s", self.name, val)
         return _remove_duplicates(val)
 
     @property
@@ -667,6 +661,8 @@ class TuyaDpsConfig:
             result = float(result)
         elif self.type is str:
             result = str(result)
+            if self.rawtype == "utf16b64":
+                result = b64encode(result.encode("utf-16-be")).decode("utf-8")
 
         if self.stringify:
             result = str(result)
@@ -682,6 +678,13 @@ class TuyaDpsConfig:
                 self.stringify = False
         else:
             self.stringify = False
+
+        # decode utf-16 base64 strings first, so normal strings can be matched
+        if self.rawtype == "utf16b64" and isinstance(val, str):
+            try:
+                val = b64decode(val).decode("utf-16-be")
+            except ValueError:
+                _LOGGER.warning("Invalid utf16b64 %s", val)
 
         result = val
         scale = self.scale(device)

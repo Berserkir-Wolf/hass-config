@@ -178,6 +178,9 @@ class TuyaLocalDevice(object):
         self._children.clear()
         self._force_dps.clear()
         if self._refresh_task:
+            self._api.set_socketPersistent(False)
+            if self._api.parent:
+                self._api.parent.set_socketPersistent(False)
             await self._refresh_task
         _LOGGER.debug("Monitor loop for %s stopped", self.name)
         self._refresh_task = None
@@ -244,6 +247,9 @@ class TuyaLocalDevice(object):
             _LOGGER.exception(
                 "%s receive loop terminated by exception %s", self.name, t
             )
+            self._api.set_socketPersistent(False)
+            if self._api.parent:
+                self._api.parent.set_socketPersistent(False)
 
     @property
     def should_poll(self):
@@ -251,6 +257,9 @@ class TuyaLocalDevice(object):
 
     def pause(self):
         self._temporary_poll = True
+        self._api.set_socketPersistent(False)
+        if self._api.parent:
+            self._api.parent.set_socketPersistent(False)
 
     def resume(self):
         self._temporary_poll = False
@@ -349,6 +358,9 @@ class TuyaLocalDevice(object):
                     type(t),
                     t,
                 )
+                self._api.set_socketPersistent(False)
+                if self._api.parent:
+                    self._api.parent.set_socketPersistent(False)
                 await asyncio.sleep(5)
 
         # Close the persistent connection when exiting the loop
@@ -364,16 +376,28 @@ class TuyaLocalDevice(object):
             # devices have dp 1. Lights generally start from 20.  101 is where
             # vendor specific dps start.  Between them, these three should cover
             # most devices.  148 covers a doorbell device that didn't have these
-            self._api.set_dpsUsed({"1": None, "20": None, "101": None, "148": None})
+            # 201 covers remote controllers and 2 and 9 cover others without 1
+            self._api.set_dpsUsed(
+                {
+                    "1": None,
+                    "2": None,
+                    "9": None,
+                    "20": None,
+                    "60": None,
+                    "101": None,
+                    "148": None,
+                    "201": None,
+                }
+            )
             await self.async_refresh()
             cached_state = self._get_cached_state()
 
-        possible = await self._hass.async_add_executor_job(
+        for matched in await self._hass.async_add_executor_job(
             possible_matches,
             cached_state,
-        )
-        for match in possible:
-            yield match
+        ):
+            await asyncio.sleep(0)
+            yield matched
 
     async def async_inferred_type(self):
         best_match = None
@@ -499,7 +523,7 @@ class TuyaLocalDevice(object):
         # Only delay a second if there was recently another command.
         # Otherwise delay 1ms, to keep things simple by reusing the
         # same send mechanism.
-        waittime = 1 if since < 1.1 else 0.001
+        waittime = 1 if since < 1.1 and self.should_poll else 0.001
 
         await asyncio.sleep(waittime)
         await self._send_pending_updates()
@@ -570,9 +594,12 @@ class TuyaLocalDevice(object):
                         > self._AUTO_FAILURE_RESET_COUNT
                     ):
                         self._api_protocol_working = False
-                    for entity in self._children:
-                        entity.async_schedule_update_ha_state()
-                    _LOGGER.error(error_message)
+                        for entity in self._children:
+                            entity.async_schedule_update_ha_state()
+                    if self._api_working_protocol_failures == 1:
+                        _LOGGER.error(error_message)
+                    else:
+                        _LOGGER.info(error_message)
 
                 if not self._api_protocol_working:
                     await self._rotate_api_protocol_version()

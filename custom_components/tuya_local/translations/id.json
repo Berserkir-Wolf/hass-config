@@ -37,11 +37,11 @@
                 "description": "[Ikuti petunjuk ini untuk menemukan ID perangkat dan kunci lokal.](https://github.com/make-all/tuya-local#finding-your-device-id-and-local-key)",
                 "data": {
                     "host": "Alamat IP atau nama hos",
-                    "device_id": "ID Perangkat (device_id)",
+                    "device_id": "ID Perangkat (device_id, atau device_id dari gateway untuk perangkat yang tersambung via gateway)",
                     "local_key": "Kunci lokal (local_key)",
                     "protocol_version": "Versi protokol (coba otomatis bila tidak diketahui)",
                     "poll_only": "Hanya poll (Coba ini bila perangkat Anda tidak berfungsi secara penuh)",
-                    "device_cid": "ID sub perangkat (untuk perangkat yang tersambung via gateway)"
+                    "device_cid": "node_id atau uuid sub perangkat (untuk perangkat yang tersambung via gateway)"
                 }
             },
             "select_type": {
@@ -87,8 +87,7 @@
                     "host": "Alamat IP atau nama hos",
                     "local_key": "Kunci lokal (local_key)",
                     "protocol_version": "Versi protokol (coba otomatis bila tidak diketahui)",
-                    "poll_only": "Hanya poll (Coba ini bila perangkat Anda tidak berfungsi secara penuh)",
-                    "device_cid": "ID sub perangkat (untuk perangkat yang tersambung via gateway)"
+                    "poll_only": "Hanya poll (Coba ini bila perangkat Anda tidak berfungsi secara penuh)"
                 }
             }
         },
@@ -131,7 +130,7 @@
             },
             "casdon_oven_fault": {
                 "state_attributes": {
-                    "fault_message": {
+                    "description": {
                         "state": {
                             "e1": "E1: Perlindungan kelebihan panas ruang (melebihi 290°C)",
                             "e2": "E2: Perlindungan kelebihan panas nampan penguapan (melebihi 200°C)",
@@ -144,6 +143,14 @@
                         }
                     }
                 }
+            }
+        },
+        "button": {
+            "factory_reset": {
+                "name": "Reset pabrik"
+            },
+            "filter_reset": {
+                "name": "Reset filter"
             }
         },
         "climate": {
@@ -371,6 +378,9 @@
         "number": {
             "timer": {
                 "name": "Pengatur waktu"
+            },
+            "timer_x": {
+                "name": "Pengatur waktu {x}"
             }
         },
         "select": {
@@ -525,6 +535,75 @@
             }
         },
         "sensor": {
+            "status": {
+                "name": "Status",
+                "state": {
+                    "available": "Tersedia",
+                    "plugged_in": "Terhubung",
+                    "fault_unplugged": "Kesalahan (tidak terhubung)",
+                    "charging": "Mengisi daya",
+                    "waiting": "Menunggu",
+                    "charged": "Terisi",
+                    "fault": "Kesalahan",
+                    "paused": "Dijeda",
+                    "waiting_for_authorization": "Menunggu otorisasi",
+                    "standby": "Siaga",
+                    "heating": "Pemanasan",
+                    "cooling": "Pendinginan",
+                    "keeping_warm": "Tetap hangat",
+                    "no_water": "Tidak ada air",
+                    "boiling": "Mendidih",
+                    "reserve_only": "Hanya pemesanan",
+                    "unknown": "Tidak diketahui",
+                    "idle": "Idle",
+                    "auto": "Otomatis",
+                    "manual": "Manual",
+                    "rain_delay": "Penundaan hujan",
+                    "off": "Mati",
+                    "cooking": "Memasak",
+                    "done": "Selesai",
+                    "door_open": "Pintu terbuka",
+                    "setting": "Pengaturan",
+                    "pre_heating": "Pemanasan awal",
+                    "scheduled": "Dijadwalkan",
+                    "at_temperature": "Pada suhu",
+                    "done_stage_1": "Selesai tahap 1",
+                    "done_stage_2": "Selesai tahap 2",
+                    "done_stage_3": "Selesai tahap 3",
+                    "done_stage_4": "Selesai tahap 4",
+                    "done_stage_5": "Selesai tahap 5",
+                    "done_stage_6": "Selesai tahap 6",
+                    "done_stage_7": "Selesai tahap 7",
+                    "done_stage_8": "Selesai tahap 8",
+                    "done_stage_9": "Selesai tahap 9",
+                    "done_stage_10": "Selesai tahap 10",
+                    "no_food": "Tidak ada makanan",
+                    "jammed": "Macet",
+                    "blocked": "Terhalang",
+                    "feeding": "Pemberian makanan",
+                    "feeding_complete": "Pemberian makanan selesai",
+                    "caking": "Pembekuan",
+                    "cleaning": "Pembersihan",
+                    "sleep": "Tidur",
+                    "sterilizing": "Sterilisasi",
+                    "deodorizing": "Penghilangan bau",
+                    "occupied": "Terisi",
+                    "normal": "Normal",
+                    "low": "Rendah",
+                    "high": "Tinggi",
+                    "unwashed": "Belum dicuci",
+                    "pre_washing": "Pencucian awal",
+                    "washing": "Mencuci",
+                    "rinsing": "Pencucian",
+                    "drying": "Pengeringan",
+                    "air_purging": "Pengudaraan",
+                    "anti_freeze": "Anti beku",
+                    "close": "Tutup",
+                    "monitor": "Pemantauan",
+                    "working": "Bekerja",
+                    "warning": "Peringatan"
+                }
+            },
             "time_remaining": {
                 "name": "Waktu yang tersisa"
             },
@@ -538,6 +617,18 @@
                     "done": "Memasak selesai",
                     "pause": "Memasak dijeda"
                 }
+            },
+            "energy_produced": {
+                "name": "Energi yang dihasilkan"
+            },
+            "energy_consumed": {
+                "name": "Energi yang dikonsumsi"
+            },
+            "energy_produced_x": {
+                "name": "Energi yang dihasilkan {x}"
+            },
+            "energy_consumed_x": {
+                "name": "Energi yang dikonsumsi {x}"
             }
         },
         "switch": {
