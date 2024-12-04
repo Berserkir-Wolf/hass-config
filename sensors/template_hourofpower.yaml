@@ -1,0 +1,7 @@
+- platform: template
+  sensors:
+    hour_of_power:
+      friendly_name: "Hour of Power"
+      value_template: >
+        {% set time = states('sensor.time') %}
+        {{ states('sensor.hour_of_free_power_start') < states('sensor.time') < states('sensor.hour_of_free_power_end')  }}
