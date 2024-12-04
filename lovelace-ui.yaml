@@ -66,8 +66,7 @@ button_card_templates:
       - overflow: visible
 title: BNet
 views:
-- badges: []
-  cards:
+- cards:
   - cards:
     - cards:
       - color_type: card
@@ -171,6 +170,96 @@ views:
       method: none
     type: custom:auto-entities
   - cards:
+    - badges:
+      - color: state
+        entity: light.lifx_switch_6c31d6_porch
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - color: state
+        entity: input_boolean.front_door_motion_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - color: state
+        entity: input_boolean.motion_notifications
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      heading: Porch
+      heading_style: title
+      icon: mdi:outdoor-lamp
+      tap_action:
+        action: perform-action
+        perform_action: light.toggle
+        target:
+          entity_id: light.lifx_switch_6c31d6_porch
+      type: heading
+    - cards:
+      - entity: light.lifx_switch_6c31d6_porch
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
+        tap_action:
+          action: toggle
+        type: button
+      - entity: select.front_door_recording_mode
+        name: Recording Mode
+        state_color: false
+        type: entity
+      - entity: input_boolean.motion_notifications
+        icon_height: 30px
+        name: Door notifications
+        show_icon: true
+        show_name: true
+        tap_action:
+          action: toggle
+        type: button
+      - entity: input_boolean.front_door_motion_light
+        icon_height: 30px
+        name: Motion Light
+        show_icon: true
+        show_name: true
+        tap_action:
+          action: toggle
+        type: button
+      type: horizontal-stack
+    type: custom:vertical-stack-in-card
+  - cards:
+    - badges:
+      - color: state
+        entity: climate.lounge_air_conditioner
+        icon: mdi:home-thermometer
+        show_icon: true
+        show_state: true
+        state_content: current_temperature
+        tap_action:
+          action: more-info
+        type: entity
+      - entity: light.lounge_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - entity: media_player.2020_2021_uhd_android_tv
+        type: entity
+      heading: Living Room
+      heading_style: title
+      icon: mdi:sofa
+      tap_action:
+        action: perform-action
+        perform_action: media_player.turn_on
+        target:
+          entity_id: media_player.2020_2021_uhd_android_tv
+      type: heading
     - columns: 3
       entities:
       - entity: switch.wol_lounge
@@ -219,7 +308,6 @@ views:
       show_name: true
       show_state: true
       state_color: true
-      title: Living Room
       type: glance
     - card:
         entity: media_player.lounge_tv
@@ -261,6 +349,14 @@ views:
         state: 'on'
       type: conditional
     - card:
+        entity: sensor.lounge_ps5_activity
+        state_color: true
+        type: entity
+      conditions:
+      - entity: switch.lounge_ps5_power
+        state: 'on'
+      type: conditional
+    - card:
         entity: media_player.living_room_xbox
         type: media-control
       conditions:
@@ -269,26 +365,124 @@ views:
       - entity: media_player.living_room_xbox
         state_not: unavailable
       type: conditional
-    - card:
-        entity: sensor.lounge_ps5_activity
-        state_color: true
+    type: custom:vertical-stack-in-card
+  - cards:
+    - badges:
+      - entity: sensor.bedroom_heater_temperature
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: perform-action
+          perform_action: switch.toggle
+          target:
+            entity_id: switch.bedroom_heater_manual_switch
         type: entity
-      conditions:
-      - entity: switch.lounge_ps5_power
-        state: 'on'
-      type: conditional
-    type: vertical-stack
+      - entity: light.bedroom_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - entity: light.bedroom_lamp
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      heading: Bedroom
+      heading_style: title
+      icon: mdi:bed-queen
+      type: heading
+    - columns: 3
+      entities:
+      - entity: light.bedroom_light
+        name: Light
+        tap_action:
+          action: toggle
+      - entity: light.bedroom_lamp
+        name: Lamp
+        tap_action:
+          action: toggle
+      - entity: media_player.doppler
+      - entity: switch.bedroom_heater
+        name: Heater
+        secondary_info: sensor.bedroom_heater_temperature
+        tap_action:
+          action: toggle
+      - entity: sensor.bedroom_heater_temperature
+      show_icon: true
+      show_name: true
+      show_state: true
+      state_color: true
+      type: glance
+    type: custom:vertical-stack-in-card
   - cards:
-    - cards:
+    - badges:
+      - color: state
+        entity: light.kitchen_switch_kitchen_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - color: state
+        entity: light.kitchen_switch_dining_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      heading: Kitchen
+      heading_style: title
+      icon: mdi:table-chair
+      tap_action:
+        action: perform-action
+        perform_action: light.toggle
+        target:
+          entity_id: light.kitchen_lights
+      type: heading
+    - entities:
       - entity: light.kitchen_switch_kitchen_light
-        icon_height: 30px
-        show_icon: true
-        show_name: true
-        show_state: false
         tap_action:
           action: toggle
-        type: button
       - entity: light.kitchen_switch_dining_light
+        tap_action:
+          action: toggle
+      show_icon: true
+      show_name: true
+      show_state: false
+      type: glance
+    type: custom:vertical-stack-in-card
+  - cards:
+    - badges:
+      - entity: sensor.kettle_temperature
+        icon: mdi:kettle
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: call-service
+          service: scene.turn_on
+          service_data:
+            entity_id: scene.boil_jug
+        type: entity
+      - color: state
+        entity: light.kitchen_switch_pantry_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      heading: Pantry
+      heading_style: title
+      icon: mdi:fridge
+      tap_action:
+        action: perform-action
+        perform_action: ''
+      type: heading
+    - cards:
+      - entity: light.kitchen_switch_pantry_light
+        hold_action:
+          action: more-info
         icon_height: 30px
         show_icon: true
         show_name: true
@@ -296,69 +490,46 @@ views:
         tap_action:
           action: toggle
         type: button
+      - entity: climate.kettle
+        hold_action:
+          action: call-service
+          service: climate.set_hvac_mode
+          service_data:
+            entity_id: climate.kettle
+            hvac_mode: 'off'
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
+        tap_action:
+          action: call-service
+          service: scene.turn_on
+          service_data:
+            entity_id: scene.boil_jug
+        type: button
+      - detail: 1
+        entity: sensor.kettle_temperature
+        graph: none
+        icon: mdi:water-thermometer
+        name: Kettle
+        type: sensor
       type: horizontal-stack
-    title: Kitchen
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   - cards:
-    - entity: light.kitchen_switch_pantry_light
-      hold_action:
-        action: more-info
-      icon_height: 30px
-      show_icon: true
-      show_name: true
-      show_state: false
-      tap_action:
-        action: toggle
-      type: button
-    - entity: climate.kettle
-      hold_action:
-        action: call-service
-        service: climate.set_hvac_mode
-        service_data:
-          entity_id: climate.kettle
-          hvac_mode: 'off'
-      icon_height: 30px
-      show_icon: true
-      show_name: true
-      show_state: false
-      tap_action:
-        action: call-service
-        service: scene.turn_on
-        service_data:
-          entity_id: scene.boil_jug
-      type: button
-    - detail: 1
-      entity: sensor.kettle_temperature
-      graph: none
-      icon: mdi:water-thermometer
-      name: Kettle
-      type: sensor
-    title: Pantry
-    type: horizontal-stack
-  - columns: 3
-    entities:
-    - entity: light.bedroom_light
-      name: Light
-      tap_action:
-        action: toggle
-    - entity: light.bedroom_lamp
-      name: Lamp
-      tap_action:
-        action: toggle
-    - entity: switch.bedroom_heater
-      name: Heater
-      secondary_info: sensor.bedroom_heater_temperature
-      tap_action:
-        action: toggle
-    - entity: media_player.doppler
-    - entity: sensor.bedroom_heater_temperature
-    show_icon: true
-    show_name: true
-    show_state: true
-    state_color: true
-    title: Bedroom
-    type: glance
-  - cards:
+    - badges:
+      - entity: sensor.office_fan_temperature
+        show_icon: true
+        show_state: true
+        type: entity
+      - color: state
+        entity: switch.wol_undefea_2
+        show_icon: true
+        show_state: true
+        type: entity
+      heading: Office
+      heading_style: title
+      icon: mdi:office-building
+      type: heading
     - columns: 3
       entities:
       - entity: switch.wol_undefea_2
@@ -377,45 +548,33 @@ views:
         tap_action:
           action: toggle
       - entity: light.office_lamp
+        tap_action:
+          action: toggle
       - entity: media_player.office_dot
       show_icon: true
       show_name: true
       show_state: true
       state_color: true
-      title: Office
       type: glance
+    - badges:
+      - entity: sensor.adap_system_temp
+        type: entity
+      - entity: sensor.hass_system_temp
+        type: entity
+      heading: Server Rack
+      heading_style: title
+      icon: mdi:server
+      type: heading
     - columns: 4
       entities:
       - entity: switch.pi_hole
       - entity: switch.adguard_filtering
         name: AdGuard
-      - entity: sensor.mikrotik_router_kib_s_received
-        name: WAN RX
-      - entity: sensor.mikrotik_router_kib_s_sent
-        name: WAN TX
-      - entity: sensor.hdhomerun_connect_duo_1241c3c2_tuner0
-      - entity: sensor.hdhomerun_connect_duo_1241c3c2_tuner1
-      - entity: button.hdhomerun_connect_duo_1241c3c2_restart
-      - entity: sensor.hdhomerun_connect_duo_1241c3c2_channel_count
       show_icon: true
       show_name: true
       show_state: true
       state_color: true
-      title: Server Rack
       type: glance
-    - card:
-        artwork: cover-fit
-        entity: media_player.vlc_telnet
-        group: false
-        info: scroll
-        replace_mute: stop
-        toggle_power: false
-        type: custom:mini-media-player
-        volume_stateless: true
-      conditions:
-      - entity: media_player.vlc_telnet
-        state_not: idle
-      type: conditional
     - entities:
       - entity: switch.wol_inevi
         name: TrueNAS
@@ -428,7 +587,20 @@ views:
         name: SteamRemote Host
         tap_action:
           action: toggle
+      - entity: sensor.server_rack_temperature
       type: glance
+    - card:
+        entities:
+        - entity: sensor.hdhomerun_connect_duo_1241c3c2_tuner0
+        - entity: sensor.hdhomerun_connect_duo_1241c3c2_tuner1
+        - entity: button.hdhomerun_connect_duo_1241c3c2_restart
+        - entity: sensor.hdhomerun_connect_duo_1241c3c2_channel_count
+        type: glance
+      conditions:
+      - condition: state
+        entity: light.office_lights
+        state: 'on'
+      type: conditional
     - card:
         card:
           type: entities
@@ -446,34 +618,32 @@ views:
         entity: light.office_lights
         state: 'on'
       type: conditional
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   - cards:
-    - cards:
-      - action_button:
-          icon: mdi:power
-          mode: toggle
-          show: true
-          show_spinner: true
-          tap_action:
-            action: toggle
-        compact: true
-        entity: light.hall_light_strip
-        icon:
-          show: true
-          tap_action:
-            action: more-info
-          use_state_color: true
-        show_name: true
+    - badges:
+      - color: state
+        entity: light.lifx_switch_6c31d6_hall_front
+        show_icon: true
         show_state: true
-        slider:
-          background: gradient
-          direction: left-right
-          force_square: false
-          show_track: false
-          toggle_on_click: false
-          use_percentage_bg_opacity: true
-          use_state_color: true
-        type: custom:slider-button-card
+        type: entity
+      heading: Hallway
+      heading_style: title
+      icon: ''
+      tap_action:
+        action: perform-action
+        perform_action: light.toggle
+        target:
+          entity_id: light.hall_lights
+      type: heading
+    - cards:
+      - entity: light.hall_light_strip
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
+        tap_action:
+          action: toggle
+        type: button
       - entity: light.lifx_switch_6c31d6_hall_front
         icon_height: 30px
         show_icon: true
@@ -483,9 +653,27 @@ views:
           action: toggle
         type: button
       type: horizontal-stack
-    title: Hallway
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   - cards:
+    - badges:
+      - color: state
+        entity: light.laundry_switch_laundry_light
+        show_icon: true
+        show_state: true
+        type: entity
+      - color: state
+        entity: light.laundry_switch_toilet_light
+        show_icon: true
+        show_state: true
+        type: entity
+      heading: Laundry
+      heading_style: title
+      tap_action:
+        action: perform-action
+        perform_action: light.toggle
+        target:
+          entity_id: light.laundry_lights
+      type: heading
     - cards:
       - entity: light.laundry_switch_laundry_light
         icon_height: 30px
@@ -504,9 +692,27 @@ views:
           action: toggle
         type: button
       type: horizontal-stack
-    title: Laundry
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   - cards:
+    - badges:
+      - entity: light.spare_room_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - entity: switch.biltong_rack
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - entity: sensor.biltong_approximate_cost
+        type: entity
+      heading: Spare Room
+      heading_style: title
+      icon: mdi:bed-outline
+      type: heading
     - cards:
       - entity: light.spare_room_light
         icon_height: 30px
@@ -526,6 +732,21 @@ views:
         type: button
       type: horizontal-stack
     - card:
+        camera_image: camera.biltong
+        camera_view: auto
+        entity: switch.biltong_rack
+        hold_action:
+          action: none
+        show_name: true
+        show_state: true
+        tap_action:
+          action: none
+        type: picture-entity
+      conditions:
+      - entity: switch.biltong_rack
+        state: 'on'
+      type: conditional
+    - card:
         entities:
         - entity: sensor.biltong_rack_current
           name: Current
@@ -544,19 +765,41 @@ views:
       - entity: switch.biltong_rack
         state: 'on'
       type: conditional
-    - camera_image: camera.biltong
-      camera_view: auto
-      entity: switch.biltong_rack
-      hold_action:
-        action: none
-      show_name: true
-      show_state: true
-      tap_action:
-        action: none
-      type: picture-entity
-    title: Spare Room
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   - cards:
+    - badges:
+      - color: state
+        entity: light.garage_switch_overhead
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - color: state
+        entity: light.garage_switch_bench
+        icon: ''
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - color: state
+        entity: light.garage_switch_driveway
+        icon: mdi:light-flood-down
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      heading: Garage
+      heading_style: title
+      icon: mdi:garage
+      tap_action:
+        action: perform-action
+        perform_action: light.toggle
+        target:
+          entity_id: light.garage_lights
+      type: heading
     - columns: 4
       entities:
       - entity: light.garage_switch_bench
@@ -576,16 +819,15 @@ views:
       show_name: true
       show_state: true
       state_color: true
-      title: Garage
       type: glance
     - card:
         entities:
         - entity: sensor.state_garageap
           icon: mdi:access-point
           name: Garage AP
-        - entity: media_player.garage_dot
         - entity: media_player.garage_speaker
           name: Garage Soundbar
+        - entity: media_player.garage_dot
         show_icon: true
         show_name: true
         show_state: true
@@ -596,7 +838,7 @@ views:
         entity: light.garage_lights
         state: 'on'
       type: conditional
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   icon: mdi:home
   path: home
   title: Home
@@ -625,11 +867,12 @@ views:
   - user: 08d29e434e9a4bed98b3a62218eac7a7
 - badges: []
   cards:
-  - dark_mode: false
-    entities:
-    - entity: device_tracker.cph2197
+  - entities:
+    - entity: device_tracker.bnet_reno12
     - entity: zone.work
     - entity: zone.home
+    - entity: device_tracker.cph2197
+    theme_mode: auto
     type: map
   - card:
       show_header_toggle: false
@@ -646,6 +889,7 @@ views:
     unique: false
   - columns: 1
     entities:
+    - entity: sensor.bnet_reno12_geocoded_location
     - entity: sensor.bnet_a74_geocoded_location
     show_icon: true
     show_state: true
@@ -785,15 +1029,14 @@ views:
       type: gauge
       unit: ' '
     - entities:
-      - entity: sensor.unifi_clients
-        icon: mdi:wifi
-        name: ' '
-        secondary_info: 'Berserkir-Net : [[ if(sensor.unifi_clients.attributes.Berserkir-Net
-          == undefined, "0", sensor.unifi_clients.attributes.Berserkir-Net) ]] <br>GuestNet
-          : [[ if(sensor.unifi_clients.attributes.GuestNet == undefined, "0", sensor.unifi_clients.attributes.GuestNet)
-          ]] <br>Wired : [[ if(sensor.unifi_clients.attributes.wired == undefined,
-          "0", sensor.unifi_clients.attributes.wired) ]]'
-        type: custom:secondaryinfo-entity-row
+      - entity: sensor.berserkir_net
+        icon: mdi:access-point
+      - entity: sensor.guestnet
+        icon: mdi:access-point
+      - entity: sensor.loungeswitch_clients
+        icon: mdi:switch
+      - entity: sensor.deskswitch_clients
+        icon: mdi:switch
       type: entities
     - entities:
       - entity: sensor.state_deskswitch
@@ -804,12 +1047,14 @@ views:
         icon: mdi:lan-connect
       - entity: sensor.state_loungeap
         icon: mdi:access-point-network
+      - entity: sensor.state_backap
+        icon: mdi:access-point-network
       - entity: sensor.state_garageap
         icon: mdi:access-point-network
       show_header_toggle: false
       type: entities
     title: UniFi Access Point Status
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   icon: mdi:network
   path: network
   theme: Backend-selected
@@ -871,7 +1116,8 @@ views:
     - card:
         type: entities
       filter:
-        exclude: []
+        exclude:
+        - state: unavailable
         include:
         - domain: geo_location
       show_empty: false
@@ -1336,6 +1582,36 @@ views:
 - badges: []
   cards:
   - cards:
+    - entities:
+      - entity: device_tracker.bnet_reno12
+      hours_to_show: 0
+      theme_mode: auto
+      title: Phone Location
+      type: map
+    - entities:
+      - entity: sensor.bnet_reno12_battery_level
+        name: Battery
+      - entity: binary_sensor.bnet_reno12_is_charging
+        name: Charging?
+      - entity: sensor.bnet_reno12_battery_temperature
+        name: Battery Temp
+      - entity: sensor.bnet_reno12_battery_state
+        name: Battery State
+      title: Phone State
+      type: glance
+    - card:
+        show_header_toggle: false
+        title: Phone Sensors
+        type: entities
+      filter:
+        include:
+        - entity_id: sensor.bnet_reno12*
+        - entity_id: binary_sensor.bnet_reno12*
+      show_empty: false
+      type: custom:auto-entities
+      unique: false
+    type: vertical-stack
+  - cards:
     - dark_mode: false
       entities:
       - entity: device_tracker.cph2197
@@ -1613,24 +1889,82 @@ views:
   title: Printers
 - badges: []
   cards:
-  - card:
-      show_header_toggle: false
-      title: Repea
-      type: entities
-    filter:
-      include:
-      - entity_id: sensor.repea*
-    sort: domain
-    type: custom:auto-entities
   - cards:
-    - entity: switch.wol_inevi
-      icon_height: 30px
-      name: inevi.table.berserkir.net
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: toggle
-      type: button
+    - badges:
+      - entity: switch.hass_chassis
+        show_icon: true
+        show_state: true
+        type: entity
+      - entity: sensor.hass_system_temp
+        type: entity
+      heading: Automa iPMI
+      heading_style: title
+      icon: si:homeassistant
+      type: heading
+    - card:
+        type: entities
+      filter:
+        exclude:
+        - entity_id: sensor.hass_repo
+        - state: unavailable
+        include:
+        - entity_id: sensor.hass_*
+      sort:
+        method: domain
+        numeric: true
+      type: custom:auto-entities
+    type: custom:vertical-stack-in-card
+  - cards:
+    - badges:
+      - entity: sensor.adap_state
+        type: entity
+      - entity: sensor.adap_system_temp
+        type: entity
+      heading: Adap iPMI
+      heading_style: title
+      icon: mdi:server
+      type: heading
+    - card:
+        type: entities
+      filter:
+        exclude:
+        - state: unavailable
+        include:
+        - entity_id: sensor.adap_*
+      sort:
+        method: domain
+        numeric: true
+      type: custom:auto-entities
+    type: custom:vertical-stack-in-card
+  - cards:
+    - badges:
+      - entity: sensor.repea_status
+        type: entity
+      - entity: sensor.repea_system_temperature
+        type: entity
+      heading: Repea
+      heading_style: title
+      icon: mdi:nas
+      type: heading
+    - card:
+        show_header_toggle: false
+        type: entities
+      filter:
+        include:
+        - entity_id: sensor.repea*
+      sort: domain
+      type: custom:auto-entities
+    type: custom:vertical-stack-in-card
+  - cards:
+    - badges:
+      - entity: switch.wol_inevi
+        type: entity
+      - entity: sensor.inevi_system_temperature
+        type: entity
+      heading: Inevi
+      heading_style: title
+      icon: si:truenas
+      type: heading
     - card:
         type: entities
       filter:
@@ -1645,63 +1979,13 @@ views:
         numeric: true
         reverse: true
       type: custom:auto-entities
-    title: TrueNAS - inevi.table.berserkir.net
-    type: vertical-stack
-  - cards:
-    - entity: switch.hass_chassis
-      icon_height: 30px
-      name: automa.table.berserkir.net
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: more-info
-      type: button
-    - card:
-        type: entities
-      filter:
-        exclude:
-        - entity_id: sensor.hass_repo
-        - state: unavailable
-        include:
-        - entity_id: sensor.hass_*
-      sort:
-        method: domain
-        numeric: true
-      type: custom:auto-entities
-    title: HAss iPMI
-    type: vertical-stack
-  - cards:
-    - entity: switch.adap_chassis
-      icon_height: 30px
-      name: adap.table.berserkir.net
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: more-info
-      type: button
-    - card:
-        type: entities
-      filter:
-        exclude:
-        - state: unavailable
-        include:
-        - entity_id: sensor.adap_*
-      sort:
-        method: domain
-        numeric: true
-      type: custom:auto-entities
-    title: Adap iPMI
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   icon: mdi:nas
   path: nas
   title: NAS
 - badges: []
   cards:
   - cards:
-    - entity: sensor.hacs
-      name: HACS
-      type: entity
-      unit: updates
     - entity: input_boolean.silent_mode
       icon: ''
       name: Silent Mode
@@ -1849,8 +2133,6 @@ views:
   cards:
   - cards:
     - entities:
-      - entity: binary_sensor.doppler_day_night_mode
-        name: Day/Night Mode
       - entity: sensor.doppler_light_detected
         name: Light Detected
       show_header_toggle: false
@@ -1862,13 +2144,9 @@ views:
         name: Wifi Connected Since
       - entity: sensor.doppler_wifi_ssid
         name: Wifi SSID
-      - entity: sensor.doppler_wifi_signal_strength
-        name: Wifi Signal Strength
       type: entities
     type: vertical-stack
   - entities:
-    - entity: switch.doppler_alexa_ascending_alarms
-      name: 'Alexa: Ascending Alarms'
     - entity: switch.doppler_alexa_tap_to_talk_tone
       name: 'Alexa: Tap to Talk Tone'
     - entity: switch.doppler_alexa_wake_word_tone
@@ -1912,8 +2190,6 @@ views:
     show_header_toggle: false
     type: entities
   - entities:
-    - entity: siren.doppler_alarm
-      name: Alarm
     - entity: switch.doppler_alarm_0_doppler_system_alarm
       name: Alarm 0 (Doppler System Alarm)
     - entity: switch.doppler_alarm_1
