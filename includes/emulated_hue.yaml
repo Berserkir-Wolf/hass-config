@@ -1,0 +1,8 @@
+# This uses the "emulated_hue" integration.
+# We !include this file in configuration.yaml, to be able to present HA devices to Alexa as pretend Hue devices.
+listen_port: 80
+expose_by_default: false
+entities:
+  input_boolean.motion_notifications:
+    name: "Door Notifications"
+    hidden: false
