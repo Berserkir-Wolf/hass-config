@@ -1,0 +1,13 @@
+hour_of_power:
+  name: "Hour of Power"
+  wednesday:
+    - from:
+        value_template: "{{ states('sensor.hour_of_free_power_start') }}"
+      to:
+        value_template: "{{ states('sensor.hour_of_free_power_end') }}"
+  thursday:
+    - from: "16:00:00"
+      to: "17:00:00"
+#total_bandwidth_mbps:
+#  value_template: "{{ (int(states('sensor.total_bandwidth')) / 1024) }}"
+#  unit_of_measurement: "Mbps"
