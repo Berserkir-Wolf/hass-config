@@ -66,8 +66,7 @@ button_card_templates:
       - overflow: visible
 title: BNet
 views:
-- badges: []
-  cards:
+- cards:
   - cards:
     - cards:
       - color_type: card
@@ -171,6 +170,96 @@ views:
       method: none
     type: custom:auto-entities
   - cards:
+    - badges:
+      - color: state
+        entity: light.lifx_switch_6c31d6_porch
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - color: state
+        entity: input_boolean.front_door_motion_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - color: state
+        entity: input_boolean.motion_notifications
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      heading: Porch
+      heading_style: title
+      icon: mdi:outdoor-lamp
+      tap_action:
+        action: perform-action
+        perform_action: light.toggle
+        target:
+          entity_id: light.lifx_switch_6c31d6_porch
+      type: heading
+    - cards:
+      - entity: light.lifx_switch_6c31d6_porch
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
+        tap_action:
+          action: toggle
+        type: button
+      - entity: select.front_door_recording_mode
+        name: Recording Mode
+        state_color: false
+        type: entity
+      - entity: input_boolean.motion_notifications
+        icon_height: 30px
+        name: Door notifications
+        show_icon: true
+        show_name: true
+        tap_action:
+          action: toggle
+        type: button
+      - entity: input_boolean.front_door_motion_light
+        icon_height: 30px
+        name: Motion Light
+        show_icon: true
+        show_name: true
+        tap_action:
+          action: toggle
+        type: button
+      type: horizontal-stack
+    type: custom:vertical-stack-in-card
+  - cards:
+    - badges:
+      - color: state
+        entity: climate.lounge_air_conditioner
+        icon: mdi:home-thermometer
+        show_icon: true
+        show_state: true
+        state_content: current_temperature
+        tap_action:
+          action: more-info
+        type: entity
+      - entity: light.lounge_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - entity: media_player.2020_2021_uhd_android_tv
+        type: entity
+      heading: Living Room
+      heading_style: title
+      icon: mdi:sofa
+      tap_action:
+        action: perform-action
+        perform_action: media_player.turn_on
+        target:
+          entity_id: media_player.2020_2021_uhd_android_tv
+      type: heading
     - columns: 3
       entities:
       - entity: switch.wol_lounge
@@ -219,7 +308,6 @@ views:
       show_name: true
       show_state: true
       state_color: true
-      title: Living Room
       type: glance
     - card:
         entity: media_player.lounge_tv
@@ -261,6 +349,14 @@ views:
         state: 'on'
       type: conditional
     - card:
+        entity: sensor.lounge_ps5_activity
+        state_color: true
+        type: entity
+      conditions:
+      - entity: switch.lounge_ps5_power
+        state: 'on'
+      type: conditional
+    - card:
         entity: media_player.living_room_xbox
         type: media-control
       conditions:
@@ -269,26 +365,124 @@ views:
       - entity: media_player.living_room_xbox
         state_not: unavailable
       type: conditional
-    - card:
-        entity: sensor.lounge_ps5_activity
-        state_color: true
+    type: custom:vertical-stack-in-card
+  - cards:
+    - badges:
+      - entity: sensor.bedroom_heater_temperature
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: perform-action
+          perform_action: switch.toggle
+          target:
+            entity_id: switch.bedroom_heater_manual_switch
         type: entity
-      conditions:
-      - entity: switch.lounge_ps5_power
-        state: 'on'
-      type: conditional
-    type: vertical-stack
+      - entity: light.bedroom_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - entity: light.bedroom_lamp
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      heading: Bedroom
+      heading_style: title
+      icon: mdi:bed-queen
+      type: heading
+    - columns: 3
+      entities:
+      - entity: light.bedroom_light
+        name: Light
+        tap_action:
+          action: toggle
+      - entity: light.bedroom_lamp
+        name: Lamp
+        tap_action:
+          action: toggle
+      - entity: media_player.doppler
+      - entity: switch.bedroom_heater
+        name: Heater
+        secondary_info: sensor.bedroom_heater_temperature
+        tap_action:
+          action: toggle
+      - entity: sensor.bedroom_heater_temperature
+      show_icon: true
+      show_name: true
+      show_state: true
+      state_color: true
+      type: glance
+    type: custom:vertical-stack-in-card
   - cards:
-    - cards:
+    - badges:
+      - color: state
+        entity: light.kitchen_switch_kitchen_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - color: state
+        entity: light.kitchen_switch_dining_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      heading: Kitchen
+      heading_style: title
+      icon: mdi:table-chair
+      tap_action:
+        action: perform-action
+        perform_action: light.toggle
+        target:
+          entity_id: light.kitchen_lights
+      type: heading
+    - entities:
       - entity: light.kitchen_switch_kitchen_light
-        icon_height: 30px
-        show_icon: true
-        show_name: true
-        show_state: false
         tap_action:
           action: toggle
-        type: button
       - entity: light.kitchen_switch_dining_light
+        tap_action:
+          action: toggle
+      show_icon: true
+      show_name: true
+      show_state: false
+      type: glance
+    type: custom:vertical-stack-in-card
+  - cards:
+    - badges:
+      - entity: sensor.kettle_temperature
+        icon: mdi:kettle
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: call-service
+          service: scene.turn_on
+          service_data:
+            entity_id: scene.boil_jug
+        type: entity
+      - color: state
+        entity: light.kitchen_switch_pantry_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      heading: Pantry
+      heading_style: title
+      icon: mdi:fridge
+      tap_action:
+        action: perform-action
+        perform_action: ''
+      type: heading
+    - cards:
+      - entity: light.kitchen_switch_pantry_light
+        hold_action:
+          action: more-info
         icon_height: 30px
         show_icon: true
         show_name: true
@@ -296,69 +490,46 @@ views:
         tap_action:
           action: toggle
         type: button
+      - entity: climate.kettle
+        hold_action:
+          action: call-service
+          service: climate.set_hvac_mode
+          service_data:
+            entity_id: climate.kettle
+            hvac_mode: 'off'
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
+        tap_action:
+          action: call-service
+          service: scene.turn_on
+          service_data:
+            entity_id: scene.boil_jug
+        type: button
+      - detail: 1
+        entity: sensor.kettle_temperature
+        graph: none
+        icon: mdi:water-thermometer
+        name: Kettle
+        type: sensor
       type: horizontal-stack
-    title: Kitchen
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   - cards:
-    - entity: light.kitchen_switch_pantry_light
-      hold_action:
-        action: more-info
-      icon_height: 30px
-      show_icon: true
-      show_name: true
-      show_state: false
-      tap_action:
-        action: toggle
-      type: button
-    - entity: climate.kettle
-      hold_action:
-        action: call-service
-        service: climate.set_hvac_mode
-        service_data:
-          entity_id: climate.kettle
-          hvac_mode: 'off'
-      icon_height: 30px
-      show_icon: true
-      show_name: true
-      show_state: false
-      tap_action:
-        action: call-service
-        service: scene.turn_on
-        service_data:
-          entity_id: scene.boil_jug
-      type: button
-    - detail: 1
-      entity: sensor.kettle_temperature
-      graph: none
-      icon: mdi:water-thermometer
-      name: Kettle
-      type: sensor
-    title: Pantry
-    type: horizontal-stack
-  - columns: 3
-    entities:
-    - entity: light.bedroom_light
-      name: Light
-      tap_action:
-        action: toggle
-    - entity: light.bedroom_lamp
-      name: Lamp
-      tap_action:
-        action: toggle
-    - entity: switch.bedroom_heater
-      name: Heater
-      secondary_info: sensor.bedroom_heater_temperature
-      tap_action:
-        action: toggle
-    - entity: media_player.doppler
-    - entity: sensor.bedroom_heater_temperature
-    show_icon: true
-    show_name: true
-    show_state: true
-    state_color: true
-    title: Bedroom
-    type: glance
-  - cards:
+    - badges:
+      - entity: sensor.office_fan_temperature
+        show_icon: true
+        show_state: true
+        type: entity
+      - color: state
+        entity: switch.wol_undefea_2
+        show_icon: true
+        show_state: true
+        type: entity
+      heading: Office
+      heading_style: title
+      icon: mdi:office-building
+      type: heading
     - columns: 3
       entities:
       - entity: switch.wol_undefea_2
@@ -377,45 +548,33 @@ views:
         tap_action:
           action: toggle
       - entity: light.office_lamp
+        tap_action:
+          action: toggle
       - entity: media_player.office_dot
       show_icon: true
       show_name: true
       show_state: true
       state_color: true
-      title: Office
       type: glance
+    - badges:
+      - entity: sensor.adap_system_temp
+        type: entity
+      - entity: sensor.hass_system_temp
+        type: entity
+      heading: Server Rack
+      heading_style: title
+      icon: mdi:server
+      type: heading
     - columns: 4
       entities:
       - entity: switch.pi_hole
       - entity: switch.adguard_filtering
         name: AdGuard
-      - entity: sensor.mikrotik_router_kib_s_received
-        name: WAN RX
-      - entity: sensor.mikrotik_router_kib_s_sent
-        name: WAN TX
-      - entity: sensor.hdhomerun_connect_duo_1241c3c2_tuner0
-      - entity: sensor.hdhomerun_connect_duo_1241c3c2_tuner1
-      - entity: button.hdhomerun_connect_duo_1241c3c2_restart
-      - entity: sensor.hdhomerun_connect_duo_1241c3c2_channel_count
       show_icon: true
       show_name: true
       show_state: true
       state_color: true
-      title: Server Rack
       type: glance
-    - card:
-        artwork: cover-fit
-        entity: media_player.vlc_telnet
-        group: false
-        info: scroll
-        replace_mute: stop
-        toggle_power: false
-        type: custom:mini-media-player
-        volume_stateless: true
-      conditions:
-      - entity: media_player.vlc_telnet
-        state_not: idle
-      type: conditional
     - entities:
       - entity: switch.wol_inevi
         name: TrueNAS
@@ -428,7 +587,20 @@ views:
         name: SteamRemote Host
         tap_action:
           action: toggle
+      - entity: sensor.server_rack_temperature
       type: glance
+    - card:
+        entities:
+        - entity: sensor.hdhomerun_connect_duo_1241c3c2_tuner0
+        - entity: sensor.hdhomerun_connect_duo_1241c3c2_tuner1
+        - entity: button.hdhomerun_connect_duo_1241c3c2_restart
+        - entity: sensor.hdhomerun_connect_duo_1241c3c2_channel_count
+        type: glance
+      conditions:
+      - condition: state
+        entity: light.office_lights
+        state: 'on'
+      type: conditional
     - card:
         card:
           type: entities
@@ -446,34 +618,32 @@ views:
         entity: light.office_lights
         state: 'on'
       type: conditional
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   - cards:
-    - cards:
-      - action_button:
-          icon: mdi:power
-          mode: toggle
-          show: true
-          show_spinner: true
-          tap_action:
-            action: toggle
-        compact: true
-        entity: light.hall_light_strip
-        icon:
-          show: true
-          tap_action:
-            action: more-info
-          use_state_color: true
-        show_name: true
+    - badges:
+      - color: state
+        entity: light.lifx_switch_6c31d6_hall_front
+        show_icon: true
         show_state: true
-        slider:
-          background: gradient
-          direction: left-right
-          force_square: false
-          show_track: false
-          toggle_on_click: false
-          use_percentage_bg_opacity: true
-          use_state_color: true
-        type: custom:slider-button-card
+        type: entity
+      heading: Hallway
+      heading_style: title
+      icon: ''
+      tap_action:
+        action: perform-action
+        perform_action: light.toggle
+        target:
+          entity_id: light.hall_lights
+      type: heading
+    - cards:
+      - entity: light.hall_light_strip
+        icon_height: 30px
+        show_icon: true
+        show_name: true
+        show_state: false
+        tap_action:
+          action: toggle
+        type: button
       - entity: light.lifx_switch_6c31d6_hall_front
         icon_height: 30px
         show_icon: true
@@ -483,9 +653,27 @@ views:
           action: toggle
         type: button
       type: horizontal-stack
-    title: Hallway
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   - cards:
+    - badges:
+      - color: state
+        entity: light.laundry_switch_laundry_light
+        show_icon: true
+        show_state: true
+        type: entity
+      - color: state
+        entity: light.laundry_switch_toilet_light
+        show_icon: true
+        show_state: true
+        type: entity
+      heading: Laundry
+      heading_style: title
+      tap_action:
+        action: perform-action
+        perform_action: light.toggle
+        target:
+          entity_id: light.laundry_lights
+      type: heading
     - cards:
       - entity: light.laundry_switch_laundry_light
         icon_height: 30px
@@ -504,9 +692,27 @@ views:
           action: toggle
         type: button
       type: horizontal-stack
-    title: Laundry
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   - cards:
+    - badges:
+      - entity: light.spare_room_light
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - entity: switch.biltong_rack
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - entity: sensor.biltong_approximate_cost
+        type: entity
+      heading: Spare Room
+      heading_style: title
+      icon: mdi:bed-outline
+      type: heading
     - cards:
       - entity: light.spare_room_light
         icon_height: 30px
@@ -526,6 +732,21 @@ views:
         type: button
       type: horizontal-stack
     - card:
+        camera_image: camera.biltong
+        camera_view: auto
+        entity: switch.biltong_rack
+        hold_action:
+          action: none
+        show_name: true
+        show_state: true
+        tap_action:
+          action: none
+        type: picture-entity
+      conditions:
+      - entity: switch.biltong_rack
+        state: 'on'
+      type: conditional
+    - card:
         entities:
         - entity: sensor.biltong_rack_current
           name: Current
@@ -544,19 +765,41 @@ views:
       - entity: switch.biltong_rack
         state: 'on'
       type: conditional
-    - camera_image: camera.biltong
-      camera_view: auto
-      entity: switch.biltong_rack
-      hold_action:
-        action: none
-      show_name: true
-      show_state: true
-      tap_action:
-        action: none
-      type: picture-entity
-    title: Spare Room
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   - cards:
+    - badges:
+      - color: state
+        entity: light.garage_switch_overhead
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - color: state
+        entity: light.garage_switch_bench
+        icon: ''
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      - color: state
+        entity: light.garage_switch_driveway
+        icon: mdi:light-flood-down
+        show_icon: true
+        show_state: true
+        tap_action:
+          action: toggle
+        type: entity
+      heading: Garage
+      heading_style: title
+      icon: mdi:garage
+      tap_action:
+        action: perform-action
+        perform_action: light.toggle
+        target:
+          entity_id: light.garage_lights
+      type: heading
     - columns: 4
       entities:
       - entity: light.garage_switch_bench
@@ -576,16 +819,15 @@ views:
       show_name: true
       show_state: true
       state_color: true
-      title: Garage
       type: glance
     - card:
         entities:
         - entity: sensor.state_garageap
           icon: mdi:access-point
           name: Garage AP
-        - entity: media_player.garage_dot
         - entity: media_player.garage_speaker
           name: Garage Soundbar
+        - entity: media_player.garage_dot
         show_icon: true
         show_name: true
         show_state: true
@@ -596,64 +838,79 @@ views:
         entity: light.garage_lights
         state: 'on'
       type: conditional
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   icon: mdi:home
   path: home
   title: Home
 - badges: []
-  cards:
-  - entities:
-    - entity: sensor.anniversary_swmbo
-      name: Our Anniversary
-    - entity: sensor.birthday_me
-      name: My Birthday
-    - entity: sensor.birthday_swmbo
-      name: Her Birthday
-    header:
-      hold_action:
-        action: none
-      image: https://www.home-assistant.io/images/lovelace/header-footer/balloons-header.png
-      tap_action:
-        action: none
-      type: picture
-    show_header_toggle: false
-    type: entities
+  cards: []
   icon: mdi:calendar
+  max_columns: 4
   path: events
+  sections:
+  - cards:
+    - entities:
+      - entity: sensor.anniversary_swmbo
+        name: Our Anniversary
+      - entity: sensor.birthday_me
+        name: My Birthday
+      - entity: sensor.birthday_swmbo
+        name: Her Birthday
+      header:
+        hold_action:
+          action: none
+        image: https://www.home-assistant.io/images/lovelace/header-footer/balloons-header.png
+        tap_action:
+          action: none
+        type: picture
+      show_header_toggle: false
+      type: entities
+    type: grid
   title: Events
+  type: sections
   visible:
   - user: 08d29e434e9a4bed98b3a62218eac7a7
 - badges: []
-  cards:
-  - dark_mode: false
-    entities:
-    - entity: device_tracker.cph2197
-    - entity: zone.work
-    - entity: zone.home
-    type: map
-  - card:
-      show_header_toggle: false
-      title: Who's Home?
-      type: entities
-    filter:
-      exclude:
-      - state: not_home
-      include:
-      - entity_id: person.*
-    show_empty: false
-    sort: none
-    type: custom:auto-entities
-    unique: false
-  - columns: 1
-    entities:
-    - entity: sensor.bnet_a74_geocoded_location
-    show_icon: true
-    show_state: true
-    title: Phone Location
-    type: glance
+  cards: []
   icon: mdi:crosshairs-gps
+  max_columns: 4
   path: location
+  sections:
+  - cards:
+    - entities:
+      - entity: device_tracker.bnet_reno12
+      - entity: zone.work
+      - entity: zone.home
+      - entity: device_tracker.cph2197
+      theme_mode: auto
+      type: map
+    type: grid
+  - cards:
+    - cards:
+      - card:
+          show_header_toggle: false
+          title: Who's Home?
+          type: entities
+        filter:
+          exclude:
+          - state: not_home
+          include:
+          - entity_id: person.*
+        show_empty: false
+        sort: none
+        type: custom:auto-entities
+        unique: false
+      - columns: 1
+        entities:
+        - entity: sensor.bnet_reno12_geocoded_location
+        show_icon: true
+        show_state: true
+        title: Phone Location
+        type: glance
+      type: custom:vertical-stack-in-card
+    type: grid
   title: Location
+  type: sections
   visible:
   - user: 08d29e434e9a4bed98b3a62218eac7a7
 - badges:
@@ -669,224 +926,253 @@ views:
     name: PiHole DNS Queries
   - entity: sensor.pi_hole_ads_percentage_blocked_today
     name: PiHole Block %
-  cards:
-  - cards:
-    - cards:
-      - entity: sensor.mikrotik_router_kib_s_sent
-        max: 90000
-        min: 0
-        name: WAN TX
-        needle: true
-        severity:
-          green: 0
-          red: 75000
-          yellow: 45000
-        type: gauge
-      - entity: sensor.mikrotik_router_kib_s_received
-        max: 100000
-        min: 0
-        name: WAN RX
-        needle: true
-        severity:
-          green: 0
-          red: 75000
-          yellow: 45000
-        type: gauge
-      type: horizontal-stack
-    - cards:
-      - detail: 1
-        entity: sensor.mikrotik_router_kib_s_sent
-        graph: line
-        hours_to_show: 24
-        type: sensor
-      - detail: 1
-        entity: sensor.mikrotik_router_kib_s_received
-        graph: line
-        hours_to_show: 24
-        type: sensor
-      type: horizontal-stack
-    - card:
-        show_header_toggle: false
-        type: entities
-      filter:
-        include:
-        - entity_id: sensor.rou_rb3011*
-        - entity_id: sensor.mikrotik_*
-      show_empty: true
-      sort:
-        ignore_case: true
-        method: name
-      type: custom:auto-entities
-      unique: false
-    title: Routerboard Stats
-    type: vertical-stack
-  - cards:
-    - entity: sensor.adguard_dns_queries_blocked_ratio
-      max: 100
-      min: 0
-      name: Blocked Ad Percentage
-      needle: true
-      severity:
-        green: 0
-        red: 75
-        yellow: 50
-      theme: default
-      type: gauge
-    - card:
-        show_header_toggle: false
-        type: entities
-      filter:
-        include:
-        - entity_id: sensor.adguard*
-      show_empty: true
-      sort:
-        ignore_case: true
-        method: name
-      type: custom:auto-entities
-      unique: false
-    title: AdGuard
-    type: vertical-stack
-  - cards:
-    - entity: sensor.pi_hole_ads_percentage_blocked_today
-      max: 100
-      min: 0
-      name: Blocked Ad Percentage
-      needle: true
-      severity:
-        green: 0
-        red: 75
-        yellow: 50
-      theme: default
-      type: gauge
-    - card:
-        show_header_toggle: false
-        type: entities
-      filter:
-        include:
-        - entity_id: sensor.pi_*
-      show_empty: true
-      sort:
-        ignore_case: true
-        method: name
-      type: custom:auto-entities
-      unique: false
-    title: Pi-Hole
-    type: vertical-stack
-  - cards:
-    - entity: sensor.unifi_clients
-      max: 50
-      min: 0
-      name: Devices
-      severity:
-        green: 10
-        red: 25
-        yellow: 15
-      theme: default
-      type: gauge
-      unit: ' '
-    - entities:
-      - entity: sensor.unifi_clients
-        icon: mdi:wifi
-        name: ' '
-        secondary_info: 'Berserkir-Net : [[ if(sensor.unifi_clients.attributes.Berserkir-Net
-          == undefined, "0", sensor.unifi_clients.attributes.Berserkir-Net) ]] <br>GuestNet
-          : [[ if(sensor.unifi_clients.attributes.GuestNet == undefined, "0", sensor.unifi_clients.attributes.GuestNet)
-          ]] <br>Wired : [[ if(sensor.unifi_clients.attributes.wired == undefined,
-          "0", sensor.unifi_clients.attributes.wired) ]]'
-        type: custom:secondaryinfo-entity-row
-      type: entities
-    - entities:
-      - entity: sensor.state_deskswitch
-        icon: mdi:lan-connect
-      - entity: sensor.state_officeap
-        icon: mdi:access-point-network
-      - entity: sensor.state_loungeswitch
-        icon: mdi:lan-connect
-      - entity: sensor.state_loungeap
-        icon: mdi:access-point-network
-      - entity: sensor.state_garageap
-        icon: mdi:access-point-network
-      show_header_toggle: false
-      type: entities
-    title: UniFi Access Point Status
-    type: vertical-stack
+  cards: []
   icon: mdi:network
+  max_columns: 4
   path: network
+  sections:
+  - cards:
+    - cards:
+      - cards:
+        - entity: sensor.mikrotik_router_kib_s_sent
+          max: 90000
+          min: 0
+          name: WAN TX
+          needle: true
+          severity:
+            green: 0
+            red: 75000
+            yellow: 45000
+          type: gauge
+        - entity: sensor.mikrotik_router_kib_s_received
+          max: 100000
+          min: 0
+          name: WAN RX
+          needle: true
+          severity:
+            green: 0
+            red: 75000
+            yellow: 45000
+          type: gauge
+        type: horizontal-stack
+      - cards:
+        - detail: 1
+          entity: sensor.mikrotik_router_kib_s_sent
+          graph: line
+          hours_to_show: 24
+          type: sensor
+        - detail: 1
+          entity: sensor.mikrotik_router_kib_s_received
+          graph: line
+          hours_to_show: 24
+          type: sensor
+        type: horizontal-stack
+      - card:
+          show_header_toggle: false
+          type: entities
+        filter:
+          include:
+          - entity_id: sensor.rou_rb3011*
+          - entity_id: sensor.mikrotik_*
+        show_empty: true
+        sort:
+          ignore_case: true
+          method: name
+        type: custom:auto-entities
+        unique: false
+      title: Routerboard Stats
+      type: custom:vertical-stack-in-card
+    type: grid
+  - cards:
+    - cards:
+      - entity: sensor.adguard_dns_queries_blocked_ratio
+        max: 100
+        min: 0
+        name: Blocked Ad Percentage
+        needle: true
+        severity:
+          green: 0
+          red: 75
+          yellow: 50
+        theme: default
+        type: gauge
+      - card:
+          show_header_toggle: false
+          type: entities
+        filter:
+          include:
+          - entity_id: sensor.adguard*
+        show_empty: true
+        sort:
+          ignore_case: true
+          method: name
+        type: custom:auto-entities
+        unique: false
+      title: AdGuard
+      type: custom:vertical-stack-in-card
+    type: grid
+  - cards:
+    - cards:
+      - entity: sensor.pi_hole_ads_percentage_blocked_today
+        max: 100
+        min: 0
+        name: Blocked Ad Percentage
+        needle: true
+        severity:
+          green: 0
+          red: 75
+          yellow: 50
+        theme: default
+        type: gauge
+      - card:
+          show_header_toggle: false
+          type: entities
+        filter:
+          include:
+          - entity_id: sensor.pi_*
+        show_empty: true
+        sort:
+          ignore_case: true
+          method: name
+        type: custom:auto-entities
+        unique: false
+      title: Pi-Hole
+      type: custom:vertical-stack-in-card
+    type: grid
+  - cards:
+    - cards:
+      - entity: sensor.unifi_clients
+        max: 50
+        min: 0
+        name: Devices
+        severity:
+          green: 10
+          red: 25
+          yellow: 15
+        theme: default
+        type: gauge
+        unit: ' '
+      - entities:
+        - entity: sensor.berserkir_net
+          icon: mdi:access-point
+        - entity: sensor.guestnet
+          icon: mdi:access-point
+        - entity: sensor.loungeswitch_clients
+          icon: mdi:switch
+        - entity: sensor.deskswitch_clients
+          icon: mdi:switch
+        type: entities
+      - entities:
+        - entity: sensor.state_deskswitch
+          icon: mdi:lan-connect
+        - entity: sensor.state_officeap
+          icon: mdi:access-point-network
+        - entity: sensor.state_loungeswitch
+          icon: mdi:lan-connect
+        - entity: sensor.state_loungeap
+          icon: mdi:access-point-network
+        - entity: sensor.state_backap
+          icon: mdi:access-point-network
+        - entity: sensor.state_garageap
+          icon: mdi:access-point-network
+        show_header_toggle: false
+        type: entities
+      title: UniFi Access Point Status
+      type: custom:vertical-stack-in-card
+    type: grid
   theme: Backend-selected
   title: Network
+  type: sections
 - badges:
   - entity: switch.wol_lounge
   - entity: switch.wol_undefea_2
-  cards:
-  - cards:
-    - cards:
-      - color_type: card
-        entity: switch.wol_lounge
-        name: Lounge HTPC
-        size: 30px
-        tap_action:
-          action: toggle
-        type: custom:button-card
-      - color_type: card
-        entity: switch.wol_inevi
-        name: Camera Server
-        size: 30px
-        tap_action:
-          action: toggle
-        type: custom:button-card
-      type: horizontal-stack
-    - cards:
-      - color_type: card
-        entity: switch.wol_undefea
-        name: Workstation
-        size: 30px
-        tap_action:
-          action: toggle
-        type: custom:button-card
-      type: horizontal-stack
-    type: vertical-stack
-  - type: custom:github-flexi-card
+  cards: []
   icon: mdi:dip-switch
+  max_columns: 4
   panel: false
   path: wakeonlan
+  sections:
+  - cards:
+    - cards:
+      - cards:
+        - color_type: card
+          entity: switch.wol_lounge
+          name: Lounge HTPC
+          size: 30px
+          tap_action:
+            action: toggle
+          type: custom:button-card
+        - color_type: card
+          entity: switch.wol_inevi
+          name: Camera Server
+          size: 30px
+          tap_action:
+            action: toggle
+          type: custom:button-card
+        type: horizontal-stack
+      - cards:
+        - color_type: card
+          entity: switch.wol_undefea
+          name: Workstation
+          size: 30px
+          tap_action:
+            action: toggle
+          type: custom:button-card
+        type: horizontal-stack
+      type: vertical-stack
+    type: grid
+  - cards:
+    - type: custom:github-flexi-card
+    type: grid
   theme: Backend-selected
   title: WakeOnLan
+  type: sections
 - badges: []
-  cards:
-  - card:
-      show_header_toggle: false
-      title: OWM
-      type: entities
-    filter:
-      include:
-      - entity_id: sensor.openweathermap*
-    sort: name
-    type: custom:auto-entities
-    unique: false
+  cards: []
+  icon: mdi:weather-partly-cloudy
+  max_columns: 4
+  path: weather
+  sections:
   - cards:
-    - entity: sensor.geonet_nz_quakes_38_656749085828864_178_01535308361056
-      name: Local Quakes
-      state_color: false
-      type: entity
     - card:
+        show_header_toggle: false
+        title: OWM
         type: entities
       filter:
-        exclude: []
         include:
-        - domain: geo_location
-      show_empty: false
-      sort:
-        method: last_updated
-        numeric: false
-        reverse: false
+        - entity_id: sensor.openweathermap*
+      sort: name
       type: custom:auto-entities
-    title: GeoNet Quakes
-    type: vertical-stack
-  - entity: weather.home
-    type: weather-forecast
-  icon: mdi:weather-partly-cloudy
-  path: weather
+      unique: false
+    type: grid
+  - cards:
+    - cards:
+      - entity: sensor.geonet_nz_quakes_38_656749085828864_178_01535308361056
+        name: Local Quakes
+        state_color: false
+        type: entity
+      - card:
+          type: entities
+        filter:
+          exclude:
+          - state: unavailable
+          include:
+          - domain: geo_location
+        show_empty: false
+        sort:
+          method: last_updated
+          numeric: false
+          reverse: false
+        type: custom:auto-entities
+      title: GeoNet Quakes
+      type: vertical-stack
+    type: grid
+  - cards:
+    - entity: weather.home
+      type: weather-forecast
+    type: grid
   title: Weather
+  type: sections
 - badges:
   - entity: sensor.plex_berserkirnet
     name: Plex Streams
@@ -895,383 +1181,398 @@ views:
   - entity: sensor.nzbget_speed
   - entity: sensor.ombi_pending_requests
     name: Pending Requests
-  cards:
-  - card:
-      show_header_toggle: false
-      title: Plex Media
-      type: entities
-    filter:
-      include:
-      - entity_id: sensor.berserkirnet_library*
-    sort: name
-    type: custom:auto-entities
-    unique: false
-  - cards:
-    - entities:
-      - entity: sensor.sonarr_upcoming
-      - entity: sensor.sonarr_queue
-      show_header_toggle: false
-      title: Sonarr
-      type: entities
-    - entities:
-      - entity: binary_sensor.radarr_health
-      - entity: sensor.radarr_movies
-      show_header_toggle: false
-      title: Radarr
-      type: entities
-    - entities:
-      - entity: sensor.lidarr_queue
-      show_header_toggle: false
-      state_color: false
-      title: Lidarr
-      type: entities
-    type: vertical-stack
-  - card:
-      show_header_toggle: false
-      title: Now Streaming
-      type: entities
-    filter:
-      exclude:
-      - state: unavailable
-      - state: idle
-      include:
-      - entity_id: media_player.plex_*
-    show_empty: false
-    sort: none
-    type: custom:auto-entities
-    unique: false
-  - entity: media_player.spotify_sky_girl14
-    type: media-control
-  - card:
-      entity: media_player.lounge_amp_3
-      type: media-control
-    conditions:
-    - entity: media_player.lounge_amp_3
-      state_not: 'off'
-    type: conditional
-  - cards:
-    - entity: sensor.plex_berserkirnet
-      name: Current Plex Streams
-      type: sensor
-    - detail: 1
-      entity: sensor.total_bandwidth
-      graph: none
-      hours_to_show: 24
-      name: Plex Raw Bandwith
-      type: sensor
-    - detail: 1
-      entity: sensor.total_bandwidth_mbps
-      graph: none
-      hours_to_show: 24
-      name: Plex Outright Bandwith
-      type: sensor
-    - detail: 1
-      entity: sensor.total_bandwidth_mbps_rounded
-      graph: none
-      hours_to_show: 24
-      name: Plex Rounded Bandwidth
-      type: sensor
-    type: vertical-stack
-  - cards:
-    - entities:
-      - entity: switch.nzbget_download
-      - entity: sensor.nzbget_queue_size
-      - entity: sensor.nzbget_speed
-      title: NZBGet
-      type: entities
-    type: vertical-stack
+  cards: []
   icon: mdi:film
+  max_columns: 4
   panel: false
   path: media
+  sections:
+  - cards:
+    - heading: Plex
+      heading_style: title
+      icon: mdi:plex
+      type: heading
+    - card:
+        show_header_toggle: false
+        title: Plex Media
+        type: entities
+      filter:
+        include:
+        - entity_id: sensor.berserkirnet_library*
+      sort: name
+      type: custom:auto-entities
+      unique: false
+    - cards:
+      - entity: sensor.plex_berserkirnet
+        name: Current Plex Streams
+        type: sensor
+      - detail: 1
+        entity: sensor.total_bandwidth
+        graph: none
+        hours_to_show: 24
+        name: Plex Raw Bandwith
+        type: sensor
+      - detail: 1
+        entity: sensor.total_bandwidth_mbps
+        graph: none
+        hours_to_show: 24
+        name: Plex Outright Bandwith
+        type: sensor
+      - detail: 1
+        entity: sensor.total_bandwidth_mbps_rounded
+        graph: none
+        hours_to_show: 24
+        name: Plex Rounded Bandwidth
+        type: sensor
+      type: vertical-stack
+    type: grid
+  - cards:
+    - heading: The Arrs
+      heading_style: title
+      type: heading
+    - cards:
+      - entities:
+        - entity: sensor.sonarr_upcoming
+        - entity: sensor.sonarr_queue
+        show_header_toggle: false
+        title: Sonarr
+        type: entities
+      - entities:
+        - entity: binary_sensor.radarr_health
+        - entity: sensor.radarr_movies
+        show_header_toggle: false
+        title: Radarr
+        type: entities
+      - entities:
+        - entity: sensor.lidarr_queue
+        show_header_toggle: false
+        state_color: false
+        title: Lidarr
+        type: entities
+      type: vertical-stack
+    type: grid
+  - cards:
+    - heading: Downloaders
+      heading_style: title
+      type: heading
+    - cards:
+      - entities:
+        - entity: switch.nzbget_download
+        - entity: sensor.nzbget_queue_size
+        - entity: sensor.nzbget_speed
+        title: NZBGet
+        type: entities
+      type: vertical-stack
+    type: grid
   theme: Backend-selected
   title: Media
+  type: sections
 - badges: []
-  cards:
-  - cards:
-    - artwork: material
-      entity: media_player.retrea
-      group: false
-      info: scroll
-      name: Retrea
-      toggle_power: true
-      type: custom:mini-media-player
-      volume_stateless: true
-    - artwork: material
-      entity: media_player.undefea
-      group: false
-      info: short
-      name: Undefea
-      toggle_power: true
-      type: custom:mini-media-player
-      volume_stateless: true
-    - artwork: material
-      entity: media_player.spotify_sky_girl14
-      group: false
-      info: short
-      name: Spotify
-      toggle_power: true
-      type: custom:mini-media-player
-      volume_stateless: true
-    type: vertical-stack
-  - cards:
-    - entities:
-      - entity: remote.lounge_tv
-      type: entities
-    - cards:
-      - hold_action:
-          action: none
-        show_icon: false
-        tap_action:
-          action: none
-        type: button
-      - hold_action:
-          action: none
-        icon: mdi:arrow-up-bold
-        tap_action:
-          action: call-service
-          data:
-            command: DPAD_UP
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: none
-        show_icon: false
-        tap_action:
-          action: none
-        type: button
-      - hold_action:
-          action: none
-        icon: mdi:arrow-left-bold
-        tap_action:
-          action: call-service
-          data:
-            command: DPAD_LEFT
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: call-service
-          data:
-            command: DPAD_CENTER
-            hold_secs: 0.5
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        icon: mdi:circle
-        tap_action:
-          action: call-service
-          data:
-            command: DPAD_CENTER
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: none
-        icon: mdi:arrow-right-bold
-        tap_action:
-          action: call-service
-          data:
-            command: DPAD_RIGHT
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: call-service
-          data:
-            command: BACK
-            hold_secs: 0.5
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        icon: mdi:arrow-left
-        tap_action:
-          action: call-service
-          data:
-            command: BACK
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: none
-        icon: mdi:arrow-down-bold
-        tap_action:
-          action: call-service
-          data:
-            command: DPAD_DOWN
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: call-service
-          data:
-            command: HOME
-            hold_secs: 0.5
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        icon: mdi:home-outline
-        tap_action:
-          action: call-service
-          data:
-            command: HOME
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      columns: 3
-      square: true
-      type: grid
-    - cards:
-      - hold_action:
-          action: call-service
-          data:
-            command: MEDIA_REWIND
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        icon: mdi:skip-previous
-        tap_action:
-          action: call-service
-          data:
-            command: MEDIA_PREVIOUS
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: call-service
-          data:
-            command: MEDIA_STOP
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        icon: mdi:play-pause
-        tap_action:
-          action: call-service
-          data:
-            command: MEDIA_PLAY_PAUSE
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: call-service
-          data:
-            command: MEDIA_FAST_FORWARD
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        icon: mdi:skip-next
-        tap_action:
-          action: call-service
-          data:
-            command: MEDIA_NEXT
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: none
-        icon: mdi:volume-off
-        tap_action:
-          action: call-service
-          data:
-            command: MUTE
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: none
-        icon: mdi:volume-medium
-        tap_action:
-          action: call-service
-          data:
-            command: VOLUME_DOWN
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: none
-        icon: mdi:volume-high
-        tap_action:
-          action: call-service
-          data:
-            command: VOLUME_UP
-          service: remote.send_command
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      columns: 3
-      square: false
-      type: grid
-    - cards:
-      - hold_action:
-          action: none
-        icon: mdi:youtube
-        tap_action:
-          action: call-service
-          data:
-            activity: https://www.youtube.com
-          service: remote.turn_on
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: none
-        icon: mdi:netflix
-        tap_action:
-          action: call-service
-          data:
-            activity: https://www.netflix.com/title
-          service: remote.turn_on
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: none
-        icon: mdi:plex
-        show_icon: true
-        show_name: true
-        tap_action:
-          action: call-service
-          data:
-            activity: plex://
-          service: remote.turn_on
-          target:
-            entity_id: remote.lounge_tv
-        type: button
-      - hold_action:
-          action: none
-        image: https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Disney%2B_logo.svg/440px-Disney%2B_logo.svg.png
-        tap_action:
-          action: call-service
-          data:
-            activity: https://www.disneyplus.com
-          service: remote.turn_on
-          target:
-            entity_id: remote.lounge_tv
-        type: picture
-      columns: 4
-      square: false
-      type: grid
-    - attribute: current_activity
-      entity: remote.lounge_tv
-      type: entity
-    type: vertical-stack
+  cards: []
   icon: mdi:multimedia
+  max_columns: 4
   path: media-players
+  sections:
+  - cards:
+    - heading: Media Players
+      heading_style: title
+      type: heading
+    - cards:
+      - artwork: material
+        entity: media_player.retrea
+        group: false
+        info: scroll
+        name: Retrea
+        toggle_power: true
+        type: custom:mini-media-player
+        volume_stateless: true
+      - artwork: material
+        entity: media_player.undefea
+        group: false
+        info: short
+        name: Undefea
+        toggle_power: true
+        type: custom:mini-media-player
+        volume_stateless: true
+      - artwork: material
+        entity: media_player.spotify_sky_girl14
+        group: false
+        info: short
+        name: Spotify
+        toggle_power: true
+        type: custom:mini-media-player
+        volume_stateless: true
+      - entity: media_player.spotify_sky_girl14
+        type: media-control
+      - card:
+          entity: media_player.lounge_amp_3
+          type: media-control
+        conditions:
+        - entity: media_player.lounge_amp_3
+          state_not: 'off'
+        type: conditional
+      type: vertical-stack
+    type: grid
+  - cards:
+    - cards:
+      - entities:
+        - entity: remote.lounge_tv
+        type: entities
+      - cards:
+        - hold_action:
+            action: none
+          show_icon: false
+          tap_action:
+            action: none
+          type: button
+        - hold_action:
+            action: none
+          icon: mdi:arrow-up-bold
+          tap_action:
+            action: call-service
+            data:
+              command: DPAD_UP
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: none
+          show_icon: false
+          tap_action:
+            action: none
+          type: button
+        - hold_action:
+            action: none
+          icon: mdi:arrow-left-bold
+          tap_action:
+            action: call-service
+            data:
+              command: DPAD_LEFT
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: call-service
+            data:
+              command: DPAD_CENTER
+              hold_secs: 0.5
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          icon: mdi:circle
+          tap_action:
+            action: call-service
+            data:
+              command: DPAD_CENTER
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: none
+          icon: mdi:arrow-right-bold
+          tap_action:
+            action: call-service
+            data:
+              command: DPAD_RIGHT
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: call-service
+            data:
+              command: BACK
+              hold_secs: 0.5
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          icon: mdi:arrow-left
+          tap_action:
+            action: call-service
+            data:
+              command: BACK
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: none
+          icon: mdi:arrow-down-bold
+          tap_action:
+            action: call-service
+            data:
+              command: DPAD_DOWN
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: call-service
+            data:
+              command: HOME
+              hold_secs: 0.5
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          icon: mdi:home-outline
+          tap_action:
+            action: call-service
+            data:
+              command: HOME
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        columns: 3
+        square: true
+        type: grid
+      - cards:
+        - hold_action:
+            action: call-service
+            data:
+              command: MEDIA_REWIND
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          icon: mdi:skip-previous
+          tap_action:
+            action: call-service
+            data:
+              command: MEDIA_PREVIOUS
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: call-service
+            data:
+              command: MEDIA_STOP
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          icon: mdi:play-pause
+          tap_action:
+            action: call-service
+            data:
+              command: MEDIA_PLAY_PAUSE
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: call-service
+            data:
+              command: MEDIA_FAST_FORWARD
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          icon: mdi:skip-next
+          tap_action:
+            action: call-service
+            data:
+              command: MEDIA_NEXT
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: none
+          icon: mdi:volume-off
+          tap_action:
+            action: call-service
+            data:
+              command: MUTE
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: none
+          icon: mdi:volume-medium
+          tap_action:
+            action: call-service
+            data:
+              command: VOLUME_DOWN
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: none
+          icon: mdi:volume-high
+          tap_action:
+            action: call-service
+            data:
+              command: VOLUME_UP
+            service: remote.send_command
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        columns: 3
+        square: false
+        type: grid
+      - cards:
+        - hold_action:
+            action: none
+          icon: mdi:youtube
+          tap_action:
+            action: call-service
+            data:
+              activity: https://www.youtube.com
+            service: remote.turn_on
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: none
+          icon: mdi:netflix
+          tap_action:
+            action: call-service
+            data:
+              activity: https://www.netflix.com/title
+            service: remote.turn_on
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: none
+          icon: mdi:plex
+          show_icon: true
+          show_name: true
+          tap_action:
+            action: call-service
+            data:
+              activity: plex://
+            service: remote.turn_on
+            target:
+              entity_id: remote.lounge_tv
+          type: button
+        - hold_action:
+            action: none
+          image: https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Disney%2B_logo.svg/440px-Disney%2B_logo.svg.png
+          tap_action:
+            action: call-service
+            data:
+              activity: https://www.disneyplus.com
+            service: remote.turn_on
+            target:
+              entity_id: remote.lounge_tv
+          type: picture
+        columns: 4
+        square: false
+        type: grid
+      - attribute: current_activity
+        entity: remote.lounge_tv
+        type: entity
+      type: vertical-stack
+    type: grid
   subview: false
   theme: Backend-selected
   title: Media Players
+  type: sections
 - badges: []
   cards:
   - aspect_ratio: 100%
@@ -1290,118 +1591,171 @@ views:
   theme: Backend-selected
   title: Recently Added
 - badges: []
-  cards:
-  - card:
-      secondary_info: game
-      show_header_toggle: false
-      title: Steam Friends
-      type: entities
-    filter:
-      include:
-      - entity_id: sensor.steam*
-    show_empty: true
-    sort:
-      ignore_case: true
-      method: name
-    type: custom:auto-entities
-    unique: false
+  cards: []
+  icon: mdi:gamepad-variant
+  max_columns: 4
+  path: gaming
+  sections:
   - cards:
-    - entity: media_player.bedroom_ps4
-      type: media-control
-    - entity: media_player.lounge_ps4
-      type: media-control
-    - entity: media_player.living_room_xbox
-      type: media-control
-    type: vertical-stack
+    - heading: Consoles
+      heading_style: title
+      type: heading
+    - cards:
+      - entity: media_player.bedroom_ps4
+        type: media-control
+      - entity: media_player.lounge_ps4
+        type: media-control
+      - entity: media_player.living_room_xbox
+        type: media-control
+      - entity: media_player.sony_audio3115
+        type: media-control
+      type: vertical-stack
+    - cards:
+      - card:
+          show_header_toggle: false
+          type: entities
+        filter:
+          include:
+          - integration: xbox
+        show_empty: true
+        sort:
+          ignore_case: true
+          method: name
+        type: custom:auto-entities
+        unique: false
+      title: Xbox
+      type: vertical-stack
+    type: grid
   - cards:
     - card:
+        secondary_info: game
         show_header_toggle: false
+        title: Steam Friends
         type: entities
       filter:
         include:
-        - integration: xbox
+        - entity_id: sensor.steam*
       show_empty: true
       sort:
         ignore_case: true
         method: name
       type: custom:auto-entities
       unique: false
-    title: Xbox
-    type: vertical-stack
-  icon: mdi:gamepad-variant
-  path: gaming
+    - heading: New section
+      type: heading
+    type: grid
   title: Gaming
+  type: sections
   visible:
   - user: 08d29e434e9a4bed98b3a62218eac7a7
 - badges: []
-  cards:
-  - cards:
-    - dark_mode: false
-      entities:
-      - entity: device_tracker.cph2197
-      hours_to_show: 0
-      title: Phone Location
-      type: map
-    - entities:
-      - entity: sensor.bnet_a74_battery_level
-        name: Battery
-      - entity: binary_sensor.bnet_a74_is_charging
-        name: Charging?
-      - entity: binary_sensor.bnet_a74_music_active
-        name: Media?
-      - entity: binary_sensor.bnet_a74_interactive
-        name: In Use?
-      title: Phone State
-      type: glance
-    - card:
-        show_header_toggle: false
-        title: Phone Sensors
-        type: entities
-      filter:
-        exclude:
-        - entity_id: sensor.g8142_geo*
-        include:
-        - entity_id: sensor.bnet_a74*
-        - entity_id: binary_sensor.bnet_a74*
-      show_empty: false
-      type: custom:auto-entities
-      unique: false
-    type: vertical-stack
-  - cards:
-    - dark_mode: false
-      entities:
-      - entity: device_tracker.g8142
-      hours_to_show: 0
-      title: Phone Location
-      type: map
-    - entities:
-      - entity: sensor.g8142_battery_level
-        name: Battery
-      - entity: binary_sensor.g8142_is_charging
-        name: Charging?
-      - entity: sensor.g8142_battery_temperature
-        name: Battery Temp
-      - entity: sensor.g8142_battery_state
-        name: Battery State
-      title: Phone State
-      type: glance
-    - card:
-        show_header_toggle: false
-        title: Phone Sensors
-        type: entities
-      filter:
-        exclude:
-        - entity_id: sensor.g8142_geo*
-        include:
-        - entity_id: sensor.g8142*
-      show_empty: false
-      type: custom:auto-entities
-      unique: false
-    type: vertical-stack
+  cards: []
   icon: mdi:phone
+  max_columns: 4
   panel: false
   path: phones
+  sections:
+  - cards:
+    - cards:
+      - entities:
+        - entity: device_tracker.bnet_reno12
+        hours_to_show: 0
+        theme_mode: auto
+        title: Reno12 Phone Location
+        type: map
+      - entities:
+        - entity: sensor.bnet_reno12_battery_level
+          name: Battery
+        - entity: binary_sensor.bnet_reno12_is_charging
+          name: Charging?
+        - entity: sensor.bnet_reno12_battery_temperature
+          name: Battery Temp
+        - entity: sensor.bnet_reno12_battery_state
+          name: Battery State
+        title: Phone State
+        type: glance
+      - card:
+          show_header_toggle: false
+          title: Phone Sensors
+          type: entities
+        filter:
+          include:
+          - entity_id: sensor.bnet_reno12*
+          - entity_id: binary_sensor.bnet_reno12*
+        show_empty: false
+        type: custom:auto-entities
+        unique: false
+      type: vertical-stack
+    type: grid
+  - cards:
+    - cards:
+      - entities:
+        - entity: device_tracker.cph2197
+        hours_to_show: 0
+        theme_mode: auto
+        title: A74 Phone Location
+        type: map
+      - entities:
+        - entity: sensor.bnet_a74_battery_level
+          name: Battery
+        - entity: binary_sensor.bnet_a74_is_charging
+          name: Charging?
+        - entity: binary_sensor.bnet_a74_music_active
+          name: Media?
+        - entity: binary_sensor.bnet_a74_interactive
+          name: In Use?
+        title: Phone State
+        type: glance
+      - card:
+          show_header_toggle: false
+          title: Phone Sensors
+          type: entities
+        filter:
+          exclude:
+          - entity_id: sensor.g8142_geo*
+          include:
+          - entity_id: sensor.bnet_a74*
+          - entity_id: binary_sensor.bnet_a74*
+        show_empty: false
+        type: custom:auto-entities
+        unique: false
+      type: vertical-stack
+    type: grid
+  - cards:
+    - cards:
+      - entities:
+        - entity: device_tracker.g8142
+        hours_to_show: 0
+        theme_mode: auto
+        title: G8142 Phone Location
+        type: map
+      - entities:
+        - entity: sensor.g8142_battery_level
+          name: Battery
+        - entity: binary_sensor.g8142_is_charging
+          name: Charging?
+        - entity: sensor.g8142_battery_temperature
+          name: Battery Temp
+        - entity: sensor.g8142_battery_state
+          name: Battery State
+        title: Phone State
+        type: glance
+      - card:
+          show_header_toggle: false
+          title: Phone Sensors
+          type: entities
+        filter:
+          exclude:
+          - entity_id: sensor.g8142_geo*
+          include:
+          - entity_id: sensor.g8142*
+        show_empty: false
+        type: custom:auto-entities
+        unique: false
+      type: vertical-stack
+    type: grid
   title: Phones
+  type: sections
   visible:
   - user: 08d29e434e9a4bed98b3a62218eac7a7
 - badges: []
@@ -1613,24 +1967,82 @@ views:
   title: Printers
 - badges: []
   cards:
-  - card:
-      show_header_toggle: false
-      title: Repea
-      type: entities
-    filter:
-      include:
-      - entity_id: sensor.repea*
-    sort: domain
-    type: custom:auto-entities
   - cards:
-    - entity: switch.wol_inevi
-      icon_height: 30px
-      name: inevi.table.berserkir.net
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: toggle
-      type: button
+    - badges:
+      - entity: switch.hass_chassis
+        show_icon: true
+        show_state: true
+        type: entity
+      - entity: sensor.hass_system_temp
+        type: entity
+      heading: Automa iPMI
+      heading_style: title
+      icon: si:homeassistant
+      type: heading
+    - card:
+        type: entities
+      filter:
+        exclude:
+        - entity_id: sensor.hass_repo
+        - state: unavailable
+        include:
+        - entity_id: sensor.hass_*
+      sort:
+        method: domain
+        numeric: true
+      type: custom:auto-entities
+    type: custom:vertical-stack-in-card
+  - cards:
+    - badges:
+      - entity: sensor.adap_state
+        type: entity
+      - entity: sensor.adap_system_temp
+        type: entity
+      heading: Adap iPMI
+      heading_style: title
+      icon: mdi:server
+      type: heading
+    - card:
+        type: entities
+      filter:
+        exclude:
+        - state: unavailable
+        include:
+        - entity_id: sensor.adap_*
+      sort:
+        method: domain
+        numeric: true
+      type: custom:auto-entities
+    type: custom:vertical-stack-in-card
+  - cards:
+    - badges:
+      - entity: sensor.repea_status
+        type: entity
+      - entity: sensor.repea_system_temperature
+        type: entity
+      heading: Repea
+      heading_style: title
+      icon: mdi:nas
+      type: heading
+    - card:
+        show_header_toggle: false
+        type: entities
+      filter:
+        include:
+        - entity_id: sensor.repea*
+      sort: domain
+      type: custom:auto-entities
+    type: custom:vertical-stack-in-card
+  - cards:
+    - badges:
+      - entity: switch.wol_inevi
+        type: entity
+      - entity: sensor.inevi_system_temperature
+        type: entity
+      heading: Inevi
+      heading_style: title
+      icon: si:truenas
+      type: heading
     - card:
         type: entities
       filter:
@@ -1645,63 +2057,13 @@ views:
         numeric: true
         reverse: true
       type: custom:auto-entities
-    title: TrueNAS - inevi.table.berserkir.net
-    type: vertical-stack
-  - cards:
-    - entity: switch.hass_chassis
-      icon_height: 30px
-      name: automa.table.berserkir.net
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: more-info
-      type: button
-    - card:
-        type: entities
-      filter:
-        exclude:
-        - entity_id: sensor.hass_repo
-        - state: unavailable
-        include:
-        - entity_id: sensor.hass_*
-      sort:
-        method: domain
-        numeric: true
-      type: custom:auto-entities
-    title: HAss iPMI
-    type: vertical-stack
-  - cards:
-    - entity: switch.adap_chassis
-      icon_height: 30px
-      name: adap.table.berserkir.net
-      show_icon: true
-      show_name: true
-      tap_action:
-        action: more-info
-      type: button
-    - card:
-        type: entities
-      filter:
-        exclude:
-        - state: unavailable
-        include:
-        - entity_id: sensor.adap_*
-      sort:
-        method: domain
-        numeric: true
-      type: custom:auto-entities
-    title: Adap iPMI
-    type: vertical-stack
+    type: custom:vertical-stack-in-card
   icon: mdi:nas
   path: nas
   title: NAS
 - badges: []
   cards:
   - cards:
-    - entity: sensor.hacs
-      name: HACS
-      type: entity
-      unit: updates
     - entity: input_boolean.silent_mode
       icon: ''
       name: Silent Mode
@@ -1849,8 +2211,6 @@ views:
   cards:
   - cards:
     - entities:
-      - entity: binary_sensor.doppler_day_night_mode
-        name: Day/Night Mode
       - entity: sensor.doppler_light_detected
         name: Light Detected
       show_header_toggle: false
@@ -1862,13 +2222,9 @@ views:
         name: Wifi Connected Since
       - entity: sensor.doppler_wifi_ssid
         name: Wifi SSID
-      - entity: sensor.doppler_wifi_signal_strength
-        name: Wifi Signal Strength
       type: entities
     type: vertical-stack
   - entities:
-    - entity: switch.doppler_alexa_ascending_alarms
-      name: 'Alexa: Ascending Alarms'
     - entity: switch.doppler_alexa_tap_to_talk_tone
       name: 'Alexa: Tap to Talk Tone'
     - entity: switch.doppler_alexa_wake_word_tone
@@ -1912,8 +2268,6 @@ views:
     show_header_toggle: false
     type: entities
   - entities:
-    - entity: siren.doppler_alarm
-      name: Alarm
     - entity: switch.doppler_alarm_0_doppler_system_alarm
       name: Alarm 0 (Doppler System Alarm)
     - entity: switch.doppler_alarm_1

@@ -3,5 +3,4 @@
     hour_of_power:
       friendly_name: "Hour of Power"
       value_template: >
-        {% set time = states('sensor.time') %}
-        {{ states('sensor.hour_of_free_power_start') < states('sensor.time') < states('sensor.hour_of_free_power_end')  }}
+        {{ states('sensor.hour_of_free_power_start') < utcnow().strftime('%Y-%m-%dT%H:%M') < states('sensor.hour_of_free_power_end') }}
