@@ -1,6 +1,6 @@
 - platform: template
   sensors:
-    # Switches
+    # Switch Custom States
     state_deskswitch:
       friendly_name: "Desk Switch"
       value_template: '{% if is_state("device_tracker.deskswitch", "home") %}Online{% else %}Offline{% endif %}'
@@ -19,7 +19,7 @@
          {% else %}
            mdi:lan-disconnect
          {% endif %}'
-    # Access Points
+    # Access Point Custom States
     state_loungeap:
       friendly_name: "Lounge AP"
       value_template: '{% if is_state("device_tracker.loungeap", "home") %}Online{% else %}Offline{% endif %}'
@@ -56,3 +56,17 @@
          {% else %}
            mdi:access-point-network-off
          {% endif %}'
+    # Counter Sensor
+    unifi_clients:
+      friendly_name: "Unifi Clients"
+      unique_id: "sensor.unifi_clients"
+      value_template: >-
+        {{ (states('sensor.deskswitch_clients')|float + states('sensor.loungeswitch_clients')|float + 
+        states('sensor.backap_clients')|float + states('sensor.garageap_clients')|float + states('sensor.loungeap_clients')|float + states('sensor.officeap_clients')|float)|round(0) }}
+      attribute_templates:
+        Desk Switch Clients: "{{ states('sensor.deskswitch_clients') }}"
+        Lounge Switch Clients: "{{ states('sensor.loungeswitch_clients') }}"
+        Back AP Clients: "{{ states('sensor.backap_clients') }}"
+        Garage AP Clients: "{{ states('sensor.garageap_clients') }}"
+        Lounge AP Clients: "{{ states('sensor.loungeap_clients') }}"
+        Office AP Clients: "{{ states('sensor.officeap_clients') }}"
