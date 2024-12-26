@@ -59,7 +59,6 @@ switch: !include_dir_merge_list switches
 zone: !include_dir_merge_list zones
 
 # Single Files / Direct includes (All saved in the includes directory)
-anniversaries: !include includes/anniversaries.yaml
 #coinbase: !include includes/coinbase.yaml
 emulated_hue: !include includes/emulated_hue.yaml
 #hdhomerun: !include includes/hdhomerun.yaml
@@ -82,6 +81,7 @@ shell_command: !include includes/shell_commands.yaml
 
 #################################################################
 ## Deprecated YAML functions
+#anniversaries: !include includes/anniversaries.yaml # Now configured via UI, 2024.12
 #google: !include includes/google.yaml ##Deprecated 2022.08
 #map: #Now configured via UI 2024.04.00
 #nzbget: !include includes/nzbget.yaml
