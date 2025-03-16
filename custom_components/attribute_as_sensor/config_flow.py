@@ -46,12 +46,16 @@ OPTIONS_SCHEMA = vol.Schema(
         vol.Optional(CONF_ICON): selector.IconSelector(),
         vol.Optional(CONF_DEVICE_CLASS): selector.SelectSelector(
             selector.SelectSelectorConfig(
-                options=DEVICE_CLASSES, mode=selector.SelectSelectorMode.DROPDOWN
+                options=DEVICE_CLASSES,
+                mode=selector.SelectSelectorMode.DROPDOWN,
+                translation_key="device_class",
             )
         ),
         vol.Optional(CONF_STATE_CLASS): selector.SelectSelector(
             selector.SelectSelectorConfig(
-                options=STATE_CLASSES, mode=selector.SelectSelectorMode.DROPDOWN
+                options=STATE_CLASSES,
+                mode=selector.SelectSelectorMode.DROPDOWN,
+                translation_key="state_class",
             )
         ),
         vol.Optional(CONF_UNIT_OF_MEASUREMENT): selector.SelectSelector(
@@ -67,14 +71,16 @@ OPTIONS_SCHEMA = vol.Schema(
 async def attribute_schema(handler: SchemaCommonFlowHandler) -> vol.Schema:
     """Return schema for selecting attribute for entity."""
     options = handler.options.copy()
-
-    return vol.Schema(
-        {
-            vol.Optional(CONF_ATTRIBUTE): selector.AttributeSelector(
-                selector.AttributeSelectorConfig(entity_id=options[CONF_ENTITY_ID])
-            ),
-        }
-    ).extend(OPTIONS_SCHEMA.schema)
+    return handler.parent_handler.add_suggested_values_to_schema(
+        vol.Schema(
+            {
+                vol.Required(CONF_ATTRIBUTE): selector.AttributeSelector(
+                    selector.AttributeSelectorConfig(entity_id=options[CONF_ENTITY_ID])
+                ),
+            }
+        ).extend(OPTIONS_SCHEMA.schema),
+        options,
+    )
 
 
 CONFIG_FLOW: dict[str, SchemaFlowFormStep | SchemaFlowMenuStep] = {
@@ -82,7 +88,7 @@ CONFIG_FLOW: dict[str, SchemaFlowFormStep | SchemaFlowMenuStep] = {
     "attr": SchemaFlowFormStep(attribute_schema),
 }
 OPTIONS_FLOW: dict[str, SchemaFlowFormStep | SchemaFlowMenuStep] = {
-    "init": SchemaFlowFormStep(OPTIONS_SCHEMA)
+    "init": SchemaFlowFormStep(attribute_schema)
 }
 
 
