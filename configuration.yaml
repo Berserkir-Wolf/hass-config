@@ -2,12 +2,11 @@
 # This gets used for a recovery boot
 default_config:
   # This tells Hass that it should still accept reverse proxy info when it does a recovery boot.
-  http:
-    use_x_forwarded_for: true
-    trusted_proxies:
-      - !secret server_1_ip
-      - !secret server_2_ip
-      - !secret server_3_ip
+#  http:
+#    use_x_forwarded_for: true
+#    trusted_proxies:
+#      - !secret server_1_ip
+#      - !secret server_4_ip
 
 ## Simple Components
 # Used for sunrise/sunset times.
@@ -38,8 +37,7 @@ http:
   use_x_forwarded_for: true
   trusted_proxies:
     - !secret server_1_ip
-    - !secret server_2_ip
-    - !secret server_3_ip
+    - !secret server_4_ip
 
 ## Frontend config - sets up support for themes
 frontend:
