@@ -100,6 +100,13 @@
     },
     "entity": {
         "binary_sensor": {
+            "direction": {
+                "name": "Посока",
+                "state": {
+                    "off": "Входящ",
+                    "on": "Изходящ"
+                }
+            },
             "defrost": {
                 "name": "Размразяване",
                 "state": {
@@ -179,6 +186,7 @@
                 }
             },
             "thermostat": {
+                "name": "Термостат",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -303,7 +311,8 @@
                             "medium": "Средно",
                             "high": "Високо",
                             "continuous": "Непрекъснато",
-                            "intermittent": "Интервално"
+                            "intermittent": "Интервално",
+                            "timer": "Таймер"
                         }
                     }
                 }
@@ -338,7 +347,9 @@
                             "sleep": "Сън",
                             "auto": "Автоматичен",
                             "eco": "Еко",
-                            "anti-condensation": "Антиконденз"
+                            "anti-condensation": "Антиконденз",
+                            "extractor": "Екстрактор",
+                            "heat_recovery": "Възстановяване на топлината"
                         }
                     }
                 }
@@ -439,6 +450,8 @@
                     "cake": "Торта",
                     "bread": "Хляб",
                     "toast": "Тост",
+                    "sausage": "Наденица",
+                    "dry_fruit": "Сухи плодове",
                     "custom": "Потребителски",
                     "cloud_recipe": "Облак рецепта",
                     "default": "По подразбиране",
@@ -446,12 +459,34 @@
                     "preheat": "Предварително загряване"
                 }
             },
+            "scene": {
+                "name": "Сцена",
+                "state": {
+                    "relax": "Релаксирайте",
+                    "movie": "Филм",
+                    "party": "Парти",
+                    "romantic": "Романтично",
+                    "night": "Нощ",
+                    "morning": "Сутрин",
+                    "working": "Работа",
+                    "leisure": "Свободно време",
+                    "vacation": "Ваканция",
+                    "reading": "Четене",
+                    "twinkle": "Мигащо",
+                    "gaming": "Игри",
+                    "none": "Няма"
+                }
+            },
             "timer": {
                 "name": "Таймер",
                 "state": {
                     "cancel": "Отказ",
+                    "continuous": "Непрекъснато",
+                    "5m": "5 минути",
                     "10m": "10 минути",
+                    "20m": "20 минути",
                     "30m": "30 минути",
+                    "40m": "40 минути",
                     "1h": "1 час",
                     "1h30m": "1 час 30 минути",
                     "2h": "2 часа",
@@ -536,6 +571,16 @@
             }
         },
         "sensor": {
+            "air_quality": {
+                "name": "Качество на въздуха",
+                "state": {
+                    "excellent": "Отлично",
+                    "good": "Добро",
+                    "moderate": "Умерен",
+                    "poor": "Лошо",
+                    "severe": "Тежко"
+                }
+            },
             "status": {
                 "name": "Статус",
                 "state": {
@@ -619,6 +664,16 @@
                     "pause": "Пауза за готвене"
                 }
             },
+            "water_level": {
+                "name": "Ниво на водата",
+                "state": {
+                    "full": "Пълна",
+                    "high": "Висока",
+                    "medium": "Средна",
+                    "low": "Ниска",
+                    "empty": "Празна"
+                }
+            },
             "energy_produced": {
                 "name": "Произведена енергия"
             },
@@ -630,6 +685,15 @@
             },
             "energy_consumed_x": {
                 "name": "Консумирана енергия {x}"
+            },
+            "current_x": {
+                "name": "Текущ {x}"
+            },
+            "voltage_x": {
+                "name": "Напрежение {x}"
+            },
+            "power_x": {
+                "name": "Мощност {x}"
             }
         },
         "switch": {
@@ -645,11 +709,25 @@
             "keytone": {
                 "name": "Клавишен тон"
             },
+            "outlet_x": {
+                "name": "Изход {x}"
+            },
             "sleep": {
                 "name": "Сън"
             },
+            "switch_x": {
+                "name": "Превключване {x}"
+            },
+            "electrolytic_sterilization": {
+                "name": "Електролизна стерилизация"
+            },
             "uv_sterilization": {
                 "name": "UV стерилизация"
+            }
+        },
+        "text": {
+            "scene": {
+                "name": "Сцена"
             }
         }
     }

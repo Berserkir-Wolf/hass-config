@@ -100,6 +100,13 @@
     },
     "entity": {
         "binary_sensor": {
+            "direction": {
+                "name": "Směr",
+                "state": {
+                    "off": "Příchozí",
+                    "on": "Odchozí"
+                }
+            },
             "defrost": {
                 "name": "Rozmrazovat",
                 "state": {
@@ -179,6 +186,7 @@
                 }
             },
             "thermostat": {
+                "name": "Termostat",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -303,7 +311,8 @@
                             "medium": "Střední",
                             "high": "Vysoký",
                             "continuous": "Nepřetržitý",
-                            "intermittent": "Přerušovaný"
+                            "intermittent": "Přerušovaný",
+                            "timer": "Časovač"
                         }
                     }
                 }
@@ -338,7 +347,9 @@
                             "sleep": "Spát",
                             "auto": "Auto",
                             "eco": "Eco",
-                            "anti-condensation": "Proti kondenzaci"
+                            "anti-condensation": "Proti kondenzaci",
+                            "extractor": "Odsávání",
+                            "heat_recovery": "Ovzduší"
                         }
                     }
                 }
@@ -439,6 +450,8 @@
                     "cake": "Koláč",
                     "bread": "Chléb",
                     "toast": "Topinka",
+                    "sausage": "Klobása",
+                    "dry_fruit": "Sušené ovoce",
                     "custom": "Vlastní",
                     "cloud_recipe": "Recept z cloudu",
                     "default": "Výchozí",
@@ -446,12 +459,34 @@
                     "preheat": "Předehřátí"
                 }
             },
+            "scene": {
+                "name": "Scéna",
+                "state": {
+                    "relax": "Relax",
+                    "movie": "Film",
+                    "party": "Večírek",
+                    "romantic": "Romantický",
+                    "night": "Noc",
+                    "morning": "Ráno",
+                    "working": "Práce",
+                    "leisure": "Volný čas",
+                    "vacation": "Dovolená",
+                    "reading": "Čtení",
+                    "twinkle": "Blikání",
+                    "gaming": "Hraní her",
+                     "none": "Žádný"
+                }
+            },
             "timer": {
                 "name": "Časovač",
                 "state": {
                     "cancel": "Zrušit",
+                    "continuous": "Nepřetržitý",
+                    "5m": "5 minut",
                     "10m": "10 minut",
+                    "20m": "20 minut",
                     "30m": "30 minut",
+                    "40m": "40 minut",
                     "1h": "1 hodina",
                     "1h30m": "1 hodina 30 minut",
                     "2h": "2 hodiny",
@@ -535,6 +570,16 @@
             }
         },
         "sensor": {
+            "air_quality": {
+                "name": "Kvalita vzduchu",
+                "state": {
+                    "excellent": "Výborná",
+                    "good": "Dobrá",
+                    "moderate": "Střední",
+                    "poor": "Špatná",
+                    "severe": "Velmi špatná"
+                }
+            },
             "status": {
                 "name": "Stav",
                 "state": {
@@ -618,6 +663,16 @@
                     "pause": "Vaření pozastaveno"
                 }
             },
+            "water_level": {
+                "name": "Úroveň vody",
+                "state": {
+                    "full": "Plný",
+                    "high": "Vysoký",
+                    "medium": "Střední",
+                    "low": "Nízký",
+                    "empty": "Prázdný"
+                }
+            },
             "energy_produced": {
                 "name": "Vyprodukována energie"
             },
@@ -629,6 +684,15 @@
             },
             "energy_consumed_x": {
                 "name": "Spotřebována energie {x}"
+            },
+            "current_x": {
+                "name": "Proud {x}"
+            },
+            "voltage_x": {
+                "name": "Napětí {x}"
+            },
+            "power_x": {
+                "name": "Výkon {x}"
             }
         },
         "switch": {
@@ -644,11 +708,25 @@
             "keytone": {
                 "name": "Tón kláves"
             },
+            "outlet_x": {
+                "name": "Zásuvka {x}"
+            },
             "sleep": {
                 "name": "Spát"
             },
+            "switch_x": {
+                "name": "Přepínač {x}"
+            },
+            "electrolytic_sterilization": {
+                "name": "Elektrolytická sterilizace"
+            },
             "uv_sterilization": {
                 "name": "UV sterilizace"
+            }
+        },
+        "text": {
+            "scene": {
+                "name": "Scéna"
             }
         }
     }

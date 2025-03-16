@@ -101,6 +101,13 @@
     },
     "entity": {
         "binary_sensor": {
+            "direction": {
+                "name": "Retning",
+                "state": {
+                    "off": "Inne",
+                    "on": "Ute"
+                }
+            },
             "defrost": {
                 "name": "Tine",
                 "state": {
@@ -180,6 +187,7 @@
                 }
             },
             "thermostat": {
+                "name": "Termostat",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -304,7 +312,8 @@
                             "medium": "Medium",
                             "high": "Høy",
                             "continuous": "Kontinuerlig",
-                            "intermittent": "Intermitterende"
+                            "intermittent": "Intermitterende",
+                            "timer": "Timer"
                         }
                     }
                 }
@@ -339,7 +348,9 @@
                             "sleep": "Sove",
                             "auto": "Auto",
                             "eco": "Øko",
-                            "anti-condensation": "Anti-kondens"
+                            "anti-condensation": "Anti-kondens",
+                            "extractor": "Ekstraktor",
+                            "heat_recovery": "Varmeutvinning"
                         }
                     }
                 }
@@ -440,6 +451,8 @@
                     "cake": "Kake",
                     "bread": "Brød",
                     "toast": "Toast",
+                    "sausage": "Pølse",
+                    "dry_fruit": "Tørket frukt",
                     "custom": "Egendefinert",
                     "cloud_recipe": "Skyoppskrift",
                     "default": "Standard",
@@ -447,12 +460,34 @@
                     "preheat": "Forvarm"
                 }
             },
+            "scene": {
+                "name": "Scene",
+                "state": {
+                    "relax": "Slapp av",
+                    "movie": "Film",
+                    "party": "Fest",
+                    "romantic": "Romantisk",
+                    "night": "Natt",
+                    "morning": "Morgen",
+                    "working": "Arbeid",
+                    "leisure": "Fritid",
+                    "vacation": "Ferie",
+                    "reading": "Lesing",
+                    "twinkle": "Blink",
+                    "gaming": "Spill",
+                    "none": "Ingen"
+                }
+            },
             "timer": {
                 "name": "Timer",
                 "state": {
                     "cancel": "Avbryt",
+                    "continuous": "Kontinuerlig",
+                    "5m": "5 minutter",
                     "10m": "10 minutter",
+                    "20m": "20 minutter",
                     "30m": "30 minutter",
+                    "40m": "40 minutter",
                     "1h": "1 time",
                     "1h30m": "1 time 30 minutter",
                     "2h": "2 timer",
@@ -536,6 +571,16 @@
             }
         },
         "sensor": {
+            "air_quality": {
+                "name": "Luftkvalitet",
+                "state": {
+                    "excellent": "Utmerket",
+                    "good": "God",
+                    "moderate": "Moderat",
+                    "poor": "Dårlig",
+                    "severe": "Alvorlig"
+                }
+            },
             "status": {
                 "name": "Status",
                 "state": {
@@ -619,6 +664,16 @@
                     "pause": "Matlaging pause"
                 }
             },
+            "water_level": {
+                "name": "Vannivå",
+                "state": {
+                    "full": "Full",
+                    "high": "Høy",
+                    "medium": "Medium",
+                    "low": "Lav",
+                    "empty": "Tom"
+                }
+            },
             "energy_produced": {
                 "name": "Energi produsert"
             },
@@ -630,6 +685,15 @@
             },
             "energy_consumed_x": {
                 "name": "Energi forbrukt {x}"
+            },
+            "current_x": {
+                "name": "Strøm {x}"
+            },
+            "voltage_x": {
+                "name": "Spenning {x}"
+            },
+            "power_x": {
+                "name": "Effekt {x}"
             }
         },
         "switch": {
@@ -645,11 +709,25 @@
             "keytone" : {
                 "name": "Tastaturtone"
             },
+            "outlet_x": {
+                "name": "Uttak {x}"
+            },
             "sleep": {
                 "name": "Søvnmodus"
             },
+            "switch_x": {
+                "name": "Bryter {x}"
+            },
+            "electrolytic_sterilization": {
+                "name": "Elektrolytisk sterilisering"
+            },
             "uv_sterilization": {
                 "name": "UV-sterilisering"
+            }
+        },
+        "text": {
+            "scene": {
+                "name": "Scene"
             }
         }
     }

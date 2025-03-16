@@ -100,6 +100,13 @@
     },
     "entity": {
         "binary_sensor": {
+            "direction": {
+                "name": "Direction",
+                "state": {
+                    "off": "In",
+                    "on": "Out"
+                }
+            },
             "defrost": {
                 "name": "Defrost",
                 "state": {
@@ -179,6 +186,7 @@
                 }
             },
             "thermostat": {
+                "name": "Thermostat",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -303,7 +311,8 @@
                             "medium": "Medium",
                             "high": "High",
                             "continuous": "Continuous",
-                            "intermittent": "Intermittent"
+                            "intermittent": "Intermittent",
+                            "timer": "Timer"
                         }
                     }
                 }
@@ -338,7 +347,9 @@
                             "sleep": "Sleep",
                             "auto": "Auto",
                             "eco": "Eco",
-                            "anti-condensation": "Anti-condensation"
+                            "anti-condensation": "Anti-condensation",
+                            "extractor": "Extractor",
+                            "heat_recovery": "Heat recovery"
                         }
                     }
                 }
@@ -439,6 +450,8 @@
                     "cake": "Cake",
                     "bread": "Bread",
                     "toast": "Toast",
+                    "sausage": "Sausage",
+                    "dry_fruit": "Dry Fruit",
                     "custom": "Custom",
                     "cloud_recipe": "Cloud Recipe",
                     "default": "Default",
@@ -446,12 +459,34 @@
                     "preheat": "Preheat"
                 }
             },
+            "scene": {
+                "name": "Scene",
+                "state": {
+                    "relax": "Relax",
+                    "movie": "Movie",
+                    "party": "Party",
+                    "romantic": "Romantic",
+                    "night": "Night",
+                    "morning": "Morning",
+                    "working": "Working",
+                    "leisure": "Leisure",
+                    "vacation": "Vacation",
+                    "reading": "Reading",
+                    "twinkle": "Twinkle",
+                    "gaming": "Gaming",
+                    "none": "None"
+                }
+            },
             "timer": {
                 "name": "Timer",
                 "state": {
                     "cancel": "Cancel",
+                    "continuous": "Continuous",
+                    "5m": "5 minutes",
                     "10m": "10 minutes",
+                    "20m": "20 minutes",
                     "30m": "30 minutes",
+                    "40m": "40 minutes",
                     "1h": "1 hour",
                     "1h30m": "1 hour 30 minutes",
                     "2h": "2 hours",
@@ -535,6 +570,16 @@
             }
         },
         "sensor": {
+            "air_quality": {
+                "name": "Air quality",
+                "state": {
+                    "excellent": "Excellent",
+                    "good": "Good",
+                    "moderate": "Moderate",
+                    "poor": "Poor",
+                    "severe": "Severe"
+                }
+            },
             "status": {
                 "name": "Status",
                 "state": {
@@ -618,6 +663,16 @@
                     "pause": "Cooking Paused"
                 }
             },
+            "water_level": {
+                "name": "Water Level",
+                "state": {
+                    "empty": "Empty",
+                    "low": "Low",
+                    "medium": "Medium",
+                    "high": "High",
+                    "full": "Full"
+                }
+            },
             "energy_produced": {
                 "name": "Energy produced"
             },
@@ -629,6 +684,15 @@
             },
             "energy_consumed_x": {
                 "name": "Energy consumed {x}"
+            },
+            "current_x": {
+                "name": "Current {x}"
+            },
+            "voltage_x": {
+                "name": "Voltage {x}"
+            },
+            "power_x": {
+                "name": "Power {x}"
             }
         },
         "switch": {
@@ -644,11 +708,25 @@
             "keytone": {
                 "name": "Keytone"
             },
+            "outlet_x": {
+                "name": "Outlet {x}"
+            },
             "sleep": {
                 "name": "Sleep"
             },
+            "switch_x": {
+                "name": "Switch {x}"
+            },
             "uv_sterilization": {
                 "name": "UV sterilization"
+            },
+            "electrolytic_sterilization": {
+                "name": "Electrolytic sterilization"
+            }
+        },
+        "text": {
+            "scene": {
+                "name": "Scene"
             }
         }
     }

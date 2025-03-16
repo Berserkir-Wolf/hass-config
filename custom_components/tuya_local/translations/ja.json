@@ -100,6 +100,13 @@
     },
     "entity": {
         "binary_sensor": {
+            "direction": {
+                "name": "方向",
+                "state": {
+                    "off": "入る",
+                    "on": "出る"
+                }
+            },
             "defrost": {
                 "name": "デフロスト",
                 "state": {
@@ -179,6 +186,7 @@
                 }
             },
             "thermostat": {
+                "name": "サーモスタット",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -303,7 +311,8 @@
                             "medium": "中",
                             "high": "高い",
                             "continuous": "連続",
-                            "intermittent": "間欠"
+                            "intermittent": "間欠",
+                            "timer": "タイマー"
                         }
                     }
                 }
@@ -338,7 +347,9 @@
                             "sleep": "スリープ",
                             "auto": "自動",
                             "eco": "エコ",
-                            "anti-condensation": "結露防止"
+                            "anti-condensation": "結露防止",
+                            "extractor": "抽出",
+                            "heat_recovery": "熱回収"
                         }
                     }
                 }
@@ -439,6 +450,8 @@
                     "cake": "ケーキ",
                     "bread": "パン",
                     "toast": "トースト",
+                    "sausage": "ソーセージ",
+                    "dry_fruit": "ドライフルーツ",
                     "custom": "カスタム",
                     "cloud_recipe": "クラウドレシピ",
                     "default": "デフォルト",
@@ -446,12 +459,34 @@
                     "preheat": "予熱"
                 }
             },
+            "scene": {
+                "name": "シーン",
+                "state": {
+                    "relax": "リラックス",
+                    "movie": "映画",
+                    "party": "パーティ",
+                    "romantic": "ロマンチック",
+                    "night": "夜",
+                    "morning": "朝",
+                    "working": "作業",
+                    "leisure": "レジャー",
+                    "vacation": "休暇",
+                    "reading": "読書",
+                    "twinkle": "きらめき",
+                    "gaming": "ゲーム",
+                    "none": "なし"
+                }
+            },
             "timer": {
                 "name": "タイマー",
                 "state": {
                     "cancel": "キャンセル",
+                    "continuous": "連続",
+                    "5m": "5分",
                     "10m": "10分",
+                    "20m": "20分",
                     "30m": "30分",
+                    "40m": "40分",
                     "1h": "1時間",
                     "1h30m": "1時間30分",
                     "2h": "2時間",
@@ -535,6 +570,16 @@
             }
         },
         "sensor": {
+            "air_quality": {
+                "name": "空気品質",
+                "state": {
+                    "excellent": "優れている",
+                    "good": "良い",
+                    "moderate": "中程度",
+                    "poor": "悪い",
+                    "severe": "非常に悪い"
+                }
+            },
             "status": {
                 "name": "ステータス",
                 "state": {
@@ -618,6 +663,16 @@
                     "pause": "調理一時停止"
                 }
             },
+            "water_level": {
+                "name": "水位",
+                "state": {
+                    "empty": "空",
+                    "medium": "中",
+                    "low": "低い",
+                    "high": "高い",
+                    "full": "満杯"
+                }
+            },
             "energy_produced": {
                 "name": "発電量"
             },
@@ -629,6 +684,15 @@
             },
             "energy_consumed_x": {
                 "name": "消費電力{x}"
+            },
+            "current_x": {
+                "name": "電流{x}"
+            },
+            "voltage_x": {
+                "name": "電圧{x}"
+            },
+            "power_x": {
+                "name": "電力{x}"
             }
         },
         "switch": {
@@ -644,11 +708,25 @@
             "keytone": {
                 "name": "キートーン"
             },
+            "outlet_x": {
+                "name": "コンセント{x}"
+            },
             "sleep": {
                 "name": "睡眠"
             },
+            "switch_x": {
+                "name": "スイッチ{x}"
+            },
+            "electrolytic_sterilization": {
+                "name": "電解殺菌"
+            },
             "uv_sterilization": {
                 "name": "紫外線殺菌"
+            }
+        },
+        "text": {
+            "scene": {
+                "name": "シーン"
             }
         }
     }

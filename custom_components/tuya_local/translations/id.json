@@ -100,6 +100,13 @@
     },
     "entity": {
         "binary_sensor": {
+            "direction": {
+                "name": "Arah",
+                "state": {
+                    "off": "Masuk",
+                    "on": "Keluar"
+                }
+            },
             "defrost": {
                 "name": "Mencairkan beku",
                 "state": {
@@ -179,6 +186,7 @@
                 }
             },
             "thermostat": {
+                "name": "Termostat",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -303,7 +311,8 @@
                             "medium": "Sedang",
                             "high": "Tinggi",
                             "continuous": "Terus menerus",
-                            "intermittent": "Intermiten"
+                            "intermittent": "Intermiten",
+                            "timer": "Pengatur waktu"
                         }
                     }
                 }
@@ -338,7 +347,9 @@
                             "sleep": "Tidur",
                             "auto": "Otomatis",
                             "eco": "Hemat",
-                            "anti-condensation": "Anti kondensasi"
+                            "anti-condensation": "Anti kondensasi",
+                            "extractor": "Ekstraktor",
+                            "heat_recovery": "Pemulihan panas"
                         }
                     }
                 }
@@ -439,6 +450,8 @@
                     "cake": "Kue",
                     "bread": "Roti",
                     "toast": "Roti panggang",
+                    "sausage": "Sosis",
+                    "dry_fruit": "Buah kering",
                     "custom": "Kustom",
                     "cloud_recipe": "Resep awan",
                     "default": "Default",
@@ -446,12 +459,34 @@
                     "preheat": "Pemanasan awal"
                 }
             },
+            "scene": {
+                "name": "Adegan",
+                "state": {
+                    "relax": "Rileks",
+                    "movie": "Film",
+                    "party": "Pesta",
+                    "romantic": "Romantis",
+                    "night": "Malam",
+                    "morning": "Pagi",
+                    "working": "Bekerja",
+                    "leisure": "Santai",
+                    "vacation": "Liburan",
+                    "reading": "Membaca",
+                    "twinkle": "Berkedip",
+                    "gaming": "Bermain game",
+                    "none": "Tidak ada"
+                }
+            },
             "timer": {
                 "name": "Pengatur waktu",
                 "state": {
                     "cancel": "Batal",
+                    "continuous": "Terus menerus",
+                    "5m": "5 menit",
                     "10m": "10 menit",
+                    "20m": "20 menit",
                     "30m": "30 menit",
+                    "40m": "40 menit",
                     "1h": "1 jam",
                     "1h30m": "1 jam 30 menit",
                     "2h": "2 jam",
@@ -535,6 +570,16 @@
             }
         },
         "sensor": {
+            "air_quality": {
+                "name": "Kualitas udara",
+                "state": {
+                    "excellent": "Sangat baik",
+                    "good": "Baik",
+                    "moderate": "Sedang",
+                    "poor": "Buruk",
+                    "severe": "Parah"
+                }
+            },
             "status": {
                 "name": "Status",
                 "state": {
@@ -618,6 +663,16 @@
                     "pause": "Memasak dijeda"
                 }
             },
+            "water_level": {
+                "name": "Tingkat air",
+                "state": {
+                    "full": "Penuh",
+                    "high": "Tinggi",
+                    "medium": "Sedang",
+                    "low": "Rendah",
+                    "empty": "Kosong"
+                }
+            },
             "energy_produced": {
                 "name": "Energi yang dihasilkan"
             },
@@ -629,6 +684,15 @@
             },
             "energy_consumed_x": {
                 "name": "Energi yang dikonsumsi {x}"
+            },
+            "current_x": {
+                "name": "Arus {x}"
+            },
+            "voltage_x": {
+                "name": "Tegangan {x}"
+            },
+            "power_x": {
+                "name": "Daya {x}"
             }
         },
         "switch": {
@@ -644,11 +708,25 @@
             "keytone": {
                 "name": "Nada tombol"
             },
+            "outlet_x": {
+                "name": "Stopkontak {x}"
+            },
             "sleep": {
                 "name": "Tidur"
             },
+            "switch_x": {
+                "name": "Saklar {x}"
+            },
+            "electrolytic_sterilization": {
+                "name": "Sterilisasi elektrolit"
+            },
             "uv_sterilization": {
                 "name": "Sterilisasi UV"
+            }
+        },
+        "text": {
+            "scene": {
+                "name": "Adegan"
             }
         }
     }

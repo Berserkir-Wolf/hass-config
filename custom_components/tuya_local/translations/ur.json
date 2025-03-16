@@ -103,6 +103,13 @@
     },
     "entity": {
         "binary_sensor": {
+            "direction": {
+                "name": "سمت",
+                "state": {
+                    "off": "آنے والی",
+                    "on": "جانب"
+                }
+            },
             "defrost": {
                 "name": "ڈیفروسٹ",
                 "state": {
@@ -182,6 +189,7 @@
                 }
             },
             "thermostat": {
+                "name": "تھرموسٹیٹ",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -306,7 +314,8 @@
                             "medium": "درمیانہ",
                             "high": "زیادہ",
                             "continuous": "مسلسل",
-                            "intermittent": "منقطع"
+                            "intermittent": "منقطع",
+                            "timer": "ٹائمر"
                         }
                     }
                 }
@@ -341,7 +350,9 @@
                             "sleep": "سونا",
                             "auto": "خود مختار",
                             "eco": "ایکو",
-                            "anti-condensation": "اینٹی کنڈینسیشن"
+                            "anti-condensation": "اینٹی کنڈینسیشن",
+                            "extractor": "نکالنے والا",
+                            "heat_recovery": "حرارتی بازیابی"
                         }
                     }
                 }
@@ -442,6 +453,8 @@
                     "cake": "کیک",
                     "bread": "روٹی",
                     "toast": "ٹوسٹ",
+                    "sausage": "سوسیج",
+                    "dry_fruit": "خشک پھل",
                     "custom": "اپنی مرضی",
                     "cloud_recipe": "کلاؤڈ ریسیپی",
                     "default": "پہلے سے طے شدہ",
@@ -449,12 +462,34 @@
                     "preheat": "پری ہیٹ"
                 }
             },
+            "scene": {
+                "name": "منظر",
+                "state": {
+                    "relax": "آرام",
+                    "movie": "فلم",
+                    "party": "پارٹی",
+                    "romantic": "رومانٹک",
+                    "night": "رات",
+                    "morning": "صبح",
+                    "working": "کام",
+                    "leisure": "فراغت",
+                    "vacation": "چھٹی",
+                    "reading": "پڑھائی",
+                    "twinkle": "چمک",
+                    "gaming": "گیمنگ",
+                    "none": "کوئی نہیں"
+                }
+            },
             "timer": {
                 "name": "ٹائمر",
                 "state": {
                     "cancel": "منسوخ کریں",
+                    "continuous": "مسلسل",
+                    "5m": "5 منٹ",
                     "10m": "10 منٹ",
+                    "20m": "20 منٹ",
                     "30m": "30 منٹ",
+                    "40m": "40 منٹ",
                     "1h": "1 گھنٹہ",
                     "1h30m": "1 گھنٹہ 30 منٹ",
                     "2h": "2 گھنٹے",
@@ -538,6 +573,16 @@
             }
         },
         "sensor": {
+            "air_quality": {
+                "name": "ہوا کی معیار",
+                "state": {
+                    "excellent": "شاندار",
+                    "good": "اچھا",
+                    "moderate": "معتدل",
+                    "poor": "خراب",
+                    "severe": "شدید"
+                }
+            },
             "status": {
                 "name": "حالت",
                 "state": {
@@ -621,6 +666,16 @@
                     "pause": "پکانا معطل ہوگیا"
                 }
             },
+            "water_level": {
+                "name": "پانی کی سطح",
+                "state": {
+                    "full": "مکمل",
+                    "high": "زیادہ",
+                    "medium": "درمیانہ",
+                    "low": "کم",
+                    "empty": "خالی"
+                }
+            },
             "energy_produced": {
                 "name": "پیدا کردہ بجلی"
             },
@@ -632,6 +687,15 @@
             },
             "energy_consumed_x": {
                 "name": "استعمال کردہ بجلی {x}"
+            },
+            "current_x": {
+                "name": "موجودہ {x}"
+            },
+            "voltage_x": {
+                "name": "وولٹیج {x}"
+            },
+            "power_x": {
+                "name": "پاور {x}"
             }
         },
         "switch": {
@@ -647,11 +711,25 @@
             "keytone": {
                 "name": "کی پیڈ ٹون"
             },
+            "outlet_x": {
+                "name": "آؤٹ لیٹ {x}"
+            },
             "sleep": {
                 "name": "سونا"
             },
+            "switch_x": {
+                "name": "سوئچ {x}"
+            },
+            "electrolytic_sterilization": {
+                "name": "الیکٹرولائٹک نس بندی"
+            },
             "uv_sterilization": {
                 "name": "UV نس بندی"
+            }
+        },
+        "text": {
+            "scene": {
+                "name": "منظر"
             }
         }
     }

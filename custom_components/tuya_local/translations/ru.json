@@ -100,6 +100,13 @@
     },
     "entity": {
         "binary_sensor": {
+            "direction": {
+                "name": "Направление",
+                "state": {
+                    "off": "Входящий",
+                    "on": "Исходящий"
+                }
+            },
             "defrost": {
                 "name": "Разморозка",
                 "state": {
@@ -179,6 +186,7 @@
                 }
             },
             "thermostat": {
+                "name": "Термостат",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -303,7 +311,8 @@
                             "medium": "Средний",
                             "high": "Высокий",
                             "continuous": "Непрерывный",
-                            "intermittent": "Интервальный"
+                            "intermittent": "Интервальный",
+                            "timer": "Таймер"
                         }
                     }
                 }
@@ -338,7 +347,9 @@
                             "sleep": "Сон",
                             "auto": "Авто",
                             "eco": "Эко",
-                            "anti-condensation": "Антиконденсация"
+                            "anti-condensation": "Антиконденсация",
+                            "extractor": "Экстрактор",
+                            "heat_recovery": "Тепловосстановление"
                         }
                     }
                 }
@@ -439,6 +450,8 @@
                     "cake": "Торт",
                     "bread": "Хлеб",
                     "toast": "Тост",
+                    "sausage": "Сосиски",
+                    "dry_fruit": "Сухофрукты",
                     "custom": "Пользовательский",
                     "cloud_recipe": "Облако",
                     "default": "По умолчанию",
@@ -446,12 +459,34 @@
                     "preheat": "Предварительный нагрев"
                 }
             },
+            "scene": {
+                "name": "Сцена",
+                "state": {
+                    "relax": "Отдых",
+                    "movie": "Кино",
+                    "party": "Вечеринка",
+                    "romantic": "Романтика",
+                    "night": "Ночь",
+                    "morning": "Утро",
+                    "working": "Работа",
+                    "leisure": "Досуг",
+                    "vacation": "Отпуск",
+                    "reading": "Чтение",
+                    "twinkle": "Мерцание",
+                    "gaming": "Игры",
+                    "none": "Нет"
+                }
+            },
             "timer": {
                 "name": "Таймер",
                 "state": {
                     "cancel": "Отмена",
+                    "continuous": "Непрерывный",
+                    "5m": "5 минут",
                     "10m": "10 минут",
+                    "20m": "20 минут",
                     "30m": "30 минут",
+                    "40m": "40 минут",
                     "1h": "1 час",
                     "1h30m": "1 час 30 минут",
                     "2h": "2 часа",
@@ -535,6 +570,16 @@
             }
         },
         "sensor": {
+            "air_quality": {
+                "name": "Качество воздуха",
+                "state": {
+                    "excellent": "Отличное",
+                    "good": "Хорошее",
+                    "moderate": "Умеренное",
+                    "poor": "Плохое",
+                    "severe": "Серьезн"
+                }
+            },
             "status": {
                 "name": "Статус",
                 "state": {
@@ -618,6 +663,16 @@
                     "pause": "Приготовление приостановлено"
                 }
             },
+            "water_level": {
+                "name": "Уровень воды",
+                "state": {
+                    "full": "Полный",
+                    "high": "Высокий",
+                    "medium": "Средний",
+                    "low": "Низкий",
+                    "empty": "Пустой"
+                }
+            },
             "energy_produced": {
                 "name": "Производимая энергия"
             },
@@ -629,6 +684,15 @@
             },
             "energy_consumed_x": {
                 "name": "Потребляемая энергия {x}"
+            },
+            "current_x": {
+                "name": "Текущий {x}"
+            },
+            "voltage_x": {
+                "name": "Напряжение {x}"
+            },
+            "power_x": {
+                "name": "Мощность {x}"
             }
         },
         "switch": {
@@ -644,11 +708,25 @@
             "keytone": {
                 "name": "Ключевой тон"
             },
+            "outlet_x": {
+                "name": "Розетка {x}"
+            },
             "sleep": {
                 "name": "Сон"
             },
+            "switch_x": {
+                "name": "Выключатель {x}"
+            },
+            "electrolytic_sterilization": {
+                "name": "Электролитическая стерилизация"
+            },
             "uv_sterilization": {
                 "name": "УФ-стерилизация"
+            }
+        },
+        "text": {
+            "scene": {
+                "name": "Сцена"
             }
         }
     }
