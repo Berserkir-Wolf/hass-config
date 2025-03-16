@@ -1742,10 +1742,17 @@
           sequence:
           - choose:
             - conditions:
-              - condition: numeric_state
-                entity_id: climate.lounge_air_conditioner
-                attribute: current_temperature
-                above: 24
+              - condition: and
+                conditions:
+                - condition: numeric_state
+                  entity_id: climate.lounge_air_conditioner
+                  attribute: current_temperature
+                  above: 24
+                - condition: not
+                  conditions:
+                  - condition: state
+                    entity_id: climate.lounge_air_conditioner
+                    state: 'off'
               sequence:
               - alias: Set lounge AC to 18, cool, medium fan
                 action: sensibo.full_state
@@ -1759,10 +1766,17 @@
               alias: When lounge is above 24 degrees, set lounge AC to 18, cool, medium
                 fan
             - conditions:
-              - condition: numeric_state
-                entity_id: climate.lounge_air_conditioner
-                attribute: current_temperature
-                below: 18
+              - condition: and
+                conditions:
+                - condition: numeric_state
+                  entity_id: climate.lounge_air_conditioner
+                  attribute: current_temperature
+                  below: 18
+                - condition: not
+                  conditions:
+                  - condition: state
+                    entity_id: climate.lounge_air_conditioner
+                    state: 'off'
               sequence:
               - alias: Set lounge AC to 22, heat, low fan
                 action: sensibo.full_state
@@ -1775,7 +1789,12 @@
                   fan_mode: low
               alias: When lounge is below 18 degrees, set lounge AC to 22, heat, low
                 fan
-            - conditions: []
+            - conditions:
+              - condition: not
+                conditions:
+                - condition: state
+                  entity_id: climate.lounge_air_conditioner
+                  state: 'off'
               sequence:
               - action: climate.set_fan_mode
                 metadata: {}
@@ -1785,5 +1804,11 @@
                   entity_id: climate.lounge_air_conditioner
               alias: Turn AC fan down
             enabled: true
+            default:
+            - device_id: c4237f147481e927b0d739c1013f137b
+              domain: climate
+              entity_id: 02492880da0b5d63742b1da7d5bb61dc
+              type: set_hvac_mode
+              hvac_mode: 'off'
       alias: Hour of Power ends
   mode: single
