@@ -1,0 +1,49 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "status": {
+        "default": "mdi:pi-hole"
+      }
+    },
+    "sensor": {
+      "ads_blocked_today": {
+        "default": "mdi:close-octagon-outline"
+      },
+      "ads_percentage_blocked_today": {
+        "default": "mdi:close-octagon-outline"
+      },
+      "seen_clients": {
+        "default": "mdi:account-outline"
+      },
+      "dns_queries_today": {
+        "default": "mdi:comment-question-outline"
+      },
+      "domains_blocked": {
+        "default": "mdi:block-helper"
+      },
+      "dns_queries_cached": {
+        "default": "mdi:comment-question-outline"
+      },
+      "dns_queries_forwarded": {
+        "default": "mdi:comment-question-outline"
+      },
+      "dns_unique_clients": {
+        "default": "mdi:account-outline"
+      },
+      "dns_unique_domains": {
+        "default": "mdi:domain"
+      },
+      "remaining_until_blocking_mode": {
+        "default": "mdi:timer-outline"
+      }
+    }
+  },
+  "services": {
+    "disable": {
+      "service": "mdi:advertisements"
+    },
+    "enable": {
+      "service": "mdi:advertisements-off"
+    }
+  }
+}
