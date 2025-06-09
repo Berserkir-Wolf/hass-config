@@ -2,8 +2,15 @@
 
 from __future__ import annotations
 
-from homeassistant.components.sensor import SensorEntity, SensorEntityDescription, SensorStateClass
-from homeassistant.const import CONF_NAME, PERCENTAGE
+from typing import Any, List
+
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+    SensorStateClass,
+)
+from homeassistant.const import CONF_NAME, PERCENTAGE, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
@@ -14,6 +21,13 @@ from .api import API as ClientAPI
 from .entity import PiHoleV6Entity
 
 SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
+    SensorEntityDescription(
+        key="remaining_until_blocking_mode",
+        translation_key="remaining_until_blocking_mode",
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        device_class=SensorDeviceClass.DURATION,
+        suggested_display_precision=0,
+    ),
     SensorEntityDescription(
         key="ads_blocked_today",
         translation_key="ads_blocked_today",
@@ -62,9 +76,35 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorEntityDescription(
-        key="remaining_until_blocking_mode",
-        translation_key="remaining_until_blocking_mode",
-        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        key="latest_data_refresh",
+        translation_key="latest_data_refresh",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        entity_category=EntityCategory.DIAGNOSTIC,
+        key="memory_use",
+        translation_key="memory_use",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=2,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        entity_category=EntityCategory.DIAGNOSTIC,
+        key="cpu_use",
+        translation_key="cpu_use",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=2,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="ftl_info_message_count",
+        translation_key="ftl_info_message_count",
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_registry_enabled_default=False,
     ),
 )
 
@@ -114,6 +154,8 @@ class PiHoleV6Sensor(PiHoleV6Entity, SensorEntity):
         """Return the state of the device."""
 
         match self.entity_description.key:
+            case "latest_data_refresh":
+                return self.api.last_refresh
             case "ads_blocked_today":
                 return self.api.cache_summary["queries"]["blocked"]
             case "ads_percentage_blocked_today":
@@ -132,8 +174,32 @@ class PiHoleV6Sensor(PiHoleV6Entity, SensorEntity):
                 return self.api.cache_summary["clients"]["active"]
             case "dns_unique_domains":
                 return self.api.cache_summary["queries"]["unique_domains"]
+            case "memory_use":
+                return self.api.cache_padd["%mem"]
+            case "cpu_use":
+                return self.api.cache_padd["%cpu"]
+            case "ftl_info_message_count":
+                return self.api.cache_ftl_info["message_count"]
             case "remaining_until_blocking_mode":
                 value: int | None = self.api.cache_blocking["timer"]
                 return value if value is not None else 0
 
         return ""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Return the state attributes of the Pi-hole V6."""
+
+        if self.entity_description.key == "memory_use":
+            return self.api.cache_padd["system"]["memory"]
+
+        if self.entity_description.key == "cpu_use":
+            return self.api.cache_padd["system"]["cpu"]
+
+        if self.entity_description.key == "ftl_info_message_count":
+            raw_messages: List[Any] = self.api.cache_ftl_info["message_list"]
+            messages: List[Any] = [{k: v for k, v in message.items() if k != "html"} for message in raw_messages]
+            status: str = self.api.cache_ftl_info["status"]
+            return {"messages": messages, "status": status}
+
+        return None

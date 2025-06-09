@@ -27,18 +27,16 @@ class PiHoleV6UpdateEntityDescription(UpdateEntityDescription):
     title: str | None = None
 
 
+# entity_registry_enabled_default=False,
+
 UPDATE_ENTITY_TYPES: tuple[PiHoleV6UpdateEntityDescription, ...] = (
     PiHoleV6UpdateEntityDescription(
         key="core_update_available",
         translation_key="core_update_available",
         title="Pi-hole Core",
         entity_category=EntityCategory.DIAGNOSTIC,
-        installed_version=lambda versions: versions.get("core")
-        .get("local", {})
-        .get("version", None),
-        latest_version=lambda versions: versions.get("core")
-        .get("remote", {})
-        .get("version", None),
+        installed_version=lambda versions: versions.get("core").get("local", {}).get("version", None),
+        latest_version=lambda versions: versions.get("core").get("remote", {}).get("version", None),
         release_base_url="https://github.com/pi-hole/pi-hole/releases/tag",
     ),
     PiHoleV6UpdateEntityDescription(
@@ -46,26 +44,27 @@ UPDATE_ENTITY_TYPES: tuple[PiHoleV6UpdateEntityDescription, ...] = (
         translation_key="web_update_available",
         title="Pi-hole Web interface",
         entity_category=EntityCategory.DIAGNOSTIC,
-        installed_version=lambda versions: versions.get("web")
-        .get("local", {})
-        .get("version", None),
-        latest_version=lambda versions: versions.get("web")
-        .get("remote", {})
-        .get("version", None),
+        installed_version=lambda versions: versions.get("web").get("local", {}).get("version", None),
+        latest_version=lambda versions: versions.get("web").get("remote", {}).get("version", None),
         release_base_url="https://github.com/pi-hole/AdminLTE/releases/tag",
     ),
     PiHoleV6UpdateEntityDescription(
         key="ftl_update_available",
         translation_key="ftl_update_available",
-        title="Pi-hole FTL DNS",
+        title="Pi-hole FTL",
         entity_category=EntityCategory.DIAGNOSTIC,
-        installed_version=lambda versions: versions.get("ftl")
-        .get("local", {})
-        .get("version", None),
-        latest_version=lambda versions: versions.get("ftl")
-        .get("remote", {})
-        .get("version", None),
+        installed_version=lambda versions: versions.get("ftl").get("local", {}).get("version", None),
+        latest_version=lambda versions: versions.get("ftl").get("remote", {}).get("version", None),
         release_base_url="https://github.com/pi-hole/FTL/releases/tag",
+    ),
+    PiHoleV6UpdateEntityDescription(
+        key="docker_update_available",
+        translation_key="docker_update_available",
+        title="Pi-hole Docker",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        installed_version=lambda versions: versions.get("docker").get("local", None),
+        latest_version=lambda versions: versions.get("docker").get("remote", None),
+        release_base_url="https://github.com/pi-hole/docker-pi-hole/releases/tag",
     ),
 )
 
@@ -109,7 +108,34 @@ class PiHoleV6UpdateEntity(PiHoleV6Entity, UpdateEntity):
         self.entity_description = description
         self._attr_unique_id = f"{self._server_unique_id}/{description.key}"
         self.entity_id = f"update.{name}_{description.key}"
+
+        enabled_value: bool = self.get_entity_registry_enabled_value()
+        self.entity_registry_enabled_default = enabled_value
         self._attr_title = description.title
+
+        if enabled_value is False:
+            self._attr_title = description.title + " (only for information, please check other update entities)"
+
+    def get_entity_registry_enabled_value(self) -> bool:
+        """..."""
+
+        try:
+            if (
+                self.api.cache_padd["version"]["docker"]["local"] is None
+                and self.entity_description.key != "docker_update_available"
+            ):
+                return True
+
+            if (
+                self.api.cache_padd["version"]["docker"]["local"] is not None
+                and self.entity_description.key == "docker_update_available"
+            ):
+                return True
+
+        except Exception:
+            pass
+
+        return False
 
     @property
     def installed_version(self) -> str | None:
