@@ -134,7 +134,7 @@ class BrowserModBrowser:
 
         hass.create_task(
             self.send(
-                None, browserEntities={k: v.entity_id for k, v in self.entities.items()}
+                None, browserEntities={k: {"entity_id": v.entity_id, "enabled": v.enabled} for k, v in self.entities.items()}
             )
         )
 
@@ -183,7 +183,8 @@ class BrowserModBrowser:
         self._connections = list(
             filter(lambda v: v[0] != connection, self._connections)
         )
-        self.update(hass, {"connected": False})
+        if not self._connections:
+            self.update(hass, {"connected": False})
 
 
 def getBrowser(hass, browserID, *, create=True):
