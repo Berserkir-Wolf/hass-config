@@ -672,6 +672,22 @@
           | format(snapshot_access_file_path) %} {{ ios_data if is_ios else android_data
           }}'
         alias: Notify Oppo Reno12 - Mobile
+        enabled: false
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 3
+          milliseconds: 0
+      - alias: Notify Discord
+        action: notify.homeassistant
+        data:
+          message: '{{ notification_message }}'
+          target:
+          - '819351502640381952'
+          data:
+            embed:
+              image:
+                url: https://hass.berserkir.net/local/tmp/snapshot_front_door_high.jpg
       alias: Notify if nobody is home and dnd is off
     - conditions:
       - condition: not
@@ -698,6 +714,7 @@
           | format(snapshot_access_file_path) %} {{ ios_data if is_ios else android_data
           }}'
         alias: Notify Oppo Reno12 - Mobile
+        enabled: false
       - action: notify.retrea
         metadata: {}
         data:
@@ -705,6 +722,16 @@
           message: Motion has been detected at the front door
           data:
             image: /api/camera_proxy/camera.front_door_high
+      - alias: Notify Discord
+        action: notify.homeassistant
+        data:
+          message: '{{ notification_message }}'
+          target:
+          - '819351502640381952'
+          data:
+            embed:
+              image:
+                url: https://hass.berserkir.net/local/tmp/snapshot_front_door_high.jpg
       alias: Notify if notifications are on and house isn't silent
   variables:
     motion_sensor: binary_sensor.front_door_motion
@@ -1812,3 +1839,38 @@
               hvac_mode: 'off'
       alias: Hour of Power ends
   mode: single
+- id: '1751856583134'
+  alias: Front Door Camera Motion - AI
+  description: ''
+  use_blueprint:
+    path: valentinfrlch/event_summary.yaml
+    input:
+      camera_entities:
+      - camera.front_door_high
+      trigger_state: recording
+      motion_sensors:
+      - binary_sensor.front_door_motion
+      duration: 5
+      provider: 01JZHD92ZB9A8MNHKC7CMNSNWE
+      notify_device:
+      - 11ecfffb8a3d3e8cb0640a1f7d3ec024
+      notification_time: at {{ now().strftime("%H:%M") }}
+      tap_navigate: /lovelace/home
+      model: gemma3:4b
+      run_conditions:
+      - condition: or
+        conditions:
+        - condition: numeric_state
+          entity_id: zone.home
+          below: 1
+        - condition: state
+          entity_id: input_boolean.motion_notifications
+          state: 'on'
+      tts_notification: false
+      cooldown:
+        hours: 0
+        minutes: 10
+        seconds: 0
+      max_frames: 10
+      use_memory: false
+      max_tokens: 30
