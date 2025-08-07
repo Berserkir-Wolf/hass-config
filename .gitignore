@@ -10,6 +10,7 @@ __pycache__
 # Directory (contents) ignores
 .cloud
 .storage
+www/llmvision
 #custom_components
 development
 deps
