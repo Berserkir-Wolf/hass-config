@@ -26,6 +26,8 @@ homeassistant:
     - type: trusted_networks
       trusted_networks:
         - !secret trusted_network
+  media_dirs:
+    llmvision: /config/media/llmvision
 
 # Text to speech
 tts:
