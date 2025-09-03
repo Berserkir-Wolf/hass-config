@@ -1741,6 +1741,10 @@
               target_temperature: 22
               fan_mode: high
           alias: When lounge is below 18 degrees
+      - type: turn_on
+        device_id: 55f7ef94ca059f6582886970f71e4bee
+        entity_id: d66ea107768322534d368364becd99d4
+        domain: switch
       alias: Hour of Power starts
     - conditions:
       - condition: state
@@ -1837,6 +1841,10 @@
               entity_id: 02492880da0b5d63742b1da7d5bb61dc
               type: set_hvac_mode
               hvac_mode: 'off'
+      - type: turn_off
+        device_id: 55f7ef94ca059f6582886970f71e4bee
+        entity_id: d66ea107768322534d368364becd99d4
+        domain: switch
       alias: Hour of Power ends
   mode: single
 - id: '1751856583134'
