@@ -19,15 +19,19 @@ wake_on_lan:
 #Custom config directives
 homeassistant:
   allowlist_external_dirs:
-    - /config/.storage
     - /config
+    - /config/.storage
+    - /config/media/llmvision
+    - /config/media/llmvision/snapshots
+    - /media/snapshots
+    - /media/snapshots/front_door_high
   auth_providers:
     - type: homeassistant
     - type: trusted_networks
       trusted_networks:
         - !secret trusted_network
-  media_dirs:
-    llmvision: /config/media/llmvision
+#  media_dirs:
+#    llmvision: /config/media/llmvision
 
 # Text to speech
 tts:
