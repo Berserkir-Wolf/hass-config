@@ -4,10 +4,10 @@
 #    my_btc_value:
 #     value_template: "{{ (states('sensor.exchange_rate_1_btc') | float * states('input_number.btc_amount') | float) | round(2) }}"
 
-template:
-  - sensor:
-      - default_entity_id: sensor.my_btc_value
-        state:
-          "{{ (states('sensor.exchange_rate_1_btc') | float * states('input_number.btc_amount')
-          | float) | round(2) }}"
-        name: my_btc_value
+#template:
+- sensor:
+    - default_entity_id: sensor.my_btc_value
+      state:
+        "{{ (states('sensor.exchange_rate_1_btc') | float * states('input_number.btc_amount')
+        | float) | round(2) }}"
+      name: my_btc_value

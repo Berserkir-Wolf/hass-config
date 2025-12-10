@@ -22,7 +22,7 @@
 #      value_template: "{{ (state_attr('climate.server_rack_fans', 'current_humidity')) }}"
 #      unit_of_measurement: "%"
 
-template:
+#template:
 - sensor:
   - unique_id: bedroom_temperature
     unit_of_measurement: °C

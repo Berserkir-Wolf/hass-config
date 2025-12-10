@@ -71,74 +71,74 @@
 #         Lounge AP Clients: "{{ states('sensor.loungeap_clients') }}"
 #         Office AP Clients: "{{ states('sensor.officeap_clients') }}"
 
-template:
-  - sensor:
-      - default_entity_id: sensor.state_deskswitch
-        icon:
-          "'{% if is_state(\"device_tracker.deskswitch\", \"home\") %}\n   mdi:lan-connect\n
-          {% else %}\n   mdi:lan-disconnect\n {% endif %}'"
-        name: Desk Switch
-        state:
-          '{% if is_state("device_tracker.deskswitch", "home") %}Online{% else %}Offline{%
-          endif %}'
-  - sensor:
-      - default_entity_id: sensor.state_loungeswitch
-        icon:
-          "'{% if is_state(\"device_tracker.loungeswitch\", \"home\") %}\n   mdi:lan-connect\n
-          {% else %}\n   mdi:lan-disconnect\n {% endif %}'"
-        name: Lounge Switch
-        state:
-          '{% if is_state("device_tracker.loungeswitch", "home") %}Online{% else
-          %}Offline{% endif %}'
-  - sensor:
-      - default_entity_id: sensor.state_loungeap
-        icon:
-          "'{% if is_state(\"device_tracker.loungeap\", \"home\") %}\n   mdi:access-point-network\n
-          {% else %}\n   mdi:access-point-network-off\n {% endif %}'"
-        name: Lounge AP
-        state:
-          '{% if is_state("device_tracker.loungeap", "home") %}Online{% else %}Offline{%
-          endif %}'
-  - sensor:
-      - default_entity_id: sensor.state_backap
-        icon:
-          "'{% if is_state(\"device_tracker.backap\", \"home\") %}\n   mdi:access-point-network\n
-          {% else %}\n   mdi:access-point-network-off\n {% endif %}'"
-        name: Back AP
-        state:
-          '{% if is_state("device_tracker.backap", "home") %}Online{% else %}Offline{%
-          endif %}'
-  - sensor:
-      - default_entity_id: sensor.state_officeap
-        icon:
-          "'{% if is_state(\"device_tracker.officeap\", \"home\") %}\n   mdi:access-point-network\n
-          {% else %}\n   mdi:access-point-network-off\n {% endif %}'"
-        name: Office AP
-        state:
-          '{% if is_state("device_tracker.officeap", "home") %}Online{% else %}Offline{%
-          endif %}'
-  - sensor:
-      - default_entity_id: sensor.state_garageap
-        icon:
-          "'{% if is_state(\"device_tracker.garageap\", \"home\") %}\n   mdi:access-point-network\n
-          {% else %}\n   mdi:access-point-network-off\n {% endif %}'"
-        name: Garage AP
-        state:
-          '{% if is_state("device_tracker.garageap", "home") %}Online{% else %}Offline{%
-          endif %}'
-  - sensor:
-      - unique_id: sensor.unifi_clients
-        default_entity_id: sensor.unifi_clients
-        attributes:
-          Desk Switch Clients: "{{ states('sensor.deskswitch_clients') }}"
-          Lounge Switch Clients: "{{ states('sensor.loungeswitch_clients') }}"
-          Back AP Clients: "{{ states('sensor.backap_clients') }}"
-          Garage AP Clients: "{{ states('sensor.garageap_clients') }}"
-          Lounge AP Clients: "{{ states('sensor.loungeap_clients') }}"
-          Office AP Clients: "{{ states('sensor.officeap_clients') }}"
-        name: Unifi Clients
-        state:
-          "{{ (states('sensor.deskswitch_clients')|float + states('sensor.loungeswitch_clients')|float
-          +  states('sensor.backap_clients')|float + states('sensor.garageap_clients')|float
-          + states('sensor.loungeap_clients')|float + states('sensor.officeap_clients')|float)|round(0)
-          }}"
+#template:
+- sensor:
+    - default_entity_id: sensor.state_deskswitch
+      icon:
+        "'{% if is_state(\"device_tracker.deskswitch\", \"home\") %}\n   mdi:lan-connect\n
+        {% else %}\n   mdi:lan-disconnect\n {% endif %}'"
+      name: Desk Switch
+      state:
+        '{% if is_state("device_tracker.deskswitch", "home") %}Online{% else %}Offline{%
+        endif %}'
+- sensor:
+    - default_entity_id: sensor.state_loungeswitch
+      icon:
+        "'{% if is_state(\"device_tracker.loungeswitch\", \"home\") %}\n   mdi:lan-connect\n
+        {% else %}\n   mdi:lan-disconnect\n {% endif %}'"
+      name: Lounge Switch
+      state:
+        '{% if is_state("device_tracker.loungeswitch", "home") %}Online{% else
+        %}Offline{% endif %}'
+- sensor:
+    - default_entity_id: sensor.state_loungeap
+      icon:
+        "'{% if is_state(\"device_tracker.loungeap\", \"home\") %}\n   mdi:access-point-network\n
+        {% else %}\n   mdi:access-point-network-off\n {% endif %}'"
+      name: Lounge AP
+      state:
+        '{% if is_state("device_tracker.loungeap", "home") %}Online{% else %}Offline{%
+        endif %}'
+- sensor:
+    - default_entity_id: sensor.state_backap
+      icon:
+        "'{% if is_state(\"device_tracker.backap\", \"home\") %}\n   mdi:access-point-network\n
+        {% else %}\n   mdi:access-point-network-off\n {% endif %}'"
+      name: Back AP
+      state:
+        '{% if is_state("device_tracker.backap", "home") %}Online{% else %}Offline{%
+        endif %}'
+- sensor:
+    - default_entity_id: sensor.state_officeap
+      icon:
+        "'{% if is_state(\"device_tracker.officeap\", \"home\") %}\n   mdi:access-point-network\n
+        {% else %}\n   mdi:access-point-network-off\n {% endif %}'"
+      name: Office AP
+      state:
+        '{% if is_state("device_tracker.officeap", "home") %}Online{% else %}Offline{%
+        endif %}'
+- sensor:
+    - default_entity_id: sensor.state_garageap
+      icon:
+        "'{% if is_state(\"device_tracker.garageap\", \"home\") %}\n   mdi:access-point-network\n
+        {% else %}\n   mdi:access-point-network-off\n {% endif %}'"
+      name: Garage AP
+      state:
+        '{% if is_state("device_tracker.garageap", "home") %}Online{% else %}Offline{%
+        endif %}'
+- sensor:
+    - unique_id: sensor.unifi_clients
+      default_entity_id: sensor.unifi_clients
+      attributes:
+        Desk Switch Clients: "{{ states('sensor.deskswitch_clients') }}"
+        Lounge Switch Clients: "{{ states('sensor.loungeswitch_clients') }}"
+        Back AP Clients: "{{ states('sensor.backap_clients') }}"
+        Garage AP Clients: "{{ states('sensor.garageap_clients') }}"
+        Lounge AP Clients: "{{ states('sensor.loungeap_clients') }}"
+        Office AP Clients: "{{ states('sensor.officeap_clients') }}"
+      name: Unifi Clients
+      state:
+        "{{ (states('sensor.deskswitch_clients')|float + states('sensor.loungeswitch_clients')|float
+        +  states('sensor.backap_clients')|float + states('sensor.garageap_clients')|float
+        + states('sensor.loungeap_clients')|float + states('sensor.officeap_clients')|float)|round(0)
+        }}"

@@ -8,7 +8,7 @@
 #      friendly_name: Printer State Message
 #      value_template: "{{ (state_attr('sensor.brother_mfc_9340cdw', 'state_message')) }}"
 
-template:
+#template:
 - sensor:
   - default_entity_id: sensor.printer_state_reason
     name: Printer State Reason

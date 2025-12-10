@@ -6,9 +6,10 @@
 #      value_template: "{{ (state_attr('climate.kettle', 'current_temperature')) }}"
 #      unit_of_measurement: "°C"
 
-template:
-- sensor:
-  - unit_of_measurement: °C
-    default_entity_id: sensor.kettle_temperature
-    name: Kettle Temperature
-    state: '{{ (state_attr(''climate.kettle'', ''current_temperature'')) }}'
+#template:
+  - sensor:
+      - name: Kettle Temperature
+        unit_of_measurement: °C
+        default_entity_id: sensor.kettle_temperature
+        unique_id: kettle_temperature
+        state: "{{ (state_attr('climate.kettle', 'current_temperature')) }}"
