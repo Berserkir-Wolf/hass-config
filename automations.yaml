@@ -1700,13 +1700,26 @@
   - trigger: state
     entity_id:
     - sensor.hour_of_power
+    alias: When hour of power is true
+    enabled: false
+  - trigger: state
+    entity_id:
+    - binary_sensor.hour_of_power
+    alias: When hour of power turns on
   conditions: []
   actions:
   - choose:
     - conditions:
-      - condition: state
-        entity_id: sensor.hour_of_power
-        state: 'True'
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: sensor.hour_of_power
+          state: 'True'
+          enabled: false
+        - condition: state
+          entity_id: binary_sensor.hour_of_power
+          state:
+          - 'on'
       sequence:
       - choose:
         - conditions:
@@ -1747,9 +1760,16 @@
         domain: switch
       alias: Hour of Power starts
     - conditions:
-      - condition: state
-        entity_id: sensor.hour_of_power
-        state: 'False'
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: sensor.hour_of_power
+          state: 'False'
+          enabled: false
+        - condition: state
+          entity_id: binary_sensor.hour_of_power
+          state:
+          - 'off'
       sequence:
       - choose:
         - conditions:
