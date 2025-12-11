@@ -210,6 +210,9 @@ views:
         - condition: state
           entity: media_player.master_bedroom_tv
           state_not: standby
+        - condition: state
+          entity: light.bedroom_light
+          state: 'on'
         type: conditional
       type: custom:vertical-stack-in-card
     - cards:
@@ -275,10 +278,6 @@ views:
         state_color: true
         type: glance
       - entities:
-        - entity: switch.wol_inevi
-          name: TrueNAS
-          tap_action:
-            action: toggle
         - entity: sensor.repea_network_link_eth0
           icon: mdi:nas
           name: QNap NAS
@@ -723,6 +722,15 @@ views:
         state_color: true
         type: glance
       - card:
+          entity: media_player.playstation_5
+          toggle_power: false
+          type: custom:mini-media-player
+        conditions:
+        - condition: state
+          entity: media_player.playstation_5
+          state_not: 'off'
+        type: conditional
+      - card:
           entity: climate.lounge_air_conditioner
           features:
           - style: dropdown
@@ -734,27 +742,6 @@ views:
         - condition: state
           entity: climate.lounge_air_conditioner
           state_not: 'off'
-        type: conditional
-      - card:
-          artwork: material
-          entity: media_player.retrea
-          group: false
-          hide:
-            power: true
-            source: true
-          info: short
-          sound_mode: icon
-          source: icon
-          toggle_power: true
-          type: custom:mini-media-player
-          volume_stateless: true
-        conditions:
-        - condition: state
-          entity: media_player.retrea
-          state_not: 'off'
-        - condition: state
-          entity: media_player.retrea
-          state_not: unavailable
         type: conditional
       - card:
           artwork: cover-fit
@@ -1255,7 +1242,7 @@ views:
         name: Current Plex Streams
         type: sensor
       - detail: 1
-        entity: sensor.total_bandwidth
+        entity: sensor.tautulli_total_bandwidth
         graph: none
         hours_to_show: 24
         name: Plex Raw Bandwith
@@ -1264,13 +1251,11 @@ views:
         entity: sensor.total_bandwidth_mbps
         graph: none
         hours_to_show: 24
-        name: Plex Outright Bandwith
         type: sensor
       - detail: 1
         entity: sensor.total_bandwidth_mbps_rounded
         graph: none
         hours_to_show: 24
-        name: Plex Rounded Bandwidth
         type: sensor
       type: vertical-stack
     type: grid
