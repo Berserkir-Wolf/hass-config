@@ -37,6 +37,10 @@ def replace_unique_ids(entity_entry, device_id, conf_file, replacements):
     platform = entity_entry.entity_id.split(".", 1)[0]
     for suffix, new_suffix in replacements.items():
         if old_id.endswith(suffix):
+            # If the entity still exists in the config, do not migrate
+            for e in conf_file.all_entities():
+                if e.unique_id(device_id) == old_id:
+                    return None
             for e in conf_file.all_entities():
                 new_id = e.unique_id(device_id)
                 if e.entity == platform and not e.name and new_id.endswith(new_suffix):
@@ -165,11 +169,9 @@ async def async_migrate_entry(hass, entry: ConfigEntry):
         @callback
         def update_unique_id(entity_entry):
             """Update the unique id of an entity entry."""
-            e = conf_file.primary_entity
-            if e.entity != entity_entry.platform:
-                for e in conf_file.secondary_entities():
-                    if e.entity == entity_entry.platform:
-                        break
+            for e in conf_file.all_entities():
+                if e.entity == entity_entry.platform:
+                    break
             if e.entity == entity_entry.platform:
                 new_id = e.unique_id(old_id)
                 if new_id != old_id:
@@ -256,19 +258,13 @@ async def async_migrate_entry(hass, entry: ConfigEntry):
             """Update the unique id of an entity entry."""
             old_id = entity_entry.unique_id
             platform = entity_entry.entity_id.split(".", 1)[0]
-            e = conf_file.primary_entity
-            if e.name:
-                expect_id = f"{device_id}-{slugify(e.name)}"
-            else:
-                expect_id = device_id
-            if e.entity != platform or expect_id != old_id:
-                for e in conf_file.secondary_entities():
-                    if e.name:
-                        expect_id = f"{device_id}-{slugify(e.name)}"
-                    else:
-                        expect_id = device_id
-                    if e.entity == platform and expect_id == old_id:
-                        break
+            for e in conf_file.all_entities():
+                if e.name:
+                    expect_id = f"{device_id}-{slugify(e.name)}"
+                else:
+                    expect_id = device_id
+                if e.entity == platform and expect_id == old_id:
+                    break
 
             if e.entity == platform and expect_id == old_id:
                 new_id = e.unique_id(device_id)
@@ -312,11 +308,9 @@ async def async_migrate_entry(hass, entry: ConfigEntry):
             # if unique_id ends with platform name, then this may have
             # changed with the addition of device_class.
             if old_id.endswith(platform):
-                e = conf_file.primary_entity
-                if e.entity != platform or e.name:
-                    for e in conf_file.secondary_entities():
-                        if e.entity == platform and not e.name:
-                            break
+                for e in conf_file.all_entities():
+                    if e.entity == platform and not e.name:
+                        break
                 if e.entity == platform and not e.name:
                     new_id = e.unique_id(device_id)
                     if new_id != old_id:
@@ -615,6 +609,63 @@ async def async_migrate_entry(hass, entry: ConfigEntry):
         await async_migrate_entries(hass, entry.entry_id, update_unique_id13_8)
         hass.config_entries.async_update_entry(entry, minor_version=8)
 
+    if entry.version == 13 and entry.minor_version < 9:
+        # Migrate unique ids of existing entities to new id taking into
+        # account translation_key, and standardising naming
+        device_id = entry.unique_id
+        conf_file = await hass.async_add_executor_job(
+            get_config,
+            entry.data[CONF_TYPE],
+        )
+        if conf_file is None:
+            _LOGGER.error(
+                NOT_FOUND,
+                entry.data[CONF_TYPE],
+            )
+            return False
+
+        @callback
+        def update_unique_id13_9(entity_entry):
+            """Update the unique id of an entity entry."""
+            # Standardistion of entity naming to use translation_key
+            replacements = {
+                "number_delay_time": "number_delay",
+            }
+            return replace_unique_ids(entity_entry, device_id, conf_file, replacements)
+
+        await async_migrate_entries(hass, entry.entry_id, update_unique_id13_9)
+        hass.config_entries.async_update_entry(entry, minor_version=9)
+
+    if entry.version == 13 and entry.minor_version < 10:
+        # Migrate unique ids of existing entities to new id taking into
+        # account translation_key, and standardising naming
+        device_id = entry.unique_id
+        conf_file = await hass.async_add_executor_job(
+            get_config,
+            entry.data[CONF_TYPE],
+        )
+        if conf_file is None:
+            _LOGGER.error(
+                NOT_FOUND,
+                entry.data[CONF_TYPE],
+            )
+            return False
+
+        @callback
+        def update_unique_id13_10(entity_entry):
+            """Update the unique id of an entity entry."""
+            # Standardistion of entity naming to use translation_key
+            replacements = {
+                "switch_disturb_switch": "switch_do_not_disturb",
+                "number_temperature_correction": "number_temperature_calibration",
+                "number_calibration_offset": "number_temperature_calibration",
+                "number_high_temperature_limit": "number_maximum_temperature",
+                "number_low_temperature_limit": "number_minimum_temperature",
+            }
+            return replace_unique_ids(entity_entry, device_id, conf_file, replacements)
+
+        await async_migrate_entries(hass, entry.entry_id, update_unique_id13_10)
+        hass.config_entries.async_update_entry(entry, minor_version=10)
     return True
 
 
@@ -625,9 +676,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
     config = {**entry.data, **entry.options, "name": entry.title}
     try:
-        await hass.async_add_executor_job(setup_device, hass, config)
+        device = await hass.async_add_executor_job(setup_device, hass, config)
+        await device.async_refresh()
+
     except Exception as e:
         raise ConfigEntryNotReady("tuya-local device not ready") from e
+
+    if not device.has_returned_state:
+        raise ConfigEntryNotReady("tuya-local device offline")
 
     device_conf = await hass.async_add_executor_job(
         get_config,

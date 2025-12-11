@@ -1,11 +1,19 @@
 {
   "domain": "electric_kiwi",
   "name": "Electric Kiwi",
-  "codeowners": ["@mikey0000"],
+  "codeowners": [
+    "@mikey0000"
+  ],
   "config_flow": true,
-  "dependencies": ["application_credentials"],
-  "documentation": "https://www.home-assistant.io/integrations/electric_kiwi",
+  "dependencies": [
+    "application_credentials"
+  ],
+  "documentation": "https://github.com/mikey0000/ha-electric-kiwi",
+  "issue_tracker": "https://github.com/mikey0000/ha-electric-kiwi/issues",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
-  "requirements": ["electrickiwi-api==0.8.5"]
+  "requirements": [
+    "electrickiwi-api==0.9.14"
+  ],
+  "version": "0.9.4"
 }

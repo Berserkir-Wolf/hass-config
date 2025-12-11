@@ -1,32 +1,44 @@
 name: Relay switch
 products:
   - id: 1aegphq4yfd50e6b
-    name: 1-433
+    model: "1-433"
   - id: fugkn1vkc53nvo1s
-    name: 1 Gang WiFi Smart Relay
-primary_entity:
-  entity: switch
-  dps:
-    - id: 1
-      type: boolean
-      name: switch
-    - id: 42
-      type: string
-      name: random_time
-    - id: 43
-      type: string
-      name: cycle_time
-    - id: 49
-      name: add_remote
-      type: string
-      optional: true
-    - id: 50
-      name: list_remote
-      type: string
-      optional: true
-secondary_entities:
+    model: "1 Gang WiFi Smart Relay"
+entities:
+  - entity: switch
+    dps:
+      - id: 1
+        type: boolean
+        name: switch
+      - id: 49
+        name: add_remote
+        type: string
+        optional: true
+      - id: 50
+        name: list_remote
+        type: string
+        optional: true
+  - entity: time
+    translation_key: timer
+    category: config
+    dps:
+      - id: 9
+        type: integer
+        name: second
+        range:
+          min: 0
+          max: 86400
+      - id: 42
+        type: string
+        name: random_time
+      - id: 43
+        type: string
+        name: cycle_time
   - entity: number
     translation_key: timer
+    # 2025-07-20
+    deprecated: time.timer
+    class: duration
     category: config
     dps:
       - id: 9

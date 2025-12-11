@@ -26,12 +26,19 @@ from alexapy import (
     hide_email,
     obfuscate,
 )
+from awesomeversion import AwesomeVersion
 from homeassistant import config_entries
 from homeassistant.components.http.view import HomeAssistantView
 from homeassistant.components.persistent_notification import (
     async_dismiss as async_dismiss_persistent_notification,
 )
-from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, CONF_SCAN_INTERVAL, CONF_URL
+from homeassistant.const import (
+    CONF_EMAIL,
+    CONF_PASSWORD,
+    CONF_SCAN_INTERVAL,
+    CONF_URL,
+    __version__ as HAVERSION,
+)
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult, UnknownFlow
 from homeassistant.exceptions import Unauthorized
@@ -300,7 +307,9 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
             return self.async_show_form(
                 step_id="user",
                 errors={"base": "2fa_key_invalid"},
-                description_placeholders={"message": ""},
+                description_placeholders={
+                    "otp_secret": self.config.get(CONF_OTPSECRET, ""),
+                },
             )
         hass_url: str = user_input.get(CONF_HASS_URL)
         if hass_url is None:
@@ -348,7 +357,7 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
         ):
             otp: str = self.login.get_totp_token()
             if otp:
-                _LOGGER.debug("Generating OTP from %s", otp)
+                _LOGGER.debug("Generated TOTP: %s", otp)
                 return self.async_show_form(
                     step_id="totp_register",
                     data_schema=vol.Schema(self.totp_register),
@@ -486,7 +495,7 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
             ):
                 otp: str = self.login.get_totp_token()
                 if otp:
-                    _LOGGER.debug("Generating OTP from %s", otp)
+                    _LOGGER.debug("Generated TOTP: %s", otp)
                     return self.async_show_form(
                         step_id="totp_register",
                         data_schema=vol.Schema(self.totp_register),
@@ -500,7 +509,9 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
                 return self.async_show_form(
                     step_id="user",
                     errors={"base": "2fa_key_invalid"},
-                    description_placeholders={"message": ""},
+                    description_placeholders={
+                        "otp_secret": user_input.get(CONF_OTPSECRET),
+                    },
                 )
             if self.login.status:
                 _LOGGER.debug("Resuming existing flow")
@@ -522,7 +533,9 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
             return self.async_show_form(
                 step_id="user_legacy",
                 errors={"base": "2fa_key_invalid"},
-                description_placeholders={"message": ""},
+                description_placeholders={
+                    "otp_secret": user_input.get(CONF_OTPSECRET),
+                },
             )
         except BaseException as ex:  # pylint: disable=broad-except
             _LOGGER.warning("Unknown error: %s", ex)
@@ -555,7 +568,7 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
             _LOGGER.debug("Not registered, regenerating")
             otp: str = self.login.get_totp_token()
             if otp:
-                _LOGGER.debug("Generating OTP from %s", otp)
+                _LOGGER.debug("Generated TOTP: %s", otp)
                 return self.async_show_form(
                     step_id="totp_register",
                     data_schema=vol.Schema(self.totp_register),
@@ -871,7 +884,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
         self.config = OrderedDict()
-        self.config_entry = config_entry
+        if AwesomeVersion(HAVERSION) < "2024.12":
+            self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -959,6 +973,15 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             if CONF_PUBLIC_URL in self.config_entry.data:
                 if not user_input[CONF_PUBLIC_URL].endswith("/"):
                     user_input[CONF_PUBLIC_URL] = user_input[CONF_PUBLIC_URL] + "/"
+            """Remove leading/trailing spaces in device strings"""
+            if CONF_INCLUDE_DEVICES in self.config_entry.data:
+                user_input[CONF_INCLUDE_DEVICES] = user_input[
+                    CONF_INCLUDE_DEVICES
+                ].strip()
+            if CONF_EXCLUDE_DEVICES in self.config_entry.data:
+                user_input[CONF_EXCLUDE_DEVICES] = user_input[
+                    CONF_EXCLUDE_DEVICES
+                ].strip()
 
             self.hass.config_entries.async_update_entry(
                 self.config_entry, data=user_input, options=self.config_entry.options

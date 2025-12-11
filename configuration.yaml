@@ -2,12 +2,11 @@
 # This gets used for a recovery boot
 default_config:
   # This tells Hass that it should still accept reverse proxy info when it does a recovery boot.
-  http:
-    use_x_forwarded_for: true
-    trusted_proxies:
-      - !secret server_1_ip
-      - !secret server_2_ip
-      - !secret server_3_ip
+#  http:
+#    use_x_forwarded_for: true
+#    trusted_proxies:
+#      - !secret server_1_ip
+#      - !secret server_4_ip
 
 ## Simple Components
 # Used for sunrise/sunset times.
@@ -20,13 +19,19 @@ wake_on_lan:
 #Custom config directives
 homeassistant:
   allowlist_external_dirs:
-    - /config/.storage
     - /config
+    - /config/.storage
+    - /config/media/llmvision
+    - /config/media/llmvision/snapshots
+    - /media/snapshots
+    - /media/snapshots/front_door_high
   auth_providers:
     - type: homeassistant
     - type: trusted_networks
       trusted_networks:
         - !secret trusted_network
+#  media_dirs:
+#    llmvision: /config/media/llmvision
 
 # Text to speech
 tts:
@@ -38,8 +43,7 @@ http:
   use_x_forwarded_for: true
   trusted_proxies:
     - !secret server_1_ip
-    - !secret server_2_ip
-    - !secret server_3_ip
+    - !secret server_4_ip
 
 ## Frontend config - sets up support for themes
 frontend:
@@ -55,11 +59,10 @@ group: !include_dir_merge_list groups
 notify: !include_dir_merge_list notify
 sensor: !include_dir_merge_list sensors
 switch: !include_dir_merge_list switches
-#template: !include_dir_merge_list templates
+template: !include_dir_merge_list templates
 zone: !include_dir_merge_list zones
 
 # Single Files / Direct includes (All saved in the includes directory)
-anniversaries: !include includes/anniversaries.yaml
 #coinbase: !include includes/coinbase.yaml
 emulated_hue: !include includes/emulated_hue.yaml
 #hdhomerun: !include includes/hdhomerun.yaml
@@ -82,6 +85,7 @@ shell_command: !include includes/shell_commands.yaml
 
 #################################################################
 ## Deprecated YAML functions
+#anniversaries: !include includes/anniversaries.yaml # Now configured via UI, 2024.12
 #google: !include includes/google.yaml ##Deprecated 2022.08
 #map: #Now configured via UI 2024.04.00
 #nzbget: !include includes/nzbget.yaml

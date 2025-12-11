@@ -1,37 +1,37 @@
 name: EV charger
 products:
   - id: o4zjlnwqwe0dzitl
-    name: Tera 22kW EV charger (32A / 3 phase)
-primary_entity:
-  entity: sensor
-  translation_key: status
-  icon: "mdi:ev-station"
-  class: enum
-  dps:
-    - id: 3  # work_state
-      type: string
-      name: sensor
-      mapping:
-        - dps_val: charger_charging
-          value: charging
-        - dps_val: charger_free
-          value: available
-        - dps_val: charger_insert
-          value: plugged_in
-        - dps_val: charger_free_fault
-          value: fault_unplugged
-        - dps_val: charger_wait
-          value: waiting
-        - dps_val: charger_pause
-          value: paused
-        - dps_val: charger_end
-          value: charged
-        - dps_val: charger_fault
-          value: fault
-    - id: 23  # system_version
-      type: string
-      name: system_version
-secondary_entities:
+    manufacturer: Tera
+    model: 22kW 32A 3 phase
+entities:
+  - entity: sensor
+    translation_key: status
+    icon: "mdi:ev-station"
+    class: enum
+    dps:
+      - id: 3  # work_state
+        type: string
+        name: sensor
+        mapping:
+          - dps_val: charger_charging
+            value: charging
+          - dps_val: charger_free
+            value: available
+          - dps_val: charger_insert
+            value: plugged_in
+          - dps_val: charger_free_fault
+            value: fault_unplugged
+          - dps_val: charger_wait
+            value: waiting
+          - dps_val: charger_pause
+            value: paused
+          - dps_val: charger_end
+            value: charged
+          - dps_val: charger_fault
+            value: fault
+      - id: 23  # system_version
+        type: string
+        name: system_version
   - entity: sensor
     class: energy
     dps:
@@ -57,7 +57,7 @@ secondary_entities:
           min: 8
           max: 32
   - entity: sensor
-    name: L1 Voltage
+    name: L1 voltage
     class: voltage
     category: diagnostic
     dps:
@@ -70,7 +70,7 @@ secondary_entities:
         mapping:
           - scale: 10
   - entity: sensor
-    name: L1 Current
+    name: L1 current
     class: current
     category: diagnostic
     dps:
@@ -83,7 +83,7 @@ secondary_entities:
         mapping:
           - scale: 1000
   - entity: sensor
-    name: L1 Power
+    name: L1 power
     class: power
     category: diagnostic
     dps:
@@ -96,7 +96,7 @@ secondary_entities:
         mapping:
           - scale: 1000
   - entity: sensor
-    name: L2 Voltage
+    name: L2 voltage
     class: voltage
     category: diagnostic
     dps:
@@ -109,7 +109,7 @@ secondary_entities:
         mapping:
           - scale: 10
   - entity: sensor
-    name: L2 Current
+    name: L2 current
     class: current
     category: diagnostic
     dps:
@@ -122,7 +122,7 @@ secondary_entities:
         mapping:
           - scale: 1000
   - entity: sensor
-    name: L2 Power
+    name: L2 power
     class: power
     category: diagnostic
     dps:
@@ -135,7 +135,7 @@ secondary_entities:
         mapping:
           - scale: 1000
   - entity: sensor
-    name: L3 Voltage
+    name: L3 voltage
     class: voltage
     category: diagnostic
     dps:
@@ -148,7 +148,7 @@ secondary_entities:
         mapping:
           - scale: 10
   - entity: sensor
-    name: L3 Current
+    name: L3 current
     class: current
     category: diagnostic
     dps:
@@ -161,7 +161,7 @@ secondary_entities:
         mapping:
           - scale: 1000
   - entity: sensor
-    name: L3 Power
+    name: L3 power
     class: power
     category: diagnostic
     dps:
@@ -256,6 +256,7 @@ secondary_entities:
         class: measurement
   - entity: number
     name: Delay charge
+    class: duration
     category: config
     icon: "mdi:car-clock"
     dps:

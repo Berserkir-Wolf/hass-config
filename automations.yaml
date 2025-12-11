@@ -76,18 +76,22 @@
       ''latest_version'') }} is available.'
   mode: single
 - id: '1603311446063'
-  alias: Github - Convert Lovelace json to yaml and commit
+  alias: Convert Lovelace json to yaml on change
   description: ''
-  trigger:
-  - platform: event
-    event_type: lovelace_updated
+  triggers:
+  - event_type: lovelace_updated
     event_data: {}
-  condition: []
-  action:
-  - service: shell_command.convert_lovelace
+    trigger: event
+    alias: Act on "lovelace_updated" event
+  conditions: []
+  actions:
+  - action: shell_command.convert_lovelace
+    alias: Run "shell_command.convert_lovelace"
   - delay: '5'
-  - service: shell_command.commit_lovelace
-    data: {}
+    enabled: false
+  - data: {}
+    action: shell_command.commit_lovelace
+    enabled: false
   initial_state: false
   mode: single
 - id: '1605335470308'
@@ -610,14 +614,14 @@
   alias: Motion - Front Door Camera
   description: Send a notification if motion is detected by cameras and nobody is
     home
-  trigger:
-  - platform: state
-    entity_id: binary_sensor.front_door_motion
+  triggers:
+  - entity_id: binary_sensor.front_door_motion
     from: 'off'
     to: 'on'
     alias: Motion at Front Door
-  condition: []
-  action:
+    trigger: state
+  conditions: []
+  actions:
   - entity_id: camera.front_door_high
     data:
       filename: '{{ snapshot_create_file_path }}'
@@ -672,6 +676,22 @@
           | format(snapshot_access_file_path) %} {{ ios_data if is_ios else android_data
           }}'
         alias: Notify Oppo Reno12 - Mobile
+        enabled: false
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 3
+          milliseconds: 0
+      - alias: Notify Discord
+        action: notify.homeassistant
+        data:
+          message: '{{ notification_message }}'
+          target:
+          - '819351502640381952'
+          data:
+            embed:
+              image:
+                url: https://hass.berserkir.net/local/tmp/snapshot_front_door_high.jpg
       alias: Notify if nobody is home and dnd is off
     - conditions:
       - condition: not
@@ -698,6 +718,24 @@
           | format(snapshot_access_file_path) %} {{ ios_data if is_ios else android_data
           }}'
         alias: Notify Oppo Reno12 - Mobile
+        enabled: false
+      - action: notify.retrea
+        metadata: {}
+        data:
+          title: Front Door
+          message: Motion has been detected at the front door
+          data:
+            image: /api/camera_proxy/camera.front_door_high
+      - alias: Notify Discord
+        action: notify.homeassistant
+        data:
+          message: '{{ notification_message }}'
+          target:
+          - '819351502640381952'
+          data:
+            embed:
+              image:
+                url: https://hass.berserkir.net/local/tmp/snapshot_front_door_high.jpg
       alias: Notify if notifications are on and house isn't silent
   variables:
     motion_sensor: binary_sensor.front_door_motion
@@ -1666,13 +1704,26 @@
   - trigger: state
     entity_id:
     - sensor.hour_of_power
+    alias: When hour of power is true
+    enabled: false
+  - trigger: state
+    entity_id:
+    - binary_sensor.hour_of_power
+    alias: When hour of power turns on
   conditions: []
   actions:
   - choose:
     - conditions:
-      - condition: state
-        entity_id: sensor.hour_of_power
-        state: 'True'
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: sensor.hour_of_power
+          state: 'True'
+          enabled: false
+        - condition: state
+          entity_id: binary_sensor.hour_of_power
+          state:
+          - 'on'
       sequence:
       - choose:
         - conditions:
@@ -1707,11 +1758,22 @@
               target_temperature: 22
               fan_mode: high
           alias: When lounge is below 18 degrees
+      - type: turn_on
+        device_id: 55f7ef94ca059f6582886970f71e4bee
+        entity_id: d66ea107768322534d368364becd99d4
+        domain: switch
       alias: Hour of Power starts
     - conditions:
-      - condition: state
-        entity_id: sensor.hour_of_power
-        state: 'False'
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: sensor.hour_of_power
+          state: 'False'
+          enabled: false
+        - condition: state
+          entity_id: binary_sensor.hour_of_power
+          state:
+          - 'off'
       sequence:
       - choose:
         - conditions:
@@ -1735,10 +1797,17 @@
           sequence:
           - choose:
             - conditions:
-              - condition: numeric_state
-                entity_id: climate.lounge_air_conditioner
-                attribute: current_temperature
-                above: 24
+              - condition: and
+                conditions:
+                - condition: numeric_state
+                  entity_id: climate.lounge_air_conditioner
+                  attribute: current_temperature
+                  above: 24
+                - condition: not
+                  conditions:
+                  - condition: state
+                    entity_id: climate.lounge_air_conditioner
+                    state: 'off'
               sequence:
               - alias: Set lounge AC to 18, cool, medium fan
                 action: sensibo.full_state
@@ -1752,10 +1821,17 @@
               alias: When lounge is above 24 degrees, set lounge AC to 18, cool, medium
                 fan
             - conditions:
-              - condition: numeric_state
-                entity_id: climate.lounge_air_conditioner
-                attribute: current_temperature
-                below: 18
+              - condition: and
+                conditions:
+                - condition: numeric_state
+                  entity_id: climate.lounge_air_conditioner
+                  attribute: current_temperature
+                  below: 18
+                - condition: not
+                  conditions:
+                  - condition: state
+                    entity_id: climate.lounge_air_conditioner
+                    state: 'off'
               sequence:
               - alias: Set lounge AC to 22, heat, low fan
                 action: sensibo.full_state
@@ -1768,7 +1844,12 @@
                   fan_mode: low
               alias: When lounge is below 18 degrees, set lounge AC to 22, heat, low
                 fan
-            - conditions: []
+            - conditions:
+              - condition: not
+                conditions:
+                - condition: state
+                  entity_id: climate.lounge_air_conditioner
+                  state: 'off'
               sequence:
               - action: climate.set_fan_mode
                 metadata: {}
@@ -1778,5 +1859,50 @@
                   entity_id: climate.lounge_air_conditioner
               alias: Turn AC fan down
             enabled: true
+            default:
+            - device_id: c4237f147481e927b0d739c1013f137b
+              domain: climate
+              entity_id: 02492880da0b5d63742b1da7d5bb61dc
+              type: set_hvac_mode
+              hvac_mode: 'off'
+      - type: turn_off
+        device_id: 55f7ef94ca059f6582886970f71e4bee
+        entity_id: d66ea107768322534d368364becd99d4
+        domain: switch
       alias: Hour of Power ends
   mode: single
+- id: '1751856583134'
+  alias: Front Door Camera Motion - AI
+  description: ''
+  use_blueprint:
+    path: valentinfrlch/event_summary.yaml
+    input:
+      camera_entities:
+      - camera.front_door_high
+      trigger_state: recording
+      motion_sensors:
+      - binary_sensor.front_door_motion
+      duration: 5
+      provider: 01JZHD92ZB9A8MNHKC7CMNSNWE
+      notify_device:
+      - 11ecfffb8a3d3e8cb0640a1f7d3ec024
+      notification_time: at {{ now().strftime("%H:%M") }}
+      tap_navigate: /lovelace/home
+      model: gemma3:4b
+      run_conditions:
+      - condition: or
+        conditions:
+        - condition: numeric_state
+          entity_id: zone.home
+          below: 1
+        - condition: state
+          entity_id: input_boolean.motion_notifications
+          state: 'on'
+      tts_notification: false
+      cooldown:
+        hours: 0
+        minutes: 10
+        seconds: 0
+      max_frames: 10
+      use_memory: false
+      max_tokens: 30

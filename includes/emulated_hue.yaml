@@ -6,3 +6,6 @@ entities:
   input_boolean.motion_notifications:
     name: "Door Notifications"
     hidden: false
+  switch.lounge_tv:
+    name: "Lounge TV"
+    hidden: false

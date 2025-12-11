@@ -88,6 +88,8 @@ class IpmiServer:
         self._alias = connection_data.get("alias")
         self._username = connection_data.get("username")
         self._password = connection_data.get("password")
+        self._kg_key = connection_data.get("kg_key")
+        self._privilege_level = connection_data.get("privilege_level")
         self._addon_url = connection_data.get("ipmi_server_host") + ":" + connection_data.get("addon_port")
         self._addon_interface = connection_data.get("addon_interface")
         self._addon_extra_params = connection_data.get("addon_extra_params")
@@ -122,7 +124,13 @@ class IpmiServer:
             if self._addon_interface is not None and self._addon_interface != "auto":
                 params["interface"] = self._addon_interface
 
-            if self._addon_extra_params is not None and self._addon_extra_params != "":
+            if self._kg_key:
+                params["kg_key"] = self._kg_key
+
+            if self._privilege_level:
+                params["privilege_level"] = self._privilege_level
+
+            if self._addon_extra_params:
                 params["extra"] = self._addon_extra_params
 
             url = self._addon_url
@@ -252,6 +260,15 @@ class IpmiServer:
         ipmi = pyipmi.create_connection(interface)
         ipmi.session.set_session_type_rmcp(self._host, self._port)
         ipmi.session.set_auth_type_user(self._username, self._password)
+        
+        # Note: python-ipmi library does not support Kg keys - only ipmi-server addon supports this
+        if self._kg_key:
+            _LOGGER.warning("Kg key specified but python-ipmi library does not support Kg key authentication. Kg key will be ignored. Consider using the ipmi-server addon for full feature support.")
+        
+        # Set privilege level if provided
+        if self._privilege_level:
+            ipmi.session.set_priv_level(self._privilege_level)
+        
         ipmi.session.establish()
         ipmi.target = pyipmi.Target(ipmb_address=0x20)
 

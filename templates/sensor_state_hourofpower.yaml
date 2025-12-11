@@ -1,0 +1,20 @@
+#- platform: template
+#  sensors:
+#    hour_of_power:
+#      friendly_name: "Hour of Power"
+#      value_template: >
+#        {{ states('sensor.hour_of_free_power_start') < utcnow().strftime('%Y-%m-%dT%H:%M') < states('sensor.hour_of_free_power_end') }}
+
+#template:
+- sensor:
+    - default_entity_id: sensor.hour_of_power
+      name: Hour of Power
+      state:
+        "{{ states('sensor.hour_of_free_power_start') < utcnow().strftime('%Y-%m-%dT%H:%M')
+        < states('sensor.hour_of_free_power_end') }}"
+
+- binary_sensor:
+    - default_entity_id: binary_sensor.hour_of_power
+      name: Hour of Power
+      state: >
+        "{{ (utcnow().strftime('%Y-%m-%dT%H:%M') < states('sensor.hour_of_free_power_end')) or (states('sensor.hour_of_free_power_start') > utcnow().strftime('%Y-%m-%dT%H:%M')) }}"

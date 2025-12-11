@@ -10,6 +10,8 @@ __pycache__
 # Directory (contents) ignores
 .cloud
 .storage
+www/llmvision
+media/llmvision
 #custom_components
 development
 deps
@@ -23,6 +25,7 @@ www/tmp/
 .google.token
 .uuid
 .ps4-games.*
+.ha_run.lock
 google_calendars.yaml
 home-assistant.log.*
 html5_push_registrations.conf
