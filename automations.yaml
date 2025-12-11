@@ -76,18 +76,22 @@
       ''latest_version'') }} is available.'
   mode: single
 - id: '1603311446063'
-  alias: Github - Convert Lovelace json to yaml and commit
+  alias: Convert Lovelace json to yaml on change
   description: ''
-  trigger:
-  - platform: event
-    event_type: lovelace_updated
+  triggers:
+  - event_type: lovelace_updated
     event_data: {}
-  condition: []
-  action:
-  - service: shell_command.convert_lovelace
+    trigger: event
+    alias: Act on "lovelace_updated" event
+  conditions: []
+  actions:
+  - action: shell_command.convert_lovelace
+    alias: Run "shell_command.convert_lovelace"
   - delay: '5'
-  - service: shell_command.commit_lovelace
-    data: {}
+    enabled: false
+  - data: {}
+    action: shell_command.commit_lovelace
+    enabled: false
   initial_state: false
   mode: single
 - id: '1605335470308'
