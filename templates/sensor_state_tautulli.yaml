@@ -13,9 +13,9 @@
     - unit_of_measurement: Mbps
       default_entity_id: sensor.total_bandwidth_mbps
       state: "{{ (int(states('sensor.tautulli_total_bandwidth')) / 1024) }}"
-      name: total_bandwidth_mbps
+      name: Plex Outright Bandwidth
 - sensor:
     - unit_of_measurement: Mbps
       default_entity_id: sensor.total_bandwidth_mbps_rounded
       state: "{{ (int(states('sensor.tautulli_total_bandwidth')) / 1024) | round(2) }}"
-      name: total_bandwidth_mbps_rounded
+      name: Plex Rounded Bandwidth
