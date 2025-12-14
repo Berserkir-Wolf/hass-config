@@ -561,6 +561,16 @@ views:
           tap_action:
             action: toggle
           type: button
+        - entity: switch.pool_pump_socket_1
+          icon: mdi:pool
+          icon_height: 30px
+          name: Pool Pump
+          show_icon: true
+          show_name: true
+          show_state: false
+          tap_action:
+            action: toggle
+          type: button
         type: horizontal-stack
       type: custom:vertical-stack-in-card
     - cards:
