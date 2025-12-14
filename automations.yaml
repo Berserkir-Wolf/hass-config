@@ -1698,7 +1698,7 @@
       destructive: true
       authenticationRequired: true
 - id: '1733259126926'
-  alias: AirCon Automation
+  alias: Hour of Power actions
   description: ''
   triggers:
   - trigger: state
@@ -1762,6 +1762,12 @@
         device_id: 55f7ef94ca059f6582886970f71e4bee
         entity_id: d66ea107768322534d368364becd99d4
         domain: switch
+      - action: switch.turn_on
+        metadata: {}
+        target:
+          device_id: e35cdc1c3f44ba4ee6636e1e1d94b221
+        data: {}
+        alias: Turn on pool pump
       alias: Hour of Power starts
     - conditions:
       - condition: or
@@ -1869,6 +1875,12 @@
         device_id: 55f7ef94ca059f6582886970f71e4bee
         entity_id: d66ea107768322534d368364becd99d4
         domain: switch
+      - action: switch.turn_off
+        metadata: {}
+        target:
+          device_id: e35cdc1c3f44ba4ee6636e1e1d94b221
+        data: {}
+        alias: Turn off pool pump
       alias: Hour of Power ends
   mode: single
 - id: '1751856583134'
