@@ -182,11 +182,35 @@ views:
           tap_action:
             action: toggle
         - entity: sensor.bedroom_heater_temperature
+        - entity: fan.bedroom_fan
+          hold_action:
+            action: more-info
+          tap_action:
+            action: toggle
         show_icon: true
         show_name: true
         show_state: true
         state_color: true
         type: glance
+      - card:
+          customSetpoints: true
+          entity: fan.bedroom_fan
+          hiPercentage: 5
+          lowPercentage: 1
+          medPercentage: 2
+          reverseButtons: true
+          type: custom:fan-percent-button-row
+        conditions:
+        - condition: state
+          entity: fan.bedroom_fan
+          state_not: 'off'
+        - condition: state
+          entity: fan.bedroom_fan
+          state_not: unavailable
+        - condition: state
+          entity: fan.bedroom_fan
+          state: 'on'
+        type: conditional
       - card:
           artwork: material
           entity: media_player.master_bedroom_tv
@@ -314,6 +338,243 @@ views:
         conditions:
         - condition: state
           entity: light.office_lights
+          state: 'on'
+        type: conditional
+      type: custom:vertical-stack-in-card
+    type: grid
+  - cards:
+    - cards:
+      - badges:
+        - color: state
+          entity: climate.lounge_air_conditioner
+          icon: mdi:home-thermometer
+          show_icon: true
+          show_state: true
+          state_content: current_temperature
+          tap_action:
+            action: toggle
+          type: entity
+        - entity: light.lounge_light
+          show_icon: true
+          show_state: true
+          tap_action:
+            action: toggle
+          type: entity
+        - entity: media_player.2020_2021_uhd_android_tv
+          type: entity
+        - entity: automation.aircon_automation
+          show_icon: true
+          show_state: true
+          tap_action:
+            action: toggle
+          type: entity
+        heading: Living Room
+        heading_style: title
+        icon: mdi:sofa
+        tap_action:
+          action: perform-action
+          perform_action: media_player.turn_on
+          target:
+            entity_id: media_player.2020_2021_uhd_android_tv
+        type: heading
+      - columns: 3
+        entities:
+        - entity: switch.wol_lounge
+          icon: mdi:desktop-classic
+          name: PC
+          tap_action:
+            action: toggle
+        - entity: light.lounge_light
+          name: Light
+          tap_action:
+            action: toggle
+        - entity: light.lounge_lamp
+          name: Lamp
+          tap_action:
+            action: toggle
+        - entity: media_player.lounge_dot
+        - double_tap_action:
+            action: call-service
+            data:
+              volume_level: 0.73
+            service: media_player.volume_set
+            target:
+              entity_id: media_player.lounge_amp_3
+          entity: media_player.lounge_amp_3
+          hold_action:
+            action: call-service
+            service: script.toggle_mute
+            service_data:
+              media_player: media_player.lounge_amp_3
+          name: Amp
+          tap_action:
+            action: more-info
+        - entity: switch.subwoofer
+          tap_action:
+            action: toggle
+        - entity: switch.lounge_outlet_socket_1
+          tap_action:
+            action: toggle
+        - entity: switch.lounge_outlet_socket_2
+          tap_action:
+            action: toggle
+        - entity: switch.lounge_outlet_socket_3
+          tap_action:
+            action: toggle
+        show_icon: true
+        show_name: true
+        show_state: true
+        state_color: true
+        type: glance
+      - card:
+          entity: media_player.playstation_5
+          toggle_power: false
+          type: custom:mini-media-player
+        conditions:
+        - condition: state
+          entity: media_player.playstation_5
+          state_not: 'off'
+        type: conditional
+      - card:
+          entity: climate.lounge_air_conditioner
+          features:
+          - style: dropdown
+            type: climate-fan-modes
+          - type: climate-hvac-modes
+          show_current_as_primary: true
+          type: thermostat
+        conditions:
+        - condition: state
+          entity: climate.lounge_air_conditioner
+          state_not: 'off'
+        type: conditional
+      - card:
+          artwork: cover-fit
+          entity: media_player.lounge_amp_2
+          group: false
+          source: full
+          toggle_power: true
+          type: custom:mini-media-player
+          volume_stateless: true
+        conditions:
+        - entity: media_player.lounge_amp_3
+          state_not: 'off'
+        - entity: media_player.lounge_amp_3
+          state_not: unknown
+        - entity: media_player.lounge_amp_3
+          state_not: unavailable
+        type: conditional
+      - card:
+          entity: media_player.lounge_tv
+          type: media-control
+        conditions:
+        - entity: media_player.lounge_tv
+          state: 'on'
+        type: conditional
+      - card:
+          entities:
+          - entity: media_player.lounge_ps4
+            name: PS4
+          - entity: switch.lounge_ps5_power
+          - entity: media_player.living_room_xbox
+          show_icon: true
+          show_name: true
+          show_state: true
+          state_color: true
+          type: glance
+        conditions:
+        - condition: state
+          entity: media_player.2020_2021_uhd_android_tv
+          state_not: 'off'
+        type: conditional
+      - card:
+          entity: media_player.living_room_xbox
+          type: media-control
+        conditions:
+        - entity: media_player.living_room_xbox
+          state_not: 'off'
+        - entity: media_player.living_room_xbox
+          state_not: unavailable
+        type: conditional
+      - card:
+          entity: sensor.lounge_ps5_activity
+          state_color: true
+          type: entity
+        conditions:
+        - entity: switch.lounge_ps5_power
+          state: 'on'
+        type: conditional
+      type: custom:vertical-stack-in-card
+    - cards:
+      - badges:
+        - color: state
+          entity: light.garage_switch_overhead
+          show_icon: true
+          show_state: true
+          tap_action:
+            action: toggle
+          type: entity
+        - color: state
+          entity: light.garage_switch_bench
+          icon: ''
+          show_icon: true
+          show_state: true
+          tap_action:
+            action: toggle
+          type: entity
+        - color: state
+          entity: light.garage_switch_driveway
+          icon: mdi:light-flood-down
+          show_icon: true
+          show_state: true
+          tap_action:
+            action: toggle
+          type: entity
+        heading: Garage
+        heading_style: title
+        icon: mdi:garage
+        tap_action:
+          action: perform-action
+          perform_action: light.toggle
+          target:
+            entity_id: light.garage_lights
+        type: heading
+      - columns: 4
+        entities:
+        - entity: light.garage_switch_bench
+          name: Workbench
+          tap_action:
+            action: toggle
+        - entity: light.garage_switch_overhead
+          name: Overhead
+          tap_action:
+            action: toggle
+        - entity: light.garage_switch_driveway
+          name: Driveway
+          tap_action:
+            action: toggle
+        - entity: camera.garage_high
+        show_icon: true
+        show_name: true
+        show_state: true
+        state_color: true
+        type: glance
+      - card:
+          entities:
+          - entity: sensor.state_garageap
+            icon: mdi:access-point
+            name: Garage AP
+          - entity: media_player.garage_speaker
+            name: Garage Soundbar
+          - entity: media_player.garage_dot
+          show_icon: true
+          show_name: true
+          show_state: true
+          state_color: true
+          type: glance
+        conditions:
+        - condition: state
+          entity: light.garage_lights
           state: 'on'
         type: conditional
       type: custom:vertical-stack-in-card
@@ -643,243 +904,6 @@ views:
           type: entities
         conditions:
         - entity: switch.biltong_rack
-          state: 'on'
-        type: conditional
-      type: custom:vertical-stack-in-card
-    type: grid
-  - cards:
-    - cards:
-      - badges:
-        - color: state
-          entity: climate.lounge_air_conditioner
-          icon: mdi:home-thermometer
-          show_icon: true
-          show_state: true
-          state_content: current_temperature
-          tap_action:
-            action: toggle
-          type: entity
-        - entity: light.lounge_light
-          show_icon: true
-          show_state: true
-          tap_action:
-            action: toggle
-          type: entity
-        - entity: media_player.2020_2021_uhd_android_tv
-          type: entity
-        - entity: automation.aircon_automation
-          show_icon: true
-          show_state: true
-          tap_action:
-            action: toggle
-          type: entity
-        heading: Living Room
-        heading_style: title
-        icon: mdi:sofa
-        tap_action:
-          action: perform-action
-          perform_action: media_player.turn_on
-          target:
-            entity_id: media_player.2020_2021_uhd_android_tv
-        type: heading
-      - columns: 3
-        entities:
-        - entity: switch.wol_lounge
-          icon: mdi:desktop-classic
-          name: PC
-          tap_action:
-            action: toggle
-        - entity: light.lounge_light
-          name: Light
-          tap_action:
-            action: toggle
-        - entity: light.lounge_lamp
-          name: Lamp
-          tap_action:
-            action: toggle
-        - entity: media_player.lounge_dot
-        - double_tap_action:
-            action: call-service
-            data:
-              volume_level: 0.73
-            service: media_player.volume_set
-            target:
-              entity_id: media_player.lounge_amp_3
-          entity: media_player.lounge_amp_3
-          hold_action:
-            action: call-service
-            service: script.toggle_mute
-            service_data:
-              media_player: media_player.lounge_amp_3
-          name: Amp
-          tap_action:
-            action: more-info
-        - entity: switch.subwoofer
-          tap_action:
-            action: toggle
-        - entity: switch.lounge_outlet_socket_1
-          tap_action:
-            action: toggle
-        - entity: switch.lounge_outlet_socket_2
-          tap_action:
-            action: toggle
-        - entity: switch.lounge_outlet_socket_3
-          tap_action:
-            action: toggle
-        show_icon: true
-        show_name: true
-        show_state: true
-        state_color: true
-        type: glance
-      - card:
-          entity: media_player.playstation_5
-          toggle_power: false
-          type: custom:mini-media-player
-        conditions:
-        - condition: state
-          entity: media_player.playstation_5
-          state_not: 'off'
-        type: conditional
-      - card:
-          entity: climate.lounge_air_conditioner
-          features:
-          - style: dropdown
-            type: climate-fan-modes
-          - type: climate-hvac-modes
-          show_current_as_primary: true
-          type: thermostat
-        conditions:
-        - condition: state
-          entity: climate.lounge_air_conditioner
-          state_not: 'off'
-        type: conditional
-      - card:
-          artwork: cover-fit
-          entity: media_player.lounge_amp_2
-          group: false
-          source: full
-          toggle_power: true
-          type: custom:mini-media-player
-          volume_stateless: true
-        conditions:
-        - entity: media_player.lounge_amp_3
-          state_not: 'off'
-        - entity: media_player.lounge_amp_3
-          state_not: unknown
-        - entity: media_player.lounge_amp_3
-          state_not: unavailable
-        type: conditional
-      - card:
-          entity: media_player.lounge_tv
-          type: media-control
-        conditions:
-        - entity: media_player.lounge_tv
-          state: 'on'
-        type: conditional
-      - card:
-          entities:
-          - entity: media_player.lounge_ps4
-            name: PS4
-          - entity: switch.lounge_ps5_power
-          - entity: media_player.living_room_xbox
-          show_icon: true
-          show_name: true
-          show_state: true
-          state_color: true
-          type: glance
-        conditions:
-        - condition: state
-          entity: media_player.2020_2021_uhd_android_tv
-          state_not: 'off'
-        type: conditional
-      - card:
-          entity: media_player.living_room_xbox
-          type: media-control
-        conditions:
-        - entity: media_player.living_room_xbox
-          state_not: 'off'
-        - entity: media_player.living_room_xbox
-          state_not: unavailable
-        type: conditional
-      - card:
-          entity: sensor.lounge_ps5_activity
-          state_color: true
-          type: entity
-        conditions:
-        - entity: switch.lounge_ps5_power
-          state: 'on'
-        type: conditional
-      type: custom:vertical-stack-in-card
-    - cards:
-      - badges:
-        - color: state
-          entity: light.garage_switch_overhead
-          show_icon: true
-          show_state: true
-          tap_action:
-            action: toggle
-          type: entity
-        - color: state
-          entity: light.garage_switch_bench
-          icon: ''
-          show_icon: true
-          show_state: true
-          tap_action:
-            action: toggle
-          type: entity
-        - color: state
-          entity: light.garage_switch_driveway
-          icon: mdi:light-flood-down
-          show_icon: true
-          show_state: true
-          tap_action:
-            action: toggle
-          type: entity
-        heading: Garage
-        heading_style: title
-        icon: mdi:garage
-        tap_action:
-          action: perform-action
-          perform_action: light.toggle
-          target:
-            entity_id: light.garage_lights
-        type: heading
-      - columns: 4
-        entities:
-        - entity: light.garage_switch_bench
-          name: Workbench
-          tap_action:
-            action: toggle
-        - entity: light.garage_switch_overhead
-          name: Overhead
-          tap_action:
-            action: toggle
-        - entity: light.garage_switch_driveway
-          name: Driveway
-          tap_action:
-            action: toggle
-        - entity: camera.garage_high
-        show_icon: true
-        show_name: true
-        show_state: true
-        state_color: true
-        type: glance
-      - card:
-          entities:
-          - entity: sensor.state_garageap
-            icon: mdi:access-point
-            name: Garage AP
-          - entity: media_player.garage_speaker
-            name: Garage Soundbar
-          - entity: media_player.garage_dot
-          show_icon: true
-          show_name: true
-          show_state: true
-          state_color: true
-          type: glance
-        conditions:
-        - condition: state
-          entity: light.garage_lights
           state: 'on'
         type: conditional
       type: custom:vertical-stack-in-card
