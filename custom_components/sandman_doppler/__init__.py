@@ -47,8 +47,13 @@ PLATFORMS = [
 ]
 
 
-async def _get_devices(client: DopplerClient) -> None:
-    """Helper function to get devices from cloud."""
+async def _get_devices(client: DopplerClient, _now: Any = None) -> None:
+    """Helper function to get devices from cloud.
+
+    Args:
+        client: The Doppler client instance.
+        _now: Optional datetime passed by async_track_time_interval (unused).
+    """
     try:
         await client.get_devices()
     except DopplerException as err:
@@ -95,10 +100,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hw_version=doppler.device_info.firmware_version,
             name=doppler.name,
         )
-        hass.data[DOMAIN][entry.entry_id][
-            doppler.dsn
-        ] = coordinator = DopplerDataUpdateCoordinator(
-            hass, entry, client, doppler, dev_entry
+        hass.data[DOMAIN][entry.entry_id][doppler.dsn] = coordinator = (
+            DopplerDataUpdateCoordinator(hass, entry, client, doppler, dev_entry)
         )
         hass.async_create_task(coordinator.async_refresh())
 
