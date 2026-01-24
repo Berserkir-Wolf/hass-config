@@ -570,16 +570,16 @@
 - id: '1694906150147'
   alias: Automation - empty the house
   description: Turn off all lights when the last person leaves the house
-  trigger:
-  - platform: state
-    entity_id:
+  triggers:
+  - entity_id:
     - zone.home
     to: '0'
     for:
       hours: 0
       minutes: 30
       seconds: 0
-  condition:
+    trigger: state
+  conditions:
   - alias: Confirm phone is not on home wifi
     condition: not
     conditions:
@@ -587,7 +587,7 @@
       entity_id: sensor.bnet_reno12_wifi_connection
       state: Berserkir-Net
     enabled: false
-  action:
+  actions:
   - data: {}
     target:
       entity_id:
@@ -595,20 +595,20 @@
       - light.all_lamps
     alias: Turn off "All Lights" and "All Lamps"
     action: light.turn_off
-  - if:
-    - condition: template
+  - alias: Set the Front Door camera to Motion if it's not
+    if:
+    - alias: Confirm if the Front Camera is not set to Adaptive
+      condition: template
       value_template: '  {% if not is_state(''select.front_door_recording_mode'',
-        ''Detections'') %}true{% endif %}'
-      alias: Confirm if the Front Camera is not set to Motion
+        ''Adaptive'') %}true{% endif %}'
     then:
-    - metadata: {}
+    - alias: Set Front Door Camera back to Adaptive recording
+      metadata: {}
       data:
-        option: Detections
+        option: Adaptive
       target:
         entity_id: select.front_door_recording_mode
-      alias: Set Front Door Camera back to record on motion
       action: select.select_option
-    alias: Set the Front Door camera to Motion if it's not
   mode: single
 - id: '1713308537578'
   alias: Motion - Front Door Camera
@@ -1705,11 +1705,12 @@
     entity_id:
     - sensor.hour_of_power
     alias: When hour of power is true
-    enabled: false
+    enabled: true
   - trigger: state
     entity_id:
     - binary_sensor.hour_of_power
     alias: When hour of power turns on
+    enabled: false
   conditions: []
   actions:
   - choose:
