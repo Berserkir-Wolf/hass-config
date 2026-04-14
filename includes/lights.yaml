@@ -58,7 +58,7 @@
   name: Hall Lights
   unique_id: light.hall_lights
   entities:
-    - light.smart_rgb_light_strip
+    - light.hall_light_strip
     - light.lifx_switch_6c31d6_hall_front
 # Bedroom Lights
 - platform: group
