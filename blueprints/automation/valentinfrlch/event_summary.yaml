@@ -1,13 +1,11 @@
 blueprint:
-  name: AI Event Summary (v1.5.1)
+  name: AI Event Summary (v1.6.0)
   author: valentinfrlch
   homeassistant:
     min_version: 2024.10.0
-  description: 'AI-powered summaries for security camera events. Sends a notification
+  description: AI-powered summaries for security camera events. Sends a notification
     with a preview to your phone that is updated dynamically when the AI summary is
     available.
-
-    '
   domain: automation
   source_url: https://github.com/valentinfrlch/ha-llmvision/blob/main/blueprints/event_summary.yaml
   input:
@@ -87,7 +85,7 @@ blueprint:
       icon: mdi:brain
       collapsed: true
       input:
-        remember:
+        store_in_timeline:
           name: Store in Timeline
           description: Stores this event in the Timeline so you can ask about it.
             If important is enabled, only events classified as Normal or Critical
@@ -140,8 +138,10 @@ blueprint:
               mode: slider
         max_tokens:
           name: Maximum Tokens
-          description: Maximum number of tokens to generate. Use this to control the
-            length of the summaries.
+          description: 'Maximum number of tokens to generate. Use this to control
+            the length of the summaries.
+
+            '
           default: 20
           selector:
             number:
@@ -191,9 +191,9 @@ blueprint:
               options:
               - Dynamic
               - Consolidated
-              custom_value: false
               multiple: false
               sort: false
+              custom_value: false
         preview_mode:
           name: Preview Mode
           description: "Choose between a live preview or a snapshot of the event before
@@ -205,9 +205,9 @@ blueprint:
               options:
               - Snapshot
               - Live Preview
-              custom_value: false
               multiple: false
               sort: false
+              custom_value: false
         analysis_mode:
           name: Analysis Mode
           description: "Choose between a live preview or a snapshot of the event after
@@ -219,9 +219,9 @@ blueprint:
               options:
               - Snapshot
               - Live Preview
-              custom_value: false
               multiple: false
               sort: false
+              custom_value: false
         notification_time:
           name: Notification Time
           description: Add time to Notification Title and choose between 12-hour or
@@ -236,9 +236,9 @@ blueprint:
                 value: at {{ now().strftime("%-I:%M %p") }}
               - label: 24 Hour
                 value: at {{ now().strftime("%H:%M") }}
-              custom_value: false
               multiple: false
               sort: false
+              custom_value: false
         file_path:
           name: File Path - To send snapshot in Dynamic Mode with Snapshot Preview
             Mode
@@ -248,12 +248,12 @@ blueprint:
             \n\n Try the `Public Folder - Unsecured` option that references **/config/www/snapshots/{{
             camera_file_path }}/last_motion.jpg** if you are having issues ***Note
             that this is unsecured and exposes the images to the web.***"
-          default: /media/snapshots/{{ camera_file_path }}/last_motion.jpg
+          default: /media/llmvision/snapshots_blueprint/{{ camera_file_path }}/last_motion.jpg
           selector:
             select:
               options:
               - label: Media Folder - Secured
-                value: /media/snapshots/{{ camera_file_path }}/last_motion.jpg
+                value: /media/llmvision/snapshots_blueprint/{{ camera_file_path }}/last_motion.jpg
               - label: Public Folder - Unsecured
                 value: /config/www/snapshots/{{ camera_file_path }}/last_motion.jpg
               custom_value: true
@@ -362,11 +362,13 @@ blueprint:
             on the Android device -> Home Assistant App Setting -> Notifications.
             Use `Alarm` to use the device's loud alarm notification sound. You can
             also type in your own channel name. [Learn More](https://companion.home-assistant.io/docs/notifications/notification-commands/#volume-level)
-            (default = Camera Name == {{ camera_entity_snapshot }} Snapshot).
-          default: '{{ camera }} Snapshot'
+            (default = 'LLM Vision Snapshot').
+          default: LLM Vision Snapshot
           selector:
             select:
               options:
+              - label: LLM Vision Snapshot
+                value: LLM Vision Snapshot
               - label: Camera Name
                 value: '{{ camera }} Snapshot'
               - label: Alarm
@@ -395,9 +397,9 @@ blueprint:
                 value: alarm_stream
               - label: Max Alarm Volume/Sound
                 value: alarm_stream_max
-              custom_value: false
               multiple: false
               sort: false
+              custom_value: false
         condition_notify_tts:
           name: Condition to TTS Notify
           description: Condition to TTS notify the device.
@@ -451,14 +453,28 @@ blueprint:
       input:
         important:
           name: Important (Experimental)
-          description: 'Use AI to classify events as Critical, Normal or Low. Notifications
+          description: '''Use AI to classify events as Critical, Normal or Low. Notifications
             are sent only for events classified as Normal or higher. Critical events
-            override ''Do Not Disturb'' settings. Use with caution: AI can make mistakes.
+            override ''''Do Not Disturb'''' settings. Use with caution: AI can make
+            mistakes.''
 
             '
           default: false
           selector:
             boolean: {}
+        importance_prompt:
+          name: Importance Prompt (Experimental)
+          description: Customize the prompt used to classify events as Critical, Normal
+            or Low importance.
+          default: 'Classify the security event based on this image. Choose from the
+            following options: ''passive'' for unimportant events, ''time-sensitive''
+            for notable but non-critical events such as a person at the front door,
+            and ''critical'' only for potential burglaries or highly suspicious activity.
+            Respond with one of these options exactly, without additional explanation.'
+          selector:
+            text:
+              multiline: true
+              multiple: false
         additional_actions:
           name: Additional Actions (Experimental)
           description: Additional actions to run after the AI analysis and notification.
@@ -469,7 +485,7 @@ blueprint:
             action: {}
 variables:
   important: !input important
-  remember: !input remember
+  store_in_timeline: !input store_in_timeline
   cooldown: !input cooldown
   preview_mode: !input preview_mode
   analysis_mode: !input analysis_mode
@@ -496,12 +512,14 @@ variables:
     }}\n"
   camera_entities_list: !input camera_entities
   motion_sensors_list: !input motion_sensors
-  camera_entity: "{% if motion_sensors_list and not trigger.entity_id.startswith(\"camera\")
-    %}\n  {% set index = motion_sensors_list.index(trigger.entity_id) %}\n    {{ camera_entities_list[index]
-    }}\n{% else %}\n  {{ trigger.entity_id }}\n{% endif %}\n"
-  tag: '{{ camera_entity + int(as_timestamp(now()))|string }}
-
-    '
+  camera_entity: "{% if motion_sensors_list and trigger is defined and trigger.entity_id
+    is defined and not trigger.entity_id.startswith(\"camera\") %}\n  {% set sensor_index
+    = motion_sensors_list.index(trigger.entity_id) if trigger.entity_id in motion_sensors_list
+    else 0 %}\n  {{ camera_entities_list[sensor_index] if sensor_index < camera_entities_list|length
+    else camera_entities_list[0] }}\n{% elif trigger is defined and trigger.entity_id
+    is defined %}\n  {{ trigger.entity_id }}\n{% else %}\n  {{ camera_entities_list[0]
+    if camera_entities_list else '' }}\n{% endif %}\n"
+  tag: '{{ camera_entity + int(as_timestamp(now()))|string }}'
   label: Motion detected
   camera_message: '{{ camera_entity.replace("camera.", "").replace("_", " ")|capitalize
     }}
@@ -511,13 +529,7 @@ variables:
     }}
 
     '
-  importance_prompt: 'Classify the security event based on this image. Choose from
-    the following options: "passive" for unimportant events, "time-sensitive" for
-    notable but non-critical events such as a person at the front door, and "critical"
-    only for potential burglaries or highly suspicious activity. Respond with one
-    of these options exactly, without additional explanation.
-
-    '
+  importance_prompt: !input importance_prompt
   camera_entity_snapshot: '{{ camera_entities_list[0] }}
 
     '
@@ -530,12 +542,12 @@ variables:
   notification_time: !input notification_time
 max_exceeded: silent
 mode: single
-triggers:
-- trigger: state
+trigger:
+- platform: state
   entity_id: !input camera_entities
   to: !input trigger_state
   id: camera_trigger
-- trigger: state
+- platform: state
   entity_id: !input motion_sensors
   to: 'on'
   id: motion_sensor_trigger
@@ -658,10 +670,10 @@ action:
     model: !input model
     message: !input message
     use_memory: !input use_memory
-    remember: !input remember
-    expose_images: '{{preview_mode == ''Snapshot'' or remember}}'
-    generate_title: !input remember
-    include_filename: true
+    store_in_timeline: !input store_in_timeline
+    expose_images: '{{preview_mode == ''Snapshot'' or store_in_timeline}}'
+    generate_title: !input store_in_timeline
+    include_filename: false
     max_frames: !input max_frames
     target_width: !input target_width
     max_tokens: !input max_tokens
@@ -695,7 +707,7 @@ action:
                   title: '{{ label }} {{ notification_time }}'
                   message: '{{response.response_text}}'
                   data:
-                    image: '{{response.key_frame.replace(''/config/media'', ''/media'')
+                    image: '{{response.key_frame.replace(''/media'',''/media/local'')
                       }}'
                     url: !input tap_navigate
                     clickAction: !input tap_navigate
@@ -718,7 +730,7 @@ action:
                     actions:
                     - action: URI
                       title: See Snapshot
-                      uri: '{{response.key_frame.replace(''/config/media'', ''/media'')
+                      uri: '{{response.key_frame.replace(''/media'',''/media/local'')
                         }}'
         - conditions:
           - condition: template
@@ -750,7 +762,7 @@ action:
                     actions:
                     - action: URI
                       title: See Snapshot
-                      uri: '{{response.key_frame.replace(''/config/media'', ''/media'')
+                      uri: '{{response.key_frame.replace(''/media'',''/media/local'')
                         }}'
     - if:
       - condition: template
