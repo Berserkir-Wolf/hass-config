@@ -1,7 +1,7 @@
 # Ombi
-  host: !secret server_2_ip
-  port: 5000
-  ssl: false
-  username: !secret ombi_username
-  api_key: !secret ombi_api_key
-  urlbase: !secret ombi_baseurl
+host: !secret server_4_ip
+port: 5000
+ssl: false
+username: !secret ombi_username
+api_key: !secret ombi_api_key
+urlbase: !secret ombi_baseurl
