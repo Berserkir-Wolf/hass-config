@@ -15,7 +15,9 @@ import os
 import random
 import time
 from typing import Optional
+from urllib.parse import urlparse
 
+import aiohttp
 from alexapy import (
     AlexaAPI,
     AlexaLogin,
@@ -789,7 +791,40 @@ async def async_setup_entry(hass, config_entry):
     hass.bus.async_listen("alexa_media_relogin_success", login_success)
     try:
         _t = time.monotonic()
-        await login.login(cookies=await login.load_cookie())
+        cookies = await login.load_cookie()
+        cookie_login_ok = False
+        if cookies:
+            try:
+                if login._session is None or getattr(login._session, "closed", False):
+                    login._create_session(True)
+                async with login._session.get(
+                    "https://alexa.amazon.com/api/bootstrap",
+                    cookies=cookies,
+                    ssl=login._ssl,
+                    allow_redirects=False,
+                ) as response:
+                    if response.status == 200:
+                        data = loads(await response.text())
+                        auth = (data or {}).get("authentication") or {}
+                        customer_email = (auth.get("customerEmail") or "").lower()
+                        if (
+                            auth.get("authenticated")
+                            and customer_email == email.lower()
+                        ):
+                            _LOGGER.debug(
+                                "[BOOT] Cookie auth confirmed via /api/bootstrap"
+                            )
+                            login.status["login_successful"] = True
+                            login.customer_id = auth.get("customerId")
+                            login.stats["login_timestamp"] = datetime.now()
+                            login.stats["api_calls"] = 0
+                            await login.check_domain()
+                            await login.finalize_login()
+                            cookie_login_ok = True
+            except (JSONDecodeError, ValueError, aiohttp.ClientError) as ex:
+                _LOGGER.debug("[BOOT] Bootstrap cookie auth check failed: %s", ex)
+        if not cookie_login_ok:
+            await login.login(cookies=cookies)
         _LOGGER.debug("[BOOT] login completed in %.2fs", time.monotonic() - _t)
         _t = time.monotonic()
         if await test_login_status(hass, config_entry, login):
@@ -1587,14 +1622,40 @@ async def setup_alexa(hass, config_entry, login_obj: AlexaLogin):
                                     LAST_CALLED_ITEMS, len(queue_snapshot) + 2
                                 )
 
+                            try:
                                 records = await AlexaAPI.get_customer_history_records(
                                     login_live,
                                     start_time=start_time,
                                     end_time=end_time,
                                     max_record_size=max_record_size,
                                 )
+                            except TypeError as exc:
+                                # Known alexapy/aiohttp edge case: None header key, etc.
+                                account_live["last_called_probe_next_allowed"] = (
+                                    time.monotonic() + LAST_CALLED_CONN_BACKOFF_S
+                                )
+                                _LOGGER.warning(
+                                    "%s: last_called probe API TypeError (%s): %s",
+                                    hide_email(email),
+                                    trigger_cmd,
+                                    exc,
+                                    exc_info=True,
+                                )
+                                # NOTE:
+                                # We intentionally re-arm the probe (set event + backoff) on this TypeError
+                                # because this path is typically caused by transient alexapy/aiohttp issues
+                                # (e.g., None header key). Unlike Login/Connection errors, we retry quickly
+                                # to avoid losing last_called updates triggered by push events.
+                                skip_debounce = True
+                                account_live["last_called_probe_event"].set()
+                                break
 
                             if records is None:
+                                _LOGGER.warning(
+                                    "%s: last_called probe API returned None (%s)",
+                                    hide_email(email),
+                                    trigger_cmd,
+                                )
                                 records = []
 
                             # 🔎 DEBUG: inspect raw history result
@@ -2579,17 +2640,24 @@ async def setup_alexa(hass, config_entry, login_obj: AlexaLogin):
                         if isinstance(json_payload, dict)
                         else None
                     )
+                    _LOGGER.debug("bt_event: %s", bt_event)
                     bt_success = (
                         json_payload.get("bluetoothEventSuccess")
                         if isinstance(json_payload, dict)
                         else None
                     )
+                    _LOGGER.debug("bt_success: %s", bt_success)
                     if (
                         serial
                         and serial in existing_serials
                         and bt_success
                         and bt_event
-                        and bt_event in ["DEVICE_CONNECTED", "DEVICE_DISCONNECTED"]
+                        and bt_event
+                        in {
+                            "DEVICE_CONNECTED",
+                            "DEVICE_DISCONNECTED",
+                            "STREAMING_STATE_CHANGED",
+                        }
                     ):
                         _LOGGER.debug(
                             "Updating media_player bluetooth %s",
@@ -2799,6 +2867,7 @@ async def setup_alexa(hass, config_entry, login_obj: AlexaLogin):
                 "%s: HTTP2Push connection closed; retries exceeded; polling",
                 hide_email(email),
             )
+        coordinator = hass.data[DATA_ALEXAMEDIA]["accounts"][email].get("coordinator")
         if coordinator:
             coordinator.update_interval = timedelta(
                 seconds=scan_interval * 10 if http2_enabled else scan_interval
@@ -3155,11 +3224,12 @@ async def test_login_status(hass, config_entry, login) -> bool:
         elaspsed_time: str = str(datetime.now() - login.stats.get("login_timestamp"))
         api_calls: int = login.stats.get("api_calls")
         message += f"Relogin required after {elaspsed_time} and {api_calls} api calls."
+    host = urlparse(login.url).hostname or login.url
     async_create_persistent_notification(
         hass,
         title="Alexa Media Reauthentication Required",
         message=message,
-        notification_id=f"alexa_media_{slugify(login.email)}{slugify(login.url[7:])}",
+        notification_id=f"alexa_media_{slugify(login.email)}_{slugify(host)}",
     )
     flow = hass.data[DATA_ALEXAMEDIA]["config_flows"].get(
         f"{account[CONF_EMAIL]} - {account[CONF_URL]}"
