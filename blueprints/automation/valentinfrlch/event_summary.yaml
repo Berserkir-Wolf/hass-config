@@ -22,7 +22,8 @@ blueprint:
       default:
         minutes: 10
       selector:
-        duration: {}
+        duration:
+          enable_second: true
     camera_sensor_section:
       name: Camera & Sensor Settings
       description: Settings for the camera and sensor entities.
@@ -142,11 +143,11 @@ blueprint:
             the length of the summaries.
 
             '
-          default: 20
+          default: 4000
           selector:
             number:
               min: 1.0
-              max: 300.0
+              max: 10000.0
               step: 1.0
               mode: slider
     notification_section:
@@ -568,7 +569,7 @@ action:
         message: '{{importance_prompt}}'
         include_filename: true
         target_width: 1280
-        max_tokens: 3
+        max_tokens: 4000
       response_variable: importance
 - choose:
   - conditions:
