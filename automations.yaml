@@ -1896,7 +1896,7 @@
       motion_sensors:
       - binary_sensor.front_door_motion
       duration: 5
-      provider: 01JZHD92ZB9A8MNHKC7CMNSNWE
+      provider: 01JZH5YWDZWXNXDCG56BG1RCKX
       notify_device:
       - 11ecfffb8a3d3e8cb0640a1f7d3ec024
       notification_time: at {{ now().strftime("%H:%M") }}
@@ -1916,6 +1916,14 @@
         hours: 0
         minutes: 10
         seconds: 0
-      max_frames: 10
+      max_frames: 3
       use_memory: false
-      max_tokens: 30
+      max_tokens: 40
+      message: 'Summarize the events based on a series of images captured at short
+        intervals. Focus only on moving subjects such as people, vehicles, and other
+        active elements. Ignore static objects and scenery. Provide a clear and concise
+        account of movements and interactions. Do not mention or imply the existence
+        of images—present the information as if directly observing the events. If
+        no movement is detected, respond with: ''I couldn''t see anything.'''
+      delay_notification: 30
+      file_path: /media/snapshots/{{ camera_file_path }}/last_motion.jpg
