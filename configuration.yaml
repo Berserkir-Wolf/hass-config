@@ -39,11 +39,12 @@ tts:
     service_name: google_say
 
 # HTTP (sets allowed proxies, reverse proxy options)
-http:
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - !secret server_1_ip
-    - !secret server_4_ip
+# Migrated to UI config 2026.08
+#http:
+#  use_x_forwarded_for: true
+#  trusted_proxies:
+#    - !secret server_1_ip
+#    - !secret server_4_ip
 
 ## Frontend config - sets up support for themes
 frontend:
