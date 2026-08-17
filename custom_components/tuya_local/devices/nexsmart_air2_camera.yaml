@@ -33,7 +33,6 @@ entities:
   # ------------------------------------
   - entity: sensor
     class: battery
-    category: diagnostic
     # Battery Level Sensor (matches wireless_electricity: 145)
     dps:
       - id: 145
@@ -122,8 +121,7 @@ entities:
   # 4. Detection & Alarm
   # ------------------------------------
   - entity: switch
-    name: Motion detection
-    icon: "mdi:motion-sensor"
+    translation_key: motion_detection
     category: config
     # PIR Switch (matches ipc_pir_switch: 240)
     dps:
