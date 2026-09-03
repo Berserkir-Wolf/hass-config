@@ -35,6 +35,7 @@ known_devices.yaml
 secrets.yaml
 zones/home.yaml
 zones/work.yaml
+custom_components/bluetti/ble/lib/aarch64/libcpsrt.so
 
 # Ignore files created by IDE's
 .vscode

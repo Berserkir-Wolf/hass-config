@@ -97,23 +97,35 @@
 - id: '1605335470308'
   alias: Notification - SWMBO home and away
   description: Is she home or isn't she?
-  trigger:
-  - platform: state
-    entity_id: person.kirstyn_rolfe
-    from: home
-    to: not_home
-  - platform: state
-    entity_id: person.kirstyn_rolfe
+  triggers:
+  - entity_id:
+    - person.kirstyn_rolfe
+    trigger: state
+    from:
+    - home
+    to:
+    - not_home
+  - entity_id: person.kirstyn_rolfe
     from: not_home
     to: home
-  condition: []
-  action:
-  - service: persistent_notification.create
-    data:
+    trigger: state
+    enabled: true
+  conditions: []
+  actions:
+  - data:
       notification_id: Kirstyn
-      title: Kirstyn is {{ trigger.to_state.state }}
-      message: Kirstyn went from {{ trigger.from_state.state }} to {{ trigger.to_state.state
-        }} at {{ now().strftime('%H:%M %d/%m/%Y') }}
+      title: Kirstyn is {{ state_translated("person.kirstyn_rolfe") }}
+      message: Kirstyn is {{ state_translated("person.kirstyn_rolfe") }} as of {{
+        now().strftime('%H:%M') }}
+    action: persistent_notification.create
+    enabled: false
+    continue_on_error: true
+  - alias: Mobile notification
+    data:
+      message: Kirstyn is {{ state_translated("person.kirstyn_rolfe") }} as of {{
+        now().strftime('%H:%M') }}
+      title: Kirstyn is {{ state_translated("person.kirstyn_rolfe") }}
+    action: notify.mobile_app_bnet_reno12
   mode: single
 - id: '1608262512161'
   alias: Notification - Happy Birthday Sir
