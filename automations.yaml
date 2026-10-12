@@ -390,27 +390,19 @@
   alias: Amp Volume - Change Input
   description: Changes volume on the Lounge amplifier to suit whatever levels are
     received from the differing sources
-  trigger:
-  - platform: state
-    entity_id:
+  triggers:
+  - entity_id:
     - media_player.lounge_amp_2
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 0
     attribute: media_title
-  condition: []
-  action:
+    trigger: state
+  conditions: []
+  actions:
   - choose:
     - conditions:
       - condition: state
         entity_id: media_player.lounge_amp_2
         attribute: media_title
         state: BD/DVD
-        for:
-          hours: 0
-          minutes: 0
-          seconds: 0
         alias: PC (BD/DVD)
       sequence:
       - target:
@@ -423,10 +415,6 @@
         entity_id: media_player.lounge_amp_2
         attribute: media_title
         state: GAME
-        for:
-          hours: 0
-          minutes: 0
-          seconds: 0
         alias: PS5 (GAME)
       sequence:
       - target:
@@ -439,10 +427,6 @@
         entity_id: media_player.lounge_amp_2
         attribute: media_title
         state: SA-CD/CD
-        for:
-          hours: 0
-          minutes: 0
-          seconds: 0
         alias: Xbox SX (SA-CD/CD)
       sequence:
       - target:
@@ -455,10 +439,6 @@
         entity_id: media_player.lounge_amp_2
         attribute: media_title
         state: VIDEO 2
-        for:
-          hours: 0
-          minutes: 0
-          seconds: 0
         alias: Xbox One (VIDEO 2)
       sequence:
       - target:
@@ -471,10 +451,6 @@
         entity_id: media_player.lounge_amp_2
         attribute: media_title
         state: TV
-        for:
-          hours: 0
-          minutes: 0
-          seconds: 0
         alias: TV
       sequence:
       - target:
@@ -765,6 +741,7 @@
   mode: single
 - id: '1714359343699'
   alias: Notification - Rack UPS has lost power
+  enabled: false
   description: ''
   triggers:
   - alias: Input Voltage drops
@@ -1908,12 +1885,12 @@
       motion_sensors:
       - binary_sensor.front_door_motion
       duration: 5
-      provider: 01JZH5YWDZWXNXDCG56BG1RCKX
+      provider: 01M4EMXB3BXS8K9RNKW4G7HZFH
       notify_device:
       - 11ecfffb8a3d3e8cb0640a1f7d3ec024
       notification_time: at {{ now().strftime("%H:%M") }}
       tap_navigate: /lovelace/home
-      model: gemma3:4b
+      model: llmvision/glimpse-v1:latest
       run_conditions:
       - condition: or
         conditions:
