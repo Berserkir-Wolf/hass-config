@@ -8,6 +8,7 @@ https://community.home-assistant.io/t/echo-devices-alexa-as-media-player-testers
 """
 
 import asyncio
+import contextlib
 from datetime import datetime, timedelta
 from json import JSONDecodeError, loads
 import logging
@@ -45,7 +46,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import UnknownFlow
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.issue_registry import IssueSeverity, async_create_issue
@@ -69,7 +70,6 @@ from .const import (
     CONF_QUEUE_DELAY,
     CONF_SCAN_INTERVAL,
     DATA_ALEXAMEDIA,
-    DATA_LISTENER,
     DEFAULT_EXTENDED_ENTITY_DISCOVERY,
     DEFAULT_PUBLIC_URL,
     DEFAULT_QUEUE_DELAY,
@@ -92,6 +92,7 @@ from .const import (
     LAST_CALLED_SUCCESS_PACE_S,
     LAST_PING_MAX_AGE_SECONDS,
     LAST_PUSH_INACTIVITY_SECONDS,
+    LOGIN_MAX_WAIT_S,
     MIN_TIME_BETWEEN_FORCED_SCANS,
     MIN_TIME_BETWEEN_SCANS,
     NOTIFICATION_COOLDOWN,
@@ -691,6 +692,14 @@ async def async_setup_entry(hass, config_entry):
     hass.data[DATA_ALEXAMEDIA].setdefault("accounts", {})
     hass.data[DATA_ALEXAMEDIA].setdefault("config_flows", {})
     hass.data[DATA_ALEXAMEDIA].setdefault("notify_service", None)
+    # The collector is removed when the last account unloads, so recreating it
+    # here re-arms boot tracking at the domain lifecycle boundary: a reload
+    # measures its own setup instead of the async_setup of this Home Assistant
+    # run. Tracking is deliberately not re-armed for an additional account,
+    # which would discard the stages already recorded for the loaded ones.
+    if not isinstance(hass.data[DATA_ALEXAMEDIA].get("metrics"), AlexaMetrics):
+        hass.data[DATA_ALEXAMEDIA]["metrics"] = AlexaMetrics(hass)
+        hass.data[DATA_ALEXAMEDIA]["metrics"].start_boot_tracking()
     account = config_entry.data
     email = account.get(CONF_EMAIL)
     password = account.get(CONF_PASSWORD)
@@ -734,26 +743,23 @@ async def async_setup_entry(hass, config_entry):
             "notifications_pending": set(),  # doppler serials that need a refresh
             "notifications_refresh_task": None,  # running task or None
             "notifications_retry_count": 0,  # simple backoff counter
-            "options": {
-                CONF_INCLUDE_DEVICES: config_entry.data.get(CONF_INCLUDE_DEVICES, ""),
-                CONF_EXCLUDE_DEVICES: config_entry.data.get(CONF_EXCLUDE_DEVICES, ""),
-                CONF_QUEUE_DELAY: config_entry.data.get(
-                    CONF_QUEUE_DELAY, DEFAULT_QUEUE_DELAY
-                ),
-                CONF_SCAN_INTERVAL: config_entry.data.get(
-                    CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
-                ),
-                CONF_PUBLIC_URL: config_entry.data.get(
-                    CONF_PUBLIC_URL, DEFAULT_PUBLIC_URL
-                ),
-                CONF_EXTENDED_ENTITY_DISCOVERY: config_entry.data.get(
-                    CONF_EXTENDED_ENTITY_DISCOVERY, DEFAULT_EXTENDED_ENTITY_DISCOVERY
-                ),
-                CONF_DEBUG: config_entry.data.get(CONF_DEBUG, False),
-            },
-            DATA_LISTENER: [config_entry.add_update_listener(update_listener)],
         },
     )
+    # Refreshed on every attempt: the account dict survives setup retries and
+    # a failed setup, so options saved in the meantime would otherwise be lost.
+    hass.data[DATA_ALEXAMEDIA]["accounts"][email]["options"] = {
+        CONF_INCLUDE_DEVICES: config_entry.data.get(CONF_INCLUDE_DEVICES, ""),
+        CONF_EXCLUDE_DEVICES: config_entry.data.get(CONF_EXCLUDE_DEVICES, ""),
+        CONF_QUEUE_DELAY: config_entry.data.get(CONF_QUEUE_DELAY, DEFAULT_QUEUE_DELAY),
+        CONF_SCAN_INTERVAL: config_entry.data.get(
+            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+        ),
+        CONF_PUBLIC_URL: config_entry.data.get(CONF_PUBLIC_URL, DEFAULT_PUBLIC_URL),
+        CONF_EXTENDED_ENTITY_DISCOVERY: config_entry.data.get(
+            CONF_EXTENDED_ENTITY_DISCOVERY, DEFAULT_EXTENDED_ENTITY_DISCOVERY
+        ),
+        CONF_DEBUG: config_entry.data.get(CONF_DEBUG, False),
+    }
     uuid_dict = await calculate_uuid(hass, email, url)
     uuid = uuid_dict["uuid"]
     hass.data[DATA_ALEXAMEDIA]["accounts"][email]["second_account_index"] = uuid_dict[
@@ -787,8 +793,6 @@ async def async_setup_entry(hass, config_entry):
     if not hass.data[DATA_ALEXAMEDIA]["accounts"][email]["second_account_index"]:
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, close_alexa_media)
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, complete_startup)
-    hass.bus.async_listen("alexa_media_relogin_required", relogin)
-    hass.bus.async_listen("alexa_media_relogin_success", login_success)
     try:
         _t = time.monotonic()
         cookies = await login.load_cookie()
@@ -824,13 +828,54 @@ async def async_setup_entry(hass, config_entry):
             except (JSONDecodeError, ValueError, aiohttp.ClientError) as ex:
                 _LOGGER.debug("[BOOT] Bootstrap cookie auth check failed: %s", ex)
         if not cookie_login_ok:
-            await login.login(cookies=cookies)
+            try:
+                async with async_timeout.timeout(LOGIN_MAX_WAIT_S):
+                    await login.login(cookies=cookies)
+            except (RuntimeError, ValueError) as err:
+                if "Session is closed" in str(err) or "unrecoverable" in str(err):
+                    _LOGGER.warning(
+                        "Alexa Media Player session is closed. Triggering Re-authentication flow."
+                    )
+                    # This tells Home Assistant to show a persistent notification requiring reauth
+                    raise ConfigEntryAuthFailed(
+                        "Amazon session closed. Please reconfigure your credentials."
+                    ) from err
+                raise
+            except asyncio.TimeoutError as err:
+                # An interrupted login can leave partial request state on the
+                # client, which alexapy resumes from on the next attempt. Both
+                # hass.data and runtime_data would hand that same client to the
+                # retry, so drop it and let the retry build a fresh one; the
+                # saved cookie is left in place.
+                with contextlib.suppress(Exception):
+                    await login.close()
+                hass.data[DATA_ALEXAMEDIA]["accounts"][email].pop("login_obj", None)
+                config_entry.runtime_data = None
+                raise ConfigEntryNotReady(
+                    f"Login did not complete within {LOGIN_MAX_WAIT_S:.0f}s"
+                ) from err
         _LOGGER.debug("[BOOT] login completed in %.2fs", time.monotonic() - _t)
         _t = time.monotonic()
         if await test_login_status(hass, config_entry, login):
+            # Registered only on success: HA processes async_on_unload
+            # callbacks on unload and on the ConfigEntryNotReady retry
+            # path, but not for a plain `False` return, so registering
+            # any earlier would leak a pair on every failed login check.
+            config_entry.async_on_unload(
+                hass.bus.async_listen("alexa_media_relogin_required", relogin)
+            )
+            config_entry.async_on_unload(
+                hass.bus.async_listen("alexa_media_relogin_success", login_success)
+            )
             _LOGGER.debug("[BOOT] test_login_status in %.2fs", time.monotonic() - _t)
             _t = time.monotonic()
             await setup_alexa(hass, config_entry, login)
+            # Registered once the entry has loaded, so that Home Assistant
+            # removes it on unload. Any earlier and each setup retry, or failed
+            # login check, would leave another copy on the entry.
+            config_entry.async_on_unload(
+                config_entry.add_update_listener(update_listener)
+            )
             _LOGGER.debug(
                 "[BOOT] setup_entry total: %.2fs", time.monotonic() - _boot_start
             )
@@ -973,8 +1018,12 @@ async def setup_alexa(hass, config_entry, login_obj: AlexaLogin):
         for binary_sensor in hass.data[DATA_ALEXAMEDIA]["accounts"][email][
             "entities"
         ].get("binary_sensor", []):
-            if binary_sensor.enabled:
-                entities_to_monitor.add(binary_sensor.alexa_entity_id)
+            # AmazonKidsSensor is stored alongside the coordinator-backed
+            # AlexaContact sensors but is not derived from an Alexa entity: it
+            # polls the Echo on its own interval and has no alexa_entity_id.
+            alexa_entity_id = getattr(binary_sensor, "alexa_entity_id", None)
+            if alexa_entity_id and binary_sensor.enabled:
+                entities_to_monitor.add(alexa_entity_id)
 
         for guard in (
             hass.data[DATA_ALEXAMEDIA]["accounts"][email]["entities"]
@@ -3099,8 +3148,6 @@ async def async_unload_entry(hass, entry) -> bool:
         except Exception:
             _LOGGER.error("Error unloading: %s", component)
     await close_connections(hass, email)
-    for listener in hass.data[DATA_ALEXAMEDIA]["accounts"][email][DATA_LISTENER]:
-        listener()
     hass.data[DATA_ALEXAMEDIA]["accounts"].pop(email)
     # Clean up config flows in progress
     flows_to_remove = []
@@ -3123,6 +3170,11 @@ async def async_unload_entry(hass, entry) -> bool:
         if alexa_services:
             await alexa_services.unregister()
             hass.data[DATA_ALEXAMEDIA].pop("services")
+        # Per-run collectors recreated by the next setup. Leaving them behind
+        # keeps DATA_ALEXAMEDIA truthy, so the data structure below is never
+        # removed and stale boot metrics survive into the next setup.
+        hass.data[DATA_ALEXAMEDIA].pop("metrics", None)
+        hass.data[DATA_ALEXAMEDIA].pop("notify_service", None)
     if hass.data[DATA_ALEXAMEDIA].get("config_flows") == {}:
         _LOGGER.debug("Removing config_flows data")
         async_dismiss_persistent_notification(
