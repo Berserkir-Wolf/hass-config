@@ -1,0 +1,9 @@
+###########################################
+# Bitcoin
+###########################################
+# Migrated to UI 2026.11.0
+#- platform: bitcoin
+#  currency: NZD
+#  display_options:
+#    - exchangerate
+#    - difficulty
