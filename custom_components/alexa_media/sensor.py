@@ -56,6 +56,8 @@ _LOGGER = logging.getLogger(__name__)
 
 LOCAL_TIMEZONE = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
 
+_ABSOLUTE_ZERO = {"CELSIUS": -273.15, "FAHRENHEIT": -459.67, "KELVIN": 0}
+
 
 async def async_setup_platform(hass, config, add_devices_callback, discovery_info=None):
     # pylint: disable=too-many-locals
@@ -260,7 +262,6 @@ async def create_air_quality_sensors(
         last_index = len(subsensors) - 1
         seen_sensor_types: set[str] = set()
 
-        # Each AIAQM has 5 different sensors.
         for idx, subsensor in enumerate(subsensors):
             prefix = "└─" if idx == last_index else "├─"
             sensor_type = subsensor.get("sensorType")
@@ -416,11 +417,26 @@ class TemperatureSensor(SensorEntity, CoordinatorEntity):
         super()._handle_coordinator_update()
 
     def _get_temperature_value(self, value):
-        if value and "value" in value:
-            if getattr(self, "_debug", False):
-                _LOGGER.debug("TemperatureSensor value: %s", value.get("value"))
-            return value.get("value")
-        return None
+        if not value or "value" not in value:
+            return None
+        raw = value.get("value")
+        if getattr(self, "_debug", False):
+            _LOGGER.debug("TemperatureSensor value: %s", raw)
+        scale = value.get("scale")
+        floor = _ABSOLUTE_ZERO.get(scale) if isinstance(scale, str) else None
+        try:
+            below_floor = floor is not None and float(raw) < floor
+        except (TypeError, ValueError):
+            below_floor = False
+        if below_floor:
+            _LOGGER.debug(
+                "%s: ignoring impossible temperature %s %s",
+                self._device_name,
+                raw,
+                scale,
+            )
+            return None
+        return raw
 
     def _get_temperature_scale(self, value):
         if value and "scale" in value:
@@ -472,6 +488,9 @@ class AirQualitySensor(SensorEntity, CoordinatorEntity):
         self._attr_translation_key = AIR_QUALITY_TRANSLATION_KEYS.get(
             sensor_name, "air_quality"
         )
+        if sensor_name == "Alexa.AirQuality.ParticulateMatterPM10":
+            self._attr_translation_key = None
+            self._attr_name = "PM10"
         # tidy up name for unique_id and logging
         self._sensor_name = sensor_name.replace("Alexa.AirQuality.", "")
         self._sensor_name = "".join(
@@ -487,9 +506,12 @@ class AirQualitySensor(SensorEntity, CoordinatorEntity):
         self._attr_native_unit_of_measurement: Optional[str] = (
             ALEXA_UNIT_CONVERSION.get(unit)
         )
-        self._attr_unique_id = (
-            entity_id + "_" + self._sensor_name.replace(" ", "_").lower()
-        )
+        if sensor_name == "Alexa.AirQuality.ParticulateMatterPM10":
+            # CamelCase splitting would yield "particulate_matter_p_m10"
+            unique_suffix = "pm10"
+        else:
+            unique_suffix = self._sensor_name.replace(" ", "_").lower()
+        self._attr_unique_id = f"{entity_id}_{unique_suffix}"
         self._attr_icon = ALEXA_ICON_CONVERSION.get(sensor_name, ALEXA_ICON_DEFAULT)
 
         # Attach to the synthetic AIAQM device so all AQM sensors group under one device.
