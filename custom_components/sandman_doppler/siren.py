@@ -8,9 +8,6 @@ import logging
 from random import randint
 from typing import Any
 
-from doppyler.const import ATTR_ALARM_SOUNDS
-from doppyler.model.doppler import Doppler
-
 from homeassistant.components.siren import (
     ATTR_TONE,
     ATTR_VOLUME_LEVEL,
@@ -25,6 +22,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import DopplerDataUpdateCoordinator
 from .const import DOMAIN
+from .doppyler.const import ATTR_ALARM_SOUNDS
+from .doppyler.model.doppler import Doppler
 from .entity import DopplerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -108,7 +107,11 @@ class DopplerSiren(DopplerEntity[DopplerSirenEntityDescription], SirenEntity):
             idx = randint(0, len(tones) - 1)
             sound = tones[idx]
             _LOGGER.info("No sound specified, picking a random one: %s", sound)
-        volume: int | None = kwargs.get(ATTR_VOLUME_LEVEL)
+        # The clock takes "vol" as an integer 0-100, while HA's volume_level is
+        # 0-1, so scale it. With no volume_level, doppyler uses the clock's
+        # current volume setting.
+        level: float | None = kwargs.get(ATTR_VOLUME_LEVEL)
+        volume = None if level is None else max(1, min(100, round(level * 100)))
         await self.ed.turn_on_func(self.device, sound, volume)
 
     async def async_turn_off(self, **kwargs) -> None:

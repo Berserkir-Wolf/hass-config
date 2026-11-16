@@ -2,21 +2,13 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 from enum import Enum
+import functools
 from typing import Any
 import zoneinfo
-
-from doppyler.const import (
-    ATTR_SOUND_PRESET,
-    ATTR_TIME_MODE,
-    ATTR_TIMEZONE,
-    ATTR_WEATHER,
-)
-from doppyler.model.doppler import Doppler
-from doppyler.model.sound import SoundPreset
-from doppyler.model.weather import WeatherMode
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
@@ -27,6 +19,15 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import DopplerDataUpdateCoordinator
 from .const import DOMAIN
+from .doppyler.const import (
+    ATTR_SOUND_PRESET,
+    ATTR_TIME_MODE,
+    ATTR_TIMEZONE,
+    ATTR_WEATHER,
+)
+from .doppyler.model.doppler import Doppler
+from .doppyler.model.sound import SoundPreset
+from .doppyler.model.weather import WeatherMode
 from .entity import DopplerEntity
 from .helpers import get_enum_from_name, normalize_enum_name
 
@@ -49,6 +50,27 @@ class DopplerSelectEntityDescription(SelectEntityDescription):
     options_func: Callable[[Doppler], list[str]] = None
     state_func: Callable[[Any], str] = lambda x: str(x)
     set_value_func: Callable[[Doppler, str], Coroutine[Any, Any, Any]] = None
+
+
+@functools.cache
+def _get_sorted_timezones() -> list[str]:
+    """Return the sorted list of available timezones.
+
+    The first call reads the tz database from disk, so it must run in the executor
+    (see async_setup_entry). Later calls return the cached list.
+    """
+    return sorted(zoneinfo.available_timezones())
+
+
+async def _async_set_timezone(dev: Doppler, val: str) -> zoneinfo.ZoneInfo:
+    """Set the device timezone, loading the ZoneInfo outside the event loop.
+
+    ZoneInfo reads the zone's file from disk the first time a key is used.
+    """
+    timezone = await asyncio.get_running_loop().run_in_executor(
+        None, zoneinfo.ZoneInfo, val
+    )
+    return await dev.set_timezone(timezone)
 
 
 ENUM_SELECT_ENTITY_DESCRIPTIONS = [
@@ -89,8 +111,8 @@ SELECT_ENTITY_DESCRIPTIONS = [
         icon="mdi:map-clock",
         entity_category=EntityCategory.CONFIG,
         state_key=ATTR_TIMEZONE,
-        options_func=lambda _: sorted(list(zoneinfo.available_timezones())),
-        set_value_func=lambda dev, val: dev.set_timezone(zoneinfo.ZoneInfo(val)),
+        options_func=lambda _: _get_sorted_timezones(),
+        set_value_func=_async_set_timezone,
     ),
 ]
 
@@ -99,6 +121,9 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_devices: AddEntitiesCallback
 ) -> None:
     """Setup select platform."""
+    # Load the timezone list once in the executor so the Timezone select's options
+    # property never touches the disk from the event loop.
+    await hass.async_add_executor_job(_get_sorted_timezones)
 
     @callback
     def async_add_device(device: Doppler) -> None:

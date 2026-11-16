@@ -8,36 +8,6 @@ import functools
 import logging
 from typing import Any
 
-from doppyler.client import DopplerClient
-from doppyler.const import (
-    ATTR_COLOR,
-    ATTR_COLORS,
-    ATTR_DEVICES,
-    ATTR_DIRECTION,
-    ATTR_DURATION,
-    ATTR_GAP,
-    ATTR_ID,
-    ATTR_LOCATION,
-    ATTR_MODE,
-    ATTR_NAME,
-    ATTR_NUMBER,
-    ATTR_RAINBOW,
-    ATTR_REPEAT,
-    ATTR_SIZE,
-    ATTR_SOUND,
-    ATTR_SPARKLE,
-    ATTR_SPEED,
-    ATTR_STATUS,
-    ATTR_TEXT,
-    ATTR_VOLUME,
-)
-from doppyler.model.alarm import Alarm, AlarmSource, RepeatDayOfWeek
-from doppyler.model.color import Color
-from doppyler.model.doppler import Doppler
-from doppyler.model.light_bar import Direction, LightBarDisplayEffect, Mode, Sparkle
-from doppyler.model.main_display_text import MainDisplayText
-from doppyler.model.mini_display_number import MiniDisplayNumber
-from doppyler.model.rainbow import RainbowConfiguration, RainbowMode
 import voluptuous as vol
 
 from homeassistant.const import ATTR_AREA_ID, ATTR_DEVICE_ID, ATTR_ENTITY_ID, ATTR_TIME
@@ -67,6 +37,36 @@ from .const import (
     SERVICE_SET_RAINBOW_MODE,
     SERVICE_UPDATE_ALARM,
 )
+from .doppyler.client import DopplerClient
+from .doppyler.const import (
+    ATTR_COLOR,
+    ATTR_COLORS,
+    ATTR_DEVICES,
+    ATTR_DIRECTION,
+    ATTR_DURATION,
+    ATTR_GAP,
+    ATTR_ID,
+    ATTR_LOCATION,
+    ATTR_MODE,
+    ATTR_NAME,
+    ATTR_NUMBER,
+    ATTR_RAINBOW,
+    ATTR_REPEAT,
+    ATTR_SIZE,
+    ATTR_SOUND,
+    ATTR_SPARKLE,
+    ATTR_SPEED,
+    ATTR_STATUS,
+    ATTR_TEXT,
+    ATTR_VOLUME,
+)
+from .doppyler.model.alarm import Alarm, AlarmSource, RepeatDayOfWeek
+from .doppyler.model.color import Color
+from .doppyler.model.doppler import Doppler
+from .doppyler.model.light_bar import Direction, LightBarDisplayEffect, Mode, Sparkle
+from .doppyler.model.main_display_text import MainDisplayText
+from .doppyler.model.mini_display_number import MiniDisplayNumber
+from .doppyler.model.rainbow import RainbowConfiguration, RainbowMode
 
 SCAN_INTERVAL = timedelta(seconds=60)
 
@@ -96,9 +96,21 @@ LIGHT_BAR_BASE_SCHEMA = BASE_SCHEMA.extend(
 )
 LIGHT_BAR_SET_EACH_SCHEMA = LIGHT_BAR_BASE_SCHEMA
 
-LIGHT_BAR_SET_SCHEMA = LIGHT_BAR_BLINK_SCHEMA = LIGHT_BAR_BASE_SCHEMA.extend(
+LIGHT_BAR_SET_SCHEMA = LIGHT_BAR_BASE_SCHEMA.extend(
     {
         vol.Optional(ATTR_SPEED): vol.All(vol.Coerce(int), vol.Range(min=0)),
+    }
+)
+
+# For blink, speed is how long each color is shown, in steps of roughly half a second
+# (higher is slower). The clock treats a missing speed as 0, which doesn't blink, so
+# default to about one second per color.
+DEFAULT_BLINK_SPEED = 2
+LIGHT_BAR_BLINK_SCHEMA = LIGHT_BAR_BASE_SCHEMA.extend(
+    {
+        vol.Optional(ATTR_SPEED, default=DEFAULT_BLINK_SPEED): vol.All(
+            vol.Coerce(int), vol.Range(min=0)
+        ),
     }
 )
 
