@@ -1916,3 +1916,105 @@
         no movement is detected, respond with: ''I couldn''t see anything.'''
       delay_notification: 30
       file_path: /media/snapshots/{{ camera_file_path }}/last_motion.jpg
+- id: '1793786184524'
+  alias: Pool pump timer
+  description: ''
+  triggers:
+  - trigger: timer.finished
+    target:
+      entity_id: timer.pool_pump
+    options:
+      for: 00:00:00
+  conditions: []
+  actions:
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id: switch.bedroom_heater_manual_switch
+    data: {}
+  mode: single
+- id: '1793786204105'
+  alias: Pool pump timer
+  description: ''
+  triggers:
+  - trigger: timer.finished
+    target:
+      entity_id: timer.pool_pump
+    options:
+      for: 00:00:00
+  conditions: []
+  actions:
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id: switch.bedroom_heater_manual_switch
+    data: {}
+  mode: single
+- id: '1793786205252'
+  alias: Pool pump timer
+  description: ''
+  triggers:
+  - trigger: timer.finished
+    target:
+      entity_id: timer.pool_pump
+    options:
+      for: 00:00:00
+  conditions: []
+  actions:
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id: switch.bedroom_heater_manual_switch
+    data: {}
+  mode: single
+- id: '1793786205947'
+  alias: Pool pump timer
+  description: ''
+  triggers:
+  - trigger: timer.finished
+    target:
+      entity_id: timer.pool_pump
+    options:
+      for: 00:00:00
+  conditions: []
+  actions:
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id: switch.bedroom_heater_manual_switch
+    data: {}
+  mode: single
+- id: '1793786206623'
+  alias: Pool pump timer
+  description: ''
+  triggers:
+  - trigger: timer.finished
+    target:
+      entity_id: timer.pool_pump
+    options:
+      for: 00:00:00
+  conditions: []
+  actions:
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id: switch.bedroom_heater_manual_switch
+    data: {}
+  mode: single
+- id: '1793786207350'
+  alias: Pool pump timer
+  description: ''
+  triggers:
+  - trigger: timer.finished
+    target:
+      entity_id: timer.pool_pump
+    options:
+      for: 00:00:00
+  conditions: []
+  actions:
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id: switch.bedroom_heater_manual_switch
+    data: {}
+  mode: single
