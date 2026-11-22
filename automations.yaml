@@ -1933,85 +1933,37 @@
       entity_id: switch.bedroom_heater_manual_switch
     data: {}
   mode: single
-- id: '1793786204105'
-  alias: Pool pump timer
+- id: '1795080998971'
+  alias: Start dryer on schedule
   description: ''
   triggers:
-  - trigger: timer.finished
+  - trigger: time
+    at: input_datetime.start_dryer
+  conditions:
+  - condition: switch.is_on
     target:
-      entity_id: timer.pool_pump
+      entity_id: input_boolean.dryer_schedule
     options:
+      behavior: any
       for: 00:00:00
-  conditions: []
   actions:
-  - action: switch.turn_off
+  - action: switch.turn_on
     metadata: {}
     target:
       entity_id: switch.bedroom_heater_manual_switch
     data: {}
-  mode: single
-- id: '1793786205252'
-  alias: Pool pump timer
-  description: ''
-  triggers:
-  - trigger: timer.finished
-    target:
-      entity_id: timer.pool_pump
-    options:
-      for: 00:00:00
-  conditions: []
-  actions:
-  - action: switch.turn_off
+  - action: timer.start
     metadata: {}
     target:
-      entity_id: switch.bedroom_heater_manual_switch
+      entity_id: timer.dryer_runtime
     data: {}
-  mode: single
-- id: '1793786205947'
-  alias: Pool pump timer
-  description: ''
-  triggers:
-  - trigger: timer.finished
-    target:
-      entity_id: timer.pool_pump
-    options:
-      for: 00:00:00
-  conditions: []
-  actions:
-  - action: switch.turn_off
-    metadata: {}
-    target:
-      entity_id: switch.bedroom_heater_manual_switch
-    data: {}
-  mode: single
-- id: '1793786206623'
-  alias: Pool pump timer
-  description: ''
-  triggers:
-  - trigger: timer.finished
-    target:
-      entity_id: timer.pool_pump
-    options:
-      for: 00:00:00
-  conditions: []
-  actions:
-  - action: switch.turn_off
-    metadata: {}
-    target:
-      entity_id: switch.bedroom_heater_manual_switch
-    data: {}
-  mode: single
-- id: '1793786207350'
-  alias: Pool pump timer
-  description: ''
-  triggers:
-  - trigger: timer.finished
-    target:
-      entity_id: timer.pool_pump
-    options:
-      for: 00:00:00
-  conditions: []
-  actions:
+  - wait_for_trigger:
+    - trigger: timer.finished
+      target:
+        entity_id: timer.dryer_runtime
+      options:
+        behavior: each
+        for: 00:00:00
   - action: switch.turn_off
     metadata: {}
     target:
