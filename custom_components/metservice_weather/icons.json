@@ -1,0 +1,188 @@
+{
+  "entity": {
+    "sensor": {
+      "valid_time_local": {
+        "default": "mdi:clock"
+      },
+      "weather_description": {
+        "default": "mdi:note-text"
+      },
+      "relative_humidity": {
+        "default": "mdi:water-percent"
+      },
+      "uv_risk": {
+        "default": "mdi:sunglasses"
+      },
+      "uv_alert": {
+        "default": "mdi:sunglasses"
+      },
+      "wind_direction": {
+        "default": "mdi:weather-windy"
+      },
+      "temperature_feels_like": {
+        "default": "mdi:thermometer"
+      },
+      "temperature": {
+        "default": "mdi:thermometer"
+      },
+      "pressure": {
+        "default": "mdi:gauge"
+      },
+      "wind_gust": {
+        "default": "mdi:weather-windy"
+      },
+      "wind_speed": {
+        "default": "mdi:weather-windy"
+      },
+      "rainfall": {
+        "default": "mdi:weather-rainy"
+      },
+      "rain_next_8_hours": {
+        "default": "mdi:weather-pouring"
+      },
+      "rain_next_24_hours": {
+        "default": "mdi:weather-pouring"
+      },
+      "next_rain_at": {
+        "default": "mdi:clock-alert-outline"
+      },
+      "pressure_trend": {
+        "default": "mdi:gauge"
+      },
+      "pollen": {
+        "default": "mdi:flower-pollen"
+      },
+      "warning_level": {
+        "default": "mdi:alert"
+      },
+      "warning_details": {
+        "default": "mdi:alert-box-outline"
+      },
+      "fire_season_status": {
+        "default": "mdi:fire"
+      },
+      "fire_danger_level": {
+        "default": "mdi:fire"
+      },
+      "drying_index_morning": {
+        "default": "mdi:tshirt-crew"
+      },
+      "drying_index_afternoon": {
+        "default": "mdi:tshirt-crew"
+      },
+      "drying_next_good_day": {
+        "default": "mdi:calendar-check"
+      },
+      "tides_high": {
+        "default": "mdi:beach"
+      },
+      "tides_low": {
+        "default": "mdi:beach"
+      },
+      "tide_direction": {
+        "default": "mdi:waves",
+        "state": {
+          "rising": "mdi:elevation-rise",
+          "falling": "mdi:elevation-decline"
+        }
+      },
+      "boating_status": {
+        "default": "mdi:sail-boat"
+      },
+      "boating_forecast": {
+        "default": "mdi:sail-boat"
+      },
+      "surf_conditions": {
+        "default": "mdi:surfing"
+      },
+      "surf_rating": {
+        "default": "mdi:surfing"
+      },
+      "surf_wave_height": {
+        "default": "mdi:waves"
+      },
+      "surf_set_face": {
+        "default": "mdi:waves"
+      },
+      "surf_swell_direction": {
+        "default": "mdi:compass-rose"
+      },
+      "surf_swell_height": {
+        "default": "mdi:waves"
+      },
+      "surf_wind_direction": {
+        "default": "mdi:weather-windy"
+      },
+      "surf_wind_speed": {
+        "default": "mdi:weather-windy"
+      },
+      "surf_wind_gust": {
+        "default": "mdi:weather-windy"
+      },
+      "surf_period": {
+        "default": "mdi:timer-sand"
+      },
+      "wind_strength_level": {
+        "default": "mdi:weather-windy"
+      },
+      "temperature_today_high": {
+        "default": "mdi:thermometer"
+      },
+      "temperature_today_low": {
+        "default": "mdi:thermometer"
+      },
+      "condition_today": {
+        "default": "mdi:weather-partly-cloudy"
+      },
+      "tomorrow_condition": {
+        "default": "mdi:weather-partly-cloudy"
+      },
+      "tomorrow_temp_high": {
+        "default": "mdi:thermometer"
+      },
+      "tomorrow_temp_low": {
+        "default": "mdi:thermometer"
+      },
+      "tomorrow_description": {
+        "default": "mdi:note-text"
+      },
+      "breakdown_morning": {
+        "default": "mdi:weather-partly-cloudy"
+      },
+      "breakdown_afternoon": {
+        "default": "mdi:weather-sunny"
+      },
+      "breakdown_evening": {
+        "default": "mdi:weather-sunset"
+      },
+      "breakdown_overnight": {
+        "default": "mdi:weather-night"
+      },
+      "sunrise_at": {
+        "default": "mdi:weather-sunset-up"
+      },
+      "sunset_at": {
+        "default": "mdi:weather-sunset-down"
+      },
+      "moonrise_at": {
+        "default": "mdi:weather-night"
+      },
+      "moonset_at": {
+        "default": "mdi:weather-night"
+      },
+      "moon_phase_current": {
+        "default": "mdi:moon-waxing-crescent",
+        "state": {
+          "new_moon": "mdi:moon-new",
+          "waxing_crescent": "mdi:moon-waxing-crescent",
+          "first_quarter": "mdi:moon-first-quarter",
+          "waxing_gibbous": "mdi:moon-waxing-gibbous",
+          "full_moon": "mdi:moon-full",
+          "waning_gibbous": "mdi:moon-waning-gibbous",
+          "last_quarter": "mdi:moon-last-quarter",
+          "waning_crescent": "mdi:moon-waning-crescent"
+        }
+      }
+    }
+  }
+}

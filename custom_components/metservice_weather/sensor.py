@@ -1,75 +1,237 @@
-"""Sensor Support for MetService weather service.
+"""Sensor Support for MetService weather service."""
 
-For more details about this platform, please refer to the documentation at
-https://github.com/ciejer/metservice-weather.
-"""
 from __future__ import annotations
 
 import logging
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity import generate_entity_id
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from typing import Any
 
 from .coordinator import WeatherUpdateCoordinator
-
-from .const import (
-    CONF_ATTRIBUTION,
-    DOMAIN,
-    MANUFACTURER,
-    RESULTS_CURRENT,
-    SENSOR_MAP_MOBILE,
-    SENSOR_MAP_PUBLIC,
+from .entity import MetServiceEntity
+from .deprecation import (
+    async_check_deprecated_entities,
+    async_check_marine_device_move,
+    async_check_removed_entity,
+    async_merge_entity_options,
 )
+
+from .const import CONF_ATTRIBUTION, CONF_AUTO_HIDE_SEASONAL, DOMAIN
 from .weather_current_conditions_sensors import (
     current_condition_sensor_descriptions_public,
-    current_condition_sensor_descriptions_mobile,
     WeatherSensorEntityDescription,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
-# Declaration of supported MetService observation/condition sensors
-SENSOR_DESCRIPTIONS_PUBLIC: tuple[
-    WeatherSensorEntityDescription, ...
-] = current_condition_sensor_descriptions_public
-SENSOR_DESCRIPTIONS_MOBILE: tuple[
-    WeatherSensorEntityDescription, ...
-] = current_condition_sensor_descriptions_mobile
+PARALLEL_UPDATES = 0
+
+SENSOR_DESCRIPTIONS: tuple[WeatherSensorEntityDescription, ...] = (
+    current_condition_sensor_descriptions_public
+)
+
+_SEASONAL_STAMP_KEY = "seasonal_disabled"
+
+
+def _seasonal_row_is_stamped(ent_reg: er.EntityRegistry, unique_id: str) -> bool:
+    """Return True when unique_id's registry row still carries our seasonal stamp."""
+    entity_id = ent_reg.async_get_entity_id(SENSOR_DOMAIN, DOMAIN, unique_id)
+    if entity_id is None:
+        return False
+    reg_entry = ent_reg.async_get(entity_id)
+    if reg_entry is None:
+        return False
+    return bool((reg_entry.options.get(DOMAIN) or {}).get(_SEASONAL_STAMP_KEY))
+
+
+def _async_apply_seasonal_disable(
+    ent_reg: er.EntityRegistry,
+    entry: ConfigEntry,
+    unique_id: str,
+) -> None:
+    """Disable + hide a dataless seasonal sensor's registry row, stamping it as ours."""
+    entity_id = ent_reg.async_get_entity_id(SENSOR_DOMAIN, DOMAIN, unique_id)
+    created = False
+    if entity_id is None:
+        reg_entry = ent_reg.async_get_or_create(
+            SENSOR_DOMAIN,
+            DOMAIN,
+            unique_id,
+            config_entry=entry,
+            disabled_by=er.RegistryEntryDisabler.INTEGRATION,
+            hidden_by=er.RegistryEntryHider.INTEGRATION,
+        )
+        entity_id = reg_entry.entity_id
+        created = True
+
+    reg_entry = ent_reg.async_get(entity_id)
+    if reg_entry is None:
+        return
+    if (
+        reg_entry.disabled_by == er.RegistryEntryDisabler.USER
+        or reg_entry.hidden_by == er.RegistryEntryHider.USER
+    ):
+        return
+    if not created and reg_entry.disabled_by is not None:
+        return
+
+    update_kwargs: dict[str, Any] = {}
+    if reg_entry.disabled_by is None:
+        update_kwargs["disabled_by"] = er.RegistryEntryDisabler.INTEGRATION
+    if reg_entry.hidden_by is None:
+        update_kwargs["hidden_by"] = er.RegistryEntryHider.INTEGRATION
+    if update_kwargs:
+        ent_reg.async_update_entity(entity_id, **update_kwargs)
+    async_merge_entity_options(ent_reg, entity_id, updates={_SEASONAL_STAMP_KEY: True})
+
+
+def _async_clear_seasonal_stamp(ent_reg: er.EntityRegistry, entity_id: str) -> None:
+    """Undo a seasonal-disable stamp: un-disable/un-hide (INTEGRATION-only) and unstamp."""
+    reg_entry = ent_reg.async_get(entity_id)
+    if reg_entry is None:
+        return
+    update_kwargs: dict[str, Any] = {}
+    if reg_entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION:
+        update_kwargs["disabled_by"] = None
+    if reg_entry.hidden_by == er.RegistryEntryHider.INTEGRATION:
+        update_kwargs["hidden_by"] = None
+    if update_kwargs:
+        ent_reg.async_update_entity(entity_id, **update_kwargs)
+    async_merge_entity_options(ent_reg, entity_id, remove_keys=(_SEASONAL_STAMP_KEY,))
+
+
+def _async_restore_seasonal_rows(
+    ent_reg: er.EntityRegistry, entry: ConfigEntry
+) -> None:
+    """Undo every seasonal-disable stamp for this entry (CONF_AUTO_HIDE_SEASONAL is off)."""
+    for reg_entry in er.async_entries_for_config_entry(ent_reg, entry.entry_id):
+        if reg_entry.domain != SENSOR_DOMAIN:
+            continue
+        if not (reg_entry.options.get(DOMAIN) or {}).get(_SEASONAL_STAMP_KEY):
+            continue
+        _async_clear_seasonal_stamp(ent_reg, reg_entry.entity_id)
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: ConfigEntry[WeatherUpdateCoordinator],
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Add MetService entities from a config_entry."""
-    coordinator: WeatherUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
-    if entry.data["api"] == "mobile":
-        sensors = [
-            WeatherSensor(coordinator, description)
-            for description in SENSOR_DESCRIPTIONS_MOBILE
-        ]
+    coordinator: WeatherUpdateCoordinator = entry.runtime_data
+    auto_hide_seasonal = entry.data.get(CONF_AUTO_HIDE_SEASONAL, False)
+
+    def _seasonal_is_dataless(description: WeatherSensorEntityDescription) -> bool:
+        """Return True when a seasonal description currently has no data."""
+        if coordinator.data is None:
+            return True
+        try:
+            return (
+                description.value_fn(coordinator.data, coordinator.unit_system) is None
+            )
+        except Exception:
+            return True
+
+    sensors = [
+        WeatherSensor(coordinator, description)
+        for description in SENSOR_DESCRIPTIONS
+        if description.exists_fn(coordinator)
+    ]
+
+    ent_reg = er.async_get(hass)
+    expected_unique_ids = {sensor.unique_id for sensor in sensors}
+    for reg_entry in er.async_entries_for_config_entry(ent_reg, entry.entry_id):
+        if (
+            reg_entry.domain == SENSOR_DOMAIN
+            and reg_entry.unique_id not in expected_unique_ids
+        ):
+            await async_check_removed_entity(hass, entry, coordinator, reg_entry)
+            ent_reg.async_remove(reg_entry.entity_id)
+
+    wd_entity_id = ent_reg.async_get_entity_id(
+        SENSOR_DOMAIN, DOMAIN, f"{coordinator.location}_warning_details".lower()
+    )
+    if wd_entity_id is not None:
+        wd_entry = ent_reg.async_get(wd_entity_id)
+        if (
+            wd_entry is not None
+            and wd_entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+        ):
+            ent_reg.async_update_entity(wd_entity_id, disabled_by=None)
+
+    stamped_seasonal: dict[str, WeatherSensorEntityDescription] = {}
+    if auto_hide_seasonal:
+        for sensor in sensors:
+            description = sensor.entity_description
+            if not description.seasonal:
+                continue
+            if not _seasonal_is_dataless(description):
+                if _seasonal_row_is_stamped(ent_reg, sensor.unique_id):
+                    _async_clear_seasonal_stamp(
+                        ent_reg,
+                        ent_reg.async_get_entity_id(
+                            SENSOR_DOMAIN, DOMAIN, sensor.unique_id
+                        ),
+                    )
+                continue
+            _async_apply_seasonal_disable(ent_reg, entry, sensor.unique_id)
+            if _seasonal_row_is_stamped(ent_reg, sensor.unique_id):
+                stamped_seasonal[description.key] = description
     else:
-        sensors = [
-            WeatherSensor(coordinator, description)
-            for description in SENSOR_DESCRIPTIONS_PUBLIC
-        ]
+        _async_restore_seasonal_rows(ent_reg, entry)
 
     async_add_entities(sensors)
 
+    await async_check_deprecated_entities(hass, entry, coordinator)
 
-class WeatherSensor(CoordinatorEntity, SensorEntity):
+    if (
+        coordinator.enable_tides
+        or coordinator.enable_boating
+        or coordinator.enable_surf
+    ):
+        await async_check_marine_device_move(hass, entry, coordinator)
+
+    if not stamped_seasonal:
+        return
+
+    @callback
+    def _resume_seasonal_sensors_with_data() -> None:
+        """Re-enable + add previously-disabled seasonal sensors once they have data."""
+        ready_keys = [
+            key
+            for key, description in stamped_seasonal.items()
+            if not _seasonal_is_dataless(description)
+        ]
+        if not ready_keys:
+            return
+        new_sensors = []
+        for key in ready_keys:
+            description = stamped_seasonal.pop(key)
+            unique_id = f"{coordinator.location}_{description.key}".lower()
+            entity_id = ent_reg.async_get_entity_id(SENSOR_DOMAIN, DOMAIN, unique_id)
+            if entity_id is not None:
+                _async_clear_seasonal_stamp(ent_reg, entity_id)
+            new_sensors.append(WeatherSensor(coordinator, description))
+        async_add_entities(new_sensors)
+
+    unsub = coordinator.async_add_listener(_resume_seasonal_sensors_with_data)
+    entry.async_on_unload(unsub)
+
+
+class WeatherSensor(MetServiceEntity, SensorEntity):
     """Implementing the MetService sensor."""
 
-    _attr_has_entity_name = True
     _attr_attribution = CONF_ATTRIBUTION
+    _unrecorded_attributes = frozenset(
+        {"tide_table", "active_warnings", "daily_conditions"}
+    )
     entity_description: WeatherSensorEntityDescription
 
     def __init__(
@@ -78,166 +240,45 @@ class WeatherSensor(CoordinatorEntity, SensorEntity):
         description: WeatherSensorEntityDescription,
     ):
         """Initialize MetService sensors."""
-        super().__init__(coordinator)
+        super().__init__(coordinator, device=description.device)
         self.entity_description = description
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, coordinator.location)},
-            name=coordinator.location_name,
-            manufacturer=MANUFACTURER,
-        )
-
-        entity_id_format = description.key + ".{}"
-
-        self._attr_unique_id = (
-            f"{self.coordinator.location_name},{description.key}".lower()
-        )
-        self.entity_id = generate_entity_id(
-            entity_id_format,
-            f"{self.coordinator.location_name}_{description.name}",
-            hass=coordinator.hass,
-        )
+        self._attr_unique_id = f"{self.coordinator.location}_{description.key}".lower()
         self._unit_system = coordinator.unit_system
-        if self.coordinator.api_type == 'mobile':
-            self._sensor_data = _get_sensor_data_mobile(
-                coordinator.data, description.key, self._unit_system
-            )
-        else:
-            self._sensor_data = _get_sensor_data_public(
-                coordinator.data, description.key, self._unit_system
-            )
+        self._sensor_data = coordinator.data
         self._attr_native_unit_of_measurement = self.entity_description.unit_fn(
             self.coordinator.hass.config.units is METRIC_SYSTEM
         )
 
-        # _LOGGER.info(f"Initialized sensor '{self.name}' with data: {self._sensor_data}")
-
-    @property
-    def available(self) -> bool:
-        """Return if weather data is available."""
-        return self.coordinator.data is not None #and RESULTS_CURRENT in self.coordinator.data
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self.entity_description.name
-
     @property
     def native_value(self) -> StateType:
         """Return the state."""
-        if not self._sensor_data:
-            _LOGGER.debug(f"Sensor '{self.name}' has no data.")
-            return None  # Return None instead of "Unknown"
+        if self._sensor_data is None:
+            _LOGGER.debug("Sensor '%s' has no data.", self.name)
+            return None
         try:
-            value = self.entity_description.value_fn(self._sensor_data, self._unit_system)
-            # _LOGGER.debug(f"Sensor '{self.name}' state: {value}")
-            return value
+            return self.entity_description.value_fn(
+                self._sensor_data, self._unit_system
+            )
         except Exception as e:
-            _LOGGER.error(f"Error processing state for sensor '{self.name}': {e}")
-            return None  # Return None instead of "Unknown"
-
+            _LOGGER.error("Error processing state for sensor '%s': %s", self.name, e)
+            return None
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
-        if not self._sensor_data:
-            _LOGGER.debug(f"Sensor '{self.name}' has no attributes data.")
+        if self._sensor_data is None:
             return {}
         try:
-            attributes = self.entity_description.attr_fn(self._sensor_data)
-            # _LOGGER.info(f"Sensor '{self.name}' attributes: {attributes}")
-            return attributes
+            return self.entity_description.attr_fn(self._sensor_data)
         except Exception as e:
-            _LOGGER.error(f"Error processing attributes for sensor '{self.name}': {e}")
+            _LOGGER.error(
+                "Error processing attributes for sensor '%s': %s", self.name, e
+            )
             return {}
-
 
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle data update."""
-        if self.coordinator.api_type == 'mobile':
-            self._sensor_data = _get_sensor_data_mobile(
-                self.coordinator.data, self.entity_description.key, self._unit_system
-            )
-        else:
-            self._sensor_data = _get_sensor_data_public(
-                self.coordinator.data, self.entity_description.key, self._unit_system
-            )
-        # _LOGGER.info(f"Updated sensor '{self.name}' with data: {self._sensor_data}")
+        self._sensor_data = self.coordinator.data
         self.async_write_ha_state()
-
-
-def _get_sensor_data_mobile(sensors: dict[str, Any], kind: str, unit_system: str) -> Any:
-    """Get sensor data."""
-
-    def get_from_dict(data_dict, map_list):
-        if not map_list:
-            return data_dict
-        if isinstance(data_dict, list):
-            for idx, item in enumerate(data_dict):
-                if map_list[0].isdigit() and idx == int(map_list[0]):
-                    result = get_from_dict(item, map_list[1:])
-                    if result is not None:
-                        return result
-                else:
-                    result = get_from_dict(item, map_list)
-                    if result is not None:
-                        return result
-        elif isinstance(data_dict, dict):
-            for key, value in data_dict.items():
-                if key == map_list[0]:
-                    result = get_from_dict(value, map_list[1:])
-                    if result is not None:
-                        return result
-                else:
-                    result = get_from_dict(value, map_list)
-                    if result is not None:
-                        return result
-        return None
-
-    keys = SENSOR_MAP_MOBILE[kind].split(".")
-    result = get_from_dict(sensors[RESULTS_CURRENT], keys)
-    return result
-    # # windGust is often null. When it is, set it to windSpeed instead.
-    # if kind == FIELD_WINDGUST and sensors[RESULTS_CURRENT][kind] == None:
-    #     return sensors[RESULTS_CURRENT][FIELD_WINDSPEED]
-    # else:
-    #     return sensors[RESULTS_CURRENT][kind]
-
-
-def _get_sensor_data_public(sensors: dict[str, Any], kind: str, unit_system: str) -> Any:
-    """Get sensor data."""
-
-    def get_from_dict(data_dict, map_list):
-        if not map_list:
-            return data_dict
-        if isinstance(data_dict, list):
-            for idx, item in enumerate(data_dict):
-                if map_list[0].isdigit() and idx == int(map_list[0]):
-                    result = get_from_dict(item, map_list[1:])
-                    if result is not None:
-                        return result
-                else:
-                    result = get_from_dict(item, map_list)
-                    if result is not None:
-                        return result
-        elif isinstance(data_dict, dict):
-            for key, value in data_dict.items():
-                if key == map_list[0]:
-                    result = get_from_dict(value, map_list[1:])
-                    if result is not None:
-                        return result
-                else:
-                    result = get_from_dict(value, map_list)
-                    if result is not None:
-                        return result
-        return None
-
-    keys = SENSOR_MAP_PUBLIC[kind].split(".")
-    result = get_from_dict(sensors[RESULTS_CURRENT], keys)
-    return result
-    # # windGust is often null. When it is, set it to windSpeed instead.
-    # if kind == FIELD_WINDGUST and sensors[RESULTS_CURRENT][kind] == None:
-    #     return sensors[RESULTS_CURRENT][FIELD_WINDSPEED]
-    # else:
-    #     return sensors[RESULTS_CURRENT][kind]

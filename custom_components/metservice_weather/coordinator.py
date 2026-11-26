@@ -2,38 +2,55 @@
 
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import timedelta
 import logging
-from typing import Any
+import re
+import asyncio
+import time
 
 import aiohttp
-import async_timeout
-from homeassistant.util import dt as dt_util
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.const import (
-    PERCENTAGE,
     UnitOfPressure,
     UnitOfTemperature,
     UnitOfLength,
     UnitOfSpeed,
-    UnitOfVolumetricFlux,
 )
 
 from .const import (
-    SENSOR_MAP_MOBILE,
-    SENSOR_MAP_PUBLIC,
-    RESULTS_CURRENT,
-    RESULTS_FORECAST_DAILY,
+    BASE_URL,
+    TEMPUNIT,
+    LENGTHUNIT,
+    SPEEDUNIT,
+    PRESSUREUNIT,
 )
+from .coordinator_types import MetServicePublicData, normalize_public_data
 
 _LOGGER = logging.getLogger(__name__)
 
 MIN_TIME_BETWEEN_UPDATES = timedelta(minutes=20)
+
+# Home Assistant's shared DNS resolver (c-ares) sometimes reports "Timeout while
+# contacting DNS servers" for a working server, and after an EDNS cookie
+# mismatch it can keep failing for about 2 minutes (home-assistant/core#145708).
+# On a transient network failure the coordinator keeps its last good data for
+# up to STALE_DATA_LIMIT and polls again after RETRY_INTERVAL, which is past
+# that window, instead of going unavailable until the next 20-minute update.
+RETRY_INTERVAL = timedelta(minutes=3)
+STALE_DATA_LIMIT = timedelta(hours=1)
+_TRANSIENT_ERRORS = (
+    TimeoutError,
+    aiohttp.ClientConnectionError,
+    aiohttp.ClientPayloadError,
+)
+# Certificate and TLS failures do not clear up by waiting.
+_PERMANENT_ERRORS = (aiohttp.ClientSSLError,)
+
+_MARINE_REGION_SLUG_RE = re.compile(r"/marine/regions/([^/]+)/")
 
 
 @dataclass
@@ -42,57 +59,48 @@ class WeatherUpdateCoordinatorConfig:
 
     api_url: str
     warnings_url: str
-    api_key: str
-    api_type: str
-    unit_system_api: str
     unit_system: str
     location: str
     location_name: str
-    latitude: str
-    longitude: str
-    enable_tides: bool
     tide_url: str
+    boating_url: str
+    surf_url: str
     update_interval = MIN_TIME_BETWEEN_UPDATES
 
 
-class WeatherUpdateCoordinator(DataUpdateCoordinator):
+class WeatherUpdateCoordinator(DataUpdateCoordinator[MetServicePublicData]):
     """The MetService update coordinator."""
 
     def __init__(
         self, hass: HomeAssistant, config: WeatherUpdateCoordinatorConfig
     ) -> None:
         """Initialize."""
-        self._hass = hass
         self._api_url = config.api_url
         self._warnings_url = config.warnings_url
-        self._api_key = config.api_key
-        self._api_type = config.api_type
         self._location = config.location
         self._location_name = config.location_name
-        self._latitude = config.latitude
-        self._longitude = config.longitude
-        self._enable_tides = config.enable_tides
         self._tide_url = config.tide_url
-        self._unit_system_api = config.unit_system_api
-        self._base_url = 'https://www.metservice.com'
+        self._boating_url = config.boating_url
+        self._surf_url = config.surf_url
         self.unit_system = config.unit_system
-        self.data = None
-        self._session = async_get_clientsession(self._hass)
-        self.units_of_measurement = (
-            UnitOfTemperature.CELSIUS,
-            UnitOfLength.MILLIMETERS,
-            UnitOfLength.METERS,
-            UnitOfSpeed.KILOMETERS_PER_HOUR,
-            UnitOfPressure.MBAR,
-            UnitOfVolumetricFlux.MILLIMETERS_PER_HOUR,
-            PERCENTAGE,
-        )
+        self.location_device_id: str | None = None
+        self._session = async_get_clientsession(hass)
+        self._normal_update_interval = config.update_interval
+        self._last_success: float | None = None
+        self._outage_logged = False
+        self.units_of_measurement = {
+            TEMPUNIT: UnitOfTemperature.CELSIUS,
+            LENGTHUNIT: UnitOfLength.MILLIMETERS,
+            SPEEDUNIT: UnitOfSpeed.KILOMETERS_PER_HOUR,
+            PRESSUREUNIT: UnitOfPressure.MBAR,
+        }
 
         super().__init__(
             hass,
             _LOGGER,
             name="WeatherUpdateCoordinator",
             update_interval=config.update_interval,
+            always_update=False,
         )
 
     @property
@@ -106,190 +114,400 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
         return self._location_name
 
     @property
-    def api_type(self):
-        """Return the API type."""
-        return self._api_type
+    def enable_tides(self) -> bool:
+        """Return whether tides data is configured."""
+        return bool(self._tide_url)
 
     @property
-    def enable_tides(self):
-        """Return if tides data is enabled."""
-        return self._enable_tides
+    def enable_boating(self) -> bool:
+        """Return whether boating data is configured."""
+        return bool(self._boating_url)
 
     @property
-    def tide_url(self):
+    def enable_surf(self) -> bool:
+        """Return whether surf data is configured."""
+        return bool(self._surf_url)
+
+    @property
+    def tide_url(self) -> str:
         """Return the tide URL."""
         return self._tide_url
 
-    async def _async_update_data(self) -> dict[str, Any]:
-        """Fetch data from API."""
-        if self._api_type == "public":
-            return await self.get_public_weather()
-        else:
-            return await self.get_mobile_weather()
+    @property
+    def marine_region_slug(self) -> str:
+        """Return the marine region slug (e.g. "kapiti-wellington"), or ""."""
+        for url in (self._tide_url, self._boating_url, self._surf_url):
+            if not url:
+                continue
+            match = _MARINE_REGION_SLUG_RE.search(url)
+            if match:
+                return match.group(1)
+        return ""
 
-    async def get_mobile_weather(self):
-        """Get weather data from mobile API."""
-        headers = {
-            "Accept": "*/*",
-            "User-Agent": "MetServiceNZ/2.19.3 (com.metservice.iphoneapp; build:332; iOS 17.1.1) Alamofire/5.4.3",
-            "Accept-Language": "en-CA;q=1.0",
-            "Accept-Encoding": "br;q=1.0, gzip;q=0.9, deflate;q=0.8",
-            "Connection": "keep-alive",
-            "apiKey": self._api_key
-        }
+    _PUBLIC_HEADERS: dict[str, str] = {
+        "Accept-Encoding": "gzip",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
+        ),
+    }
+
+    async def _async_update_data(self) -> MetServicePublicData:
+        """Fetch data from API, riding out a transient network failure."""
         try:
-            async with async_timeout.timeout(10):
-                url = f"{self._api_url}/{self._latitude}/{self._longitude}"
-                _LOGGER.info(f"Fetching MetService data from {url}")
-                response = await self._session.get(url, headers=headers)
-                result_current = await response.json(content_type=None)
-                if result_current is None:
-                    raise ValueError("No current weather data received.")
-                self._check_errors(url, result_current)
-            warnings_text = '\n'.join([
-                f"{warning['name']}, {warning['markdown']}"
-                for warning in result_current['result']['warnings'].get('previews', [])
-            ]).replace('**', '').replace('#', '').replace('\n', ' ')
-            async with async_timeout.timeout(10):
-                url = f"{self._api_url}/locations/{self.location}/7-days"
-                response = await self._session.get(url, headers=headers)
-                result_daily = await response.json(content_type=None)
-                if result_daily is None:
-                    raise ValueError("No daily forecast data received.")
-                self._check_errors(url, result_daily)
-                await self.expand_data_urls(result_current)
-                await self.expand_data_urls(result_daily)
-            result_current['weather_warnings'] = warnings_text
-            result = {}
-            if self._enable_tides:
-                result_tides = await self.get_tides()
-                result_current['tideImport'] = result_tides
-                result = {
-                    RESULTS_CURRENT: result_current,
-                    RESULTS_FORECAST_DAILY: result_daily,
-                }
-            else:
-                result = {
-                    RESULTS_CURRENT: result_current,
-                    RESULTS_FORECAST_DAILY: result_daily,
-                }
-            self.data = result
-            return result
+            data = await self.get_public_weather()
+        except UpdateFailed as err:
+            if self._can_keep_last_data(err):
+                return self._keep_last_data(err)
+            self._outage_logged = False
+            self.update_interval = self._normal_update_interval
+            raise
+        if self._outage_logged:
+            _LOGGER.info("MetService data for %s recovered", self._location_name)
+        self._outage_logged = False
+        self._last_success = time.monotonic()
+        self.update_interval = self._normal_update_interval
+        return data
 
-        except ValueError as err:
-            _LOGGER.error("Data validation error: %s", err)
-            raise UpdateFailed(f"Data validation error: {err}") from err
-        except (asyncio.TimeoutError, aiohttp.ClientError) as err:
-            _LOGGER.error("Error fetching MetService data: %s", repr(err))
-            raise UpdateFailed(f"Error fetching MetService data: {err}") from err
-        except Exception as err:
-            _LOGGER.error("Unexpected error fetching MetService data: %s", repr(err))
-            raise UpdateFailed(f"Unexpected error: {err}") from err
-        # finally:
-            # _LOGGER.info(f"MetService data updated: {self.data}")
+    def _can_keep_last_data(self, err: UpdateFailed) -> bool:
+        """Return whether a failed update can fall back to the last good data."""
+        cause = err.__cause__
+        if not isinstance(cause, _TRANSIENT_ERRORS) or isinstance(
+            cause, _PERMANENT_ERRORS
+        ):
+            return False
+        # Only while the entities are still available: once a failure has been
+        # raised, old data must not come back as if an update had succeeded.
+        if self._last_success is None or not self.last_update_success:
+            return False
+        age = time.monotonic() - self._last_success
+        return age < STALE_DATA_LIMIT.total_seconds()
+
+    def _keep_last_data(self, err: UpdateFailed) -> MetServicePublicData:
+        """Keep the last good data and poll again sooner than usual."""
+        retry_minutes = int(RETRY_INTERVAL.total_seconds() // 60)
+        if not self._outage_logged:
+            _LOGGER.warning(
+                "%s; keeping the last MetService data for %s and trying again "
+                "every %s minutes",
+                err,
+                self._location_name,
+                retry_minutes,
+            )
+            self._outage_logged = True
+        else:
+            _LOGGER.debug("%s; still keeping the last MetService data", err)
+        self.update_interval = RETRY_INTERVAL
+        return self.data
 
     async def get_public_weather(self):
         """Get weather data from public API."""
-        headers = {
-            "Accept-Encoding": "gzip",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                          "(KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
-        }
+        headers = self._PUBLIC_HEADERS
         try:
-            async with async_timeout.timeout(10):
+            async with asyncio.timeout(10):
                 url = f"{self._api_url}{self.location}"
-                _LOGGER.info(f"Fetching MetService data from {url}")
+                _LOGGER.debug("Fetching MetService public data from %s", url)
                 response = await self._session.get(url, headers=headers)
-                _LOGGER.debug(f"Received MetService data from {url}: {response}")
                 result_current = await response.json(content_type=None)
-                _LOGGER.debug(f"result_current is: {result_current}")
                 if result_current is None:
                     raise ValueError("No current weather data received.")
                 self._check_errors(url, result_current)
             await self.expand_data_urls(result_current)
-            async with async_timeout.timeout(10):
+            async with asyncio.timeout(10):
                 url = f"{self._warnings_url}/{result_current['location']['type']}/{result_current['location']['key']}"
                 response = await self._session.get(url, headers=headers)
                 result_warnings = await response.json(content_type=None)
                 if result_warnings is None:
                     raise ValueError("No warnings data received.")
                 self._check_errors(url, result_warnings)
-                await self.expand_data_urls(result_warnings)
-                warnings_text = '\n'.join([
-                    f"{warning['name']}, {warning['text']}, {warning['threatPeriod']}"
-                    for warning in result_warnings.get('warnings', [])
-                ])
-            async with async_timeout.timeout(10):
+            await self.expand_data_urls(result_warnings)
+            structured = [
+                {
+                    "name": warning.get("name") or "Warning",
+                    "text": warning.get("text") or "",
+                    "threat_period": warning.get("threatPeriod") or "",
+                }
+                for warning in result_warnings.get("warnings", [])
+            ]
+            warnings_list = [
+                f"{w['name']}, {w['text']}, {w['threat_period']}" for w in structured
+            ]
+            warnings_text = "\n".join(warnings_list) if warnings_list else "No warnings"
+            async with asyncio.timeout(10):
                 url = f"{self._api_url}{self.location}/7-days"
                 response = await self._session.get(url, headers=headers)
                 result_daily = await response.json(content_type=None)
                 if result_daily is None:
                     raise ValueError("No daily forecast data received.")
                 self._check_errors(url, result_daily)
-                await self.expand_data_urls(result_daily)
-            result_current['weather_warnings'] = warnings_text
-            result = {}
-            if self._enable_tides:
-                await self.expand_data_urls(result_current)
-                await self.expand_data_urls(result_daily)
-                result_tides = await self.get_tides()
-                result_current['tideImport'] = result_tides
-                result = {
-                    RESULTS_CURRENT: result_current,
-                    RESULTS_FORECAST_DAILY: result_daily,
-                }
-            else:
-                result = {
-                    RESULTS_CURRENT: result_current,
-                    RESULTS_FORECAST_DAILY: result_daily,
-                }
-            self.data = result
-            return result
+            await self.expand_data_urls(result_daily)
+            result_current["weather_warnings"] = warnings_text
+            result_current["warnings_list"] = structured
+            result_current["pollen"] = await self.get_pollen_data()
+            try:
+                drying_states = self.get_from_dict(
+                    result_current, ["dryingIndex", "dryingState"]
+                )
+                if isinstance(drying_states, list):
+                    drying_morning = None
+                    drying_afternoon = None
+                    drying_next_good_day = None
+                    for entry in drying_states:
+                        text = entry.get("text", "") if isinstance(entry, dict) else ""
+                        if text.startswith("Morning:"):
+                            drying_morning = text.removeprefix("Morning:").strip()
+                        elif text.startswith("Afternoon:"):
+                            drying_afternoon = text.removeprefix("Afternoon:").strip()
+                        elif text.lower().startswith("next good day"):
+                            drying_next_good_day = (
+                                text.split(":", 1)[-1].strip() if ":" in text else text
+                            )
+                        elif text:
+                            drying_morning = text
+                    if drying_afternoon is None and drying_morning is not None:
+                        drying_afternoon = drying_morning
+                    if drying_next_good_day is None:
+                        drying_next_good_day = "Today"
+                    result_current["drying_morning"] = drying_morning
+                    result_current["drying_afternoon"] = drying_afternoon
+                    result_current["drying_next_good_day"] = drying_next_good_day
+            except Exception as _e:
+                _LOGGER.debug("Could not extract drying index states: %s", _e)
+            if self._tide_url:
+                result_current["tideImport"] = await self.get_tides()
+            if self._boating_url:
+                result_current["boating_data"] = await self.get_boating_data()
+            if self._surf_url:
+                result_current["surf_data"] = await self.get_surf_data()
+            return normalize_public_data(result_current, result_daily)
 
         except ValueError as err:
-            _LOGGER.error("Data validation error: %s", err)
             raise UpdateFailed(f"Data validation error: {err}") from err
-        except (asyncio.TimeoutError, aiohttp.ClientError) as err:
-            _LOGGER.error("Error fetching MetService data: %s", repr(err))
+        except (TimeoutError, aiohttp.ClientError) as err:
             raise UpdateFailed(f"Error fetching MetService data: {err}") from err
         except Exception as err:
-            _LOGGER.error("Unexpected error fetching MetService data: %s", repr(err))
             raise UpdateFailed(f"Unexpected error: {err}") from err
-        # finally:
-        #     _LOGGER.info(f"MetService data updated: {self.data}")
 
     async def get_tides(self):
-        """Get tides data."""
-        headers = {
-            "Accept-Encoding": "gzip",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                          "(KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
-        }
+        """Get tides data. Returns None if unavailable rather than raising."""
         try:
-            async with async_timeout.timeout(10):
-                url = f"{self._tide_url}"
-                _LOGGER.info(f"Fetching tides data from {url}")
-                response = await self._session.get(url, headers=headers)
+            async with asyncio.timeout(10):
+                url = self._tide_url
+                _LOGGER.info("Fetching tides data from %s", url)
+                response = await self._session.get(url, headers=self._PUBLIC_HEADERS)
+                if response.status != 200:
+                    _LOGGER.warning(
+                        "Tides endpoint returned HTTP %s — tides data will be unavailable",
+                        response.status,
+                    )
+                    return None
                 result_tides = await response.json(content_type=None)
                 if result_tides is None:
-                    raise ValueError("No tides data received.")
+                    _LOGGER.warning("No tides data received")
+                    return None
                 self._check_errors(url, result_tides)
             await self.expand_data_urls(result_tides)
-            tide_data = result_tides["layout"]["primary"]["slots"]["main"]["modules"][0]["tideData"]
+            for path in [
+                ["layout", "primary", "slots", "main", "modules"],
+                ["layout", "primary", "slots", "left-major", "modules"],
+            ]:
+                try:
+                    modules = result_tides
+                    for key in path:
+                        modules = modules[key]
+                    for module in modules:
+                        if "tideData" in module:
+                            return module["tideData"]
+                except KeyError, TypeError:
+                    continue
+            _LOGGER.warning(
+                "Could not locate tideData in response — tides data will be unavailable"
+            )
+            return None
 
-            return tide_data
-
-        except ValueError as err:
-            _LOGGER.error("Data validation error in tides: %s", err)
-            raise UpdateFailed(f"Data validation error in tides: {err}") from err
-        except (asyncio.TimeoutError, aiohttp.ClientError) as err:
-            _LOGGER.error("Error fetching tides data: %s", repr(err))
-            raise UpdateFailed(f"Error fetching tides data: {err}") from err
+        except (TimeoutError, aiohttp.ClientError) as err:
+            _LOGGER.warning(
+                "Error fetching tides data: %s — tides will be unavailable", repr(err)
+            )
+            return None
         except Exception as err:
-            _LOGGER.error("Unexpected error fetching tides data: %s", repr(err))
-            raise UpdateFailed(f"Unexpected error in tides: {err}") from err
-        # finally:
-        #     _LOGGER.info(f"Tides data updated: {tide_data if 'tide_data' in locals() else 'No tides data'}")
+            _LOGGER.warning(
+                "Unexpected error fetching tides data: %s — tides will be unavailable",
+                repr(err),
+            )
+            return None
+
+    async def get_boating_data(self) -> dict:
+        """Get boating/surf conditions. Returns empty dict if unavailable."""
+        try:
+            async with asyncio.timeout(10):
+                url = self._boating_url
+                _LOGGER.info("Fetching boating data from %s", url)
+                response = await self._session.get(url, headers=self._PUBLIC_HEADERS)
+                if response.status != 200:
+                    _LOGGER.warning(
+                        "Boating endpoint returned HTTP %s — boating data unavailable",
+                        response.status,
+                    )
+                    return {}
+                data = await response.json(content_type=None)
+            modules = (
+                data.get("layout", {})
+                .get("primary", {})
+                .get("slots", {})
+                .get("main", {})
+                .get("modules", [])
+            )
+            if not modules:
+                return {}
+            days = modules[0].get("days", [])
+            if not days:
+                return {}
+            today = days[0]
+            return {
+                "boating_status": today.get("view", {}).get("text", ""),
+                "boating_status_raw": today.get("view", {}).get("status", ""),
+                "boating_forecast": today.get("forecast", {}).get("text", ""),
+                "boating_issued_at": today.get("forecast", {}).get("issuedAt", ""),
+                "boating_table": today.get("table", {}).get("columns", []),
+            }
+        except (TimeoutError, aiohttp.ClientError) as err:
+            _LOGGER.warning(
+                "Error fetching boating data: %s — boating will be unavailable",
+                repr(err),
+            )
+            return {}
+        except Exception as err:
+            _LOGGER.warning(
+                "Unexpected error fetching boating data: %s — boating will be unavailable",
+                repr(err),
+            )
+            return {}
+
+    async def get_surf_data(self) -> dict:
+        """Get surf conditions for the configured location."""
+        try:
+            regional_url = re.sub(r"/locations/[^/]+$", "", self._surf_url.rstrip("/"))
+            location_path = self._surf_url.split("publicData/webdata")[-1]
+
+            _LOGGER.info("Fetching surf data from %s", regional_url)
+            async with asyncio.timeout(10):
+                response = await self._session.get(
+                    regional_url, headers=self._PUBLIC_HEADERS
+                )
+                if response.status != 200:
+                    _LOGGER.warning(
+                        "Surf endpoint returned HTTP %s — surf data unavailable",
+                        response.status,
+                    )
+                    return {}
+                data = await response.json(content_type=None)
+
+            all_markers = (
+                data.get("layout", {})
+                .get("primary", {})
+                .get("map", {})
+                .get("markers", [])
+            )
+            marker = None
+            for m in all_markers:
+                try:
+                    if m["action"]["modules"][0]["link"]["url"] == location_path:
+                        marker = m
+                        break
+                except KeyError, IndexError, TypeError:
+                    continue
+
+            if not marker:
+                _LOGGER.warning(
+                    "Could not find surf marker for %s — surf data unavailable",
+                    location_path,
+                )
+                return {}
+
+            value = marker.get("action", {}).get("modules", [{}])[0].get("value", {})
+            swell = value.get("swell", {})
+            wind = value.get("wind", {})
+            view = marker.get("view", {})
+
+            return {
+                "surf_conditions": view.get("text", ""),
+                "surf_rating": value.get("rating"),
+                "surf_wave_height": value.get("waveHeight"),
+                "surf_set_face": value.get("setFace"),
+                "surf_swell_direction": swell.get("direction"),
+                "surf_swell_height": swell.get("swellHeight"),
+                "surf_wind_direction": wind.get("direction"),
+                "surf_wind_speed": wind.get("averageSpeed"),
+                "surf_wind_gust": wind.get("gustSpeed"),
+                "surf_period": value.get("period"),
+            }
+
+        except (TimeoutError, aiohttp.ClientError) as err:
+            _LOGGER.warning(
+                "Error fetching surf data: %s — surf will be unavailable", repr(err)
+            )
+            return {}
+        except Exception as err:
+            _LOGGER.warning(
+                "Unexpected error fetching surf data: %s — surf will be unavailable",
+                repr(err),
+            )
+            return {}
+
+    @staticmethod
+    def _parse_pollen_html(html: str) -> dict:
+        """Extract pollen level, plant types and status class from allergen HTML."""
+        level = None
+        plants = None
+        status_class = None
+        level_match = re.search(
+            r'<span[^>]*class="status-([a-z-]+)"[^>]*>([^<]+)</span>', html
+        )
+        if level_match:
+            status_class = level_match.group(1).strip()
+            level = level_match.group(2).strip()
+        plants_match = re.search(
+            r"</span>(?:<br\s*/?>|</br>)(.*?)(?:<br\s*/?>|</br>|$)", html, re.IGNORECASE
+        )
+        if plants_match:
+            plants = plants_match.group(1).strip()
+        return {"level": level, "type": plants, "status_class": status_class}
+
+    async def get_pollen_data(self) -> dict:
+        """Fetch pollen/allergen data from MetService allergens endpoint."""
+        empty = {"pollenLevels": {"level": None, "type": None}, "groups": []}
+        try:
+            async with asyncio.timeout(10):
+                url = f"{self._api_url}{self._location}/airborne-allergens"
+                _LOGGER.debug("Fetching pollen data from %s", url)
+                response = await self._session.get(url, headers=self._PUBLIC_HEADERS)
+                if response.status != 200:
+                    _LOGGER.debug(
+                        "Pollen endpoint returned HTTP %s — pollen data unavailable",
+                        response.status,
+                    )
+                    return empty
+                result = await response.json(content_type=None)
+            modules = (
+                result.get("layout", {})
+                .get("primary", {})
+                .get("slots", {})
+                .get("main", {})
+                .get("modules", [])
+            )
+            groups = [
+                self._parse_pollen_html(item["html"])
+                for module in modules
+                for item in module.get("content", [])
+                if item.get("iconName") == "pollen" and "html" in item
+            ]
+            if groups:
+                _LOGGER.debug("Pollen groups this cycle: %s", groups)
+                return {"pollenLevels": groups[0], "groups": groups}
+        except Exception as err:
+            _LOGGER.debug("Could not fetch pollen data: %s", repr(err))
+        return empty
 
     def _check_errors(self, url: str, response: dict):
         """Check for errors in the API response."""
@@ -325,96 +543,42 @@ class WeatherUpdateCoordinator(DataUpdateCoordinator):
                         return result
         return None
 
-    def get_current_public(self, field):
-        """Get a specific key from the MetService returned data."""
-        try:
-            keys = SENSOR_MAP_PUBLIC[field].split(".")
-            result = self.get_from_dict(self.data[RESULTS_CURRENT], keys)
-            return result
-        except Exception as e:
-            _LOGGER.error(f"Error retrieving public sensor '{field}': {e}")
-            return None  # Return a dummy value if an error occurs
-
-    def get_current_mobile(self, field):
-        """Get a specific key from the MetService returned data."""
-        try:
-            keys = SENSOR_MAP_MOBILE[field].split(".")
-            result = self.get_from_dict(self.data[RESULTS_CURRENT], keys)
-            return result
-        except Exception as e:
-            _LOGGER.error(f"Error retrieving mobile sensor '{field}': {e}")
-            return None  # Return a dummy value if an error occurs
-
-    def get_forecast_daily_public(self, field, day):
-        """Get a specific key from the MetService returned data."""
-        try:
-            all_days = self.data[RESULTS_FORECAST_DAILY]["layout"]["primary"]["slots"]["main"]["modules"][0]["days"]
-            if field == "":  # send a blank to get the number of days
-                return len(all_days)
-            this_day = all_days[day]
-            keys = SENSOR_MAP_PUBLIC[field].split(".")
-            result = self.get_from_dict(this_day, keys)
-            return result
-        except Exception as e:
-            _LOGGER.error(f"Error retrieving public forecast daily sensor '{field}' for day {day}: {e}")
-            return None
-
-    def get_forecast_daily_mobile(self, field, day):
-        """Get a specific key from the MetService returned data."""
-        try:
-            all_days = self.data["current"]["result"]["forecastData"]["days"]
-            if field == "":  # send a blank to get the number of days
-                return len(all_days)
-            this_day = all_days[day]
-            keys = SENSOR_MAP_MOBILE[field].split(".")
-            result = self.get_from_dict(this_day, keys)
-            return result
-        except Exception as e:
-            _LOGGER.error(f"Error retrieving mobile forecast daily sensor '{field}' for day {day}: {e}")
-            return None
-
-    @classmethod
-    def _format_timestamp(cls, timestamp_val):
-        """Format timestamp to ISO format in UTC."""
-        return datetime.fromisoformat(timestamp_val).astimezone(dt_util.get_time_zone("UTC")).isoformat()
-
-
-    async def expand_data_urls(self, data, parent=None, key=None):
+    async def expand_data_urls(self, data, parent=None, key=None, _depth=0):
         """Recursively expand dataUrl entries in the data, replacing the entire object."""
+        if _depth > 10:
+            _LOGGER.warning("expand_data_urls: max recursion depth reached, stopping")
+            return
         if isinstance(data, dict):
-            if 'dataUrl' in data:
-                url = data['dataUrl']
-                if url.startswith('/'):
-                    full_url = f"{self._base_url}{url}"
-                else:
-                    full_url = url
+            if "dataUrl" in data:
+                url = data["dataUrl"]
+                full_url = f"{BASE_URL}{url}" if url.startswith("/") else url
                 try:
-                    async with async_timeout.timeout(10):
-                        response = await self._session.get(full_url)
+                    async with asyncio.timeout(10):
+                        response = await self._session.get(
+                            full_url, headers=self._PUBLIC_HEADERS
+                        )
                         if response.status != 200:
-                            _LOGGER.error(f"Error fetching {full_url}: HTTP {response.status}")
+                            _LOGGER.warning(
+                                "Error fetching %s: HTTP %s", full_url, response.status
+                            )
                             if parent is not None and key is not None:
-                                parent[key] = None  # Handle as needed
+                                parent[key] = None
                             return
                         result = await response.json(content_type=None)
-                    # Replace the entire object containing 'dataUrl' with the fetched data
                     if parent is not None and key is not None:
                         parent[key] = result
-                    # Continue processing in case there are nested dataUrls
-                    await self.expand_data_urls(result, parent=parent, key=key)
+                    await self.expand_data_urls(
+                        result, parent=parent, key=key, _depth=_depth + 1
+                    )
                 except Exception as e:
-                    _LOGGER.error(f"Error fetching dataUrl {full_url}: {e}")
+                    _LOGGER.warning("Error fetching dataUrl %s: %s", full_url, e)
                     if parent is not None and key is not None:
-                        parent[key] = None  # Handle as needed
+                        parent[key] = None
             else:
-                # Recursively process the rest of the dictionary
                 for k in list(data.keys()):
-                    await self.expand_data_urls(data[k], parent=data, key=k)
+                    await self.expand_data_urls(
+                        data[k], parent=data, key=k, _depth=_depth
+                    )
         elif isinstance(data, list):
-            # Recursively process each item in the list
             for idx, item in enumerate(data):
-                await self.expand_data_urls(item, parent=data, key=idx)
-        else:
-            # Not a dict or list, do nothing
-            pass
-
+                await self.expand_data_urls(item, parent=data, key=idx, _depth=_depth)

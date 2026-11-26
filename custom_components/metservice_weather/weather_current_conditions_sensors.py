@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import logging
+from dataclasses import dataclass, field
 from typing import Any, cast
 from collections.abc import Callable
-import datetime
+import datetime as dt
 from homeassistant.util import dt as dt_util
 
+from .helpers import safe_float as _safe_float, safe_int as _safe_int
 from .const import (
     FIELD_DESCRIPTION,
     FIELD_HUMIDITY,
@@ -16,8 +18,6 @@ from .const import (
     FIELD_WINDDIR,
     FIELD_WINDGUST,
     FIELD_WINDSPEED,
-    ICON_THERMOMETER,
-    ICON_WIND,
 )
 from homeassistant.components.sensor import (
     SensorEntityDescription,
@@ -25,402 +25,1039 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
+    MAX_LENGTH_STATE_STATE,
     PERCENTAGE,
     UnitOfTemperature,
     UnitOfPressure,
     UnitOfSpeed,
+    UnitOfPrecipitationDepth,
 )
 from homeassistant.helpers.typing import StateType
-AUCKLAND_TIMEZONE = dt_util.get_time_zone("Pacific/Auckland")
 
-@dataclass
+_LOGGER = logging.getLogger(__name__)
+
+
+def _warn_once(logged: set[str], category: str, raw: str) -> None:
+    """Log one warning per runtime per unmapped raw value in a category."""
+    if raw in logged:
+        return
+    logged.add(raw)
+    _LOGGER.warning(
+        "Unknown MetService %s %r — please report at "
+        "https://github.com/nagelm/metservice-weather/issues",
+        category,
+        raw,
+    )
+
+
+def _next_tide_entry(data: list | None, tide_type: str) -> dict | None:
+    """Return the next-upcoming tide entry dict of the given type, or None."""
+    if not isinstance(data, list):
+        return None
+    now = dt_util.utcnow()
+    for entry in data:
+        if entry.get("type") == tide_type:
+            t = dt_util.parse_datetime(entry["time"])
+            if t is not None and t > now:
+                return entry
+    return None
+
+
+def _next_tide_time(data: list | None, tide_type: str) -> dt.datetime | None:
+    """Return the next upcoming tide time of the given type, or None if unavailable."""
+    entry = _next_tide_entry(data, tide_type)
+    if entry is None:
+        return None
+    return dt_util.parse_datetime(entry["time"])
+
+
+def _tide_attrs(data: Any, tide_type: str) -> dict[str, StateType]:
+    """Return height_m for the tide entry the value_fn selected."""
+    entry = _next_tide_entry(data.tides, tide_type)
+    return {"height_m": _safe_float(entry.get("height"))} if entry else {}
+
+
+_TIDE_DIRECTION_BY_TYPE = {"HIGH": "rising", "LOW": "falling"}
+
+
+def _next_tide_event(data: list | None) -> dict | None:
+    """Return the next upcoming tide entry of either type, or None."""
+    if not isinstance(data, list):
+        return None
+    now = dt_util.utcnow()
+    for entry in data:
+        if not isinstance(entry, dict):
+            continue
+        t = dt_util.parse_datetime(entry.get("time") or "")
+        if t is not None and t > now:
+            return entry
+    return None
+
+
+def _tide_direction_state(tides: list | None) -> str | None:
+    """Direction the tide is moving: next event HIGH means rising, LOW falling."""
+    entry = _next_tide_event(tides)
+    if entry is None:
+        return None
+    return _TIDE_DIRECTION_BY_TYPE.get(entry.get("type"))
+
+
+def _tide_table_attr(data: Any) -> dict[str, Any]:
+    """Full-day tide table for the opt-in carrier sensor."""
+    if not isinstance(data.tides, list) or not data.tides:
+        return {}
+    return {
+        "tide_table": [
+            {"type": t.get("type"), "time": t.get("time"), "height": t.get("height")}
+            for t in data.tides
+            if isinstance(t, dict)
+        ]
+    }
+
+
+def _warning_severity(name: str) -> int:
+    """Rank a MetService warning name: Red > Orange > other Warning > Watch."""
+    lowered = name.lower()
+    if "red" in lowered:
+        return 3
+    if "orange" in lowered:
+        return 2
+    if "warning" in lowered:
+        return 1
+    return 0
+
+
+def _warnings_severity_number(data: Any) -> int:
+    """Numeric severity: 0 none / 1 watch / 2 warning / 3 orange / 4 red."""
+    warnings = data.warnings_list
+    if not warnings:
+        return 0
+    return 1 + max(_warning_severity(w.get("name", "")) for w in warnings)
+
+
+def _warnings_state(data: Any) -> str:
+    """Most severe warning name, with a (+N more) suffix when several are active."""
+    warnings = data.warnings_list
+    if not warnings:
+        return "No warnings"
+    top = max(warnings, key=lambda w: _warning_severity(w.get("name", "")))
+    extra = len(warnings) - 1
+    state = top.get("name") or "Warning"
+    if extra:
+        state = f"{state} (+{extra} more)"
+    return state[:255]
+
+
+_WARNING_ENUM_BY_RANK: dict[int, str] = {
+    0: "watch",
+    1: "warning",
+    2: "orange",
+    3: "red",
+}
+
+
+def _warnings_enum_state(data: Any) -> str:
+    """Return the top-ranked active warning as an enum state, or "none" when clear."""
+    warnings = data.warnings_list
+    if not warnings:
+        return "none"
+    top_rank = max(_warning_severity(w.get("name", "")) for w in warnings)
+    return _WARNING_ENUM_BY_RANK[top_rank]
+
+
+_UV_ALERT_LEVEL_MAP: dict[str, str] = {
+    "low": "low",
+    "moderate": "moderate",
+    "high": "high",
+    "very high": "very_high",
+    "extreme": "extreme",
+}
+_UV_ALERT_LEVEL_PREFIXES: tuple[tuple[str, str], ...] = (
+    ("not dangerous", "not_dangerous"),
+    ("dangerous today from", "dangerous_later"),
+    ("dangerous from", "dangerous_later"),
+    ("dangerous", "dangerous"),
+)
+_UV_RISK_OPTIONS = [
+    "low",
+    "moderate",
+    "high",
+    "very_high",
+    "extreme",
+    "not_dangerous",
+    "dangerous_later",
+    "dangerous",
+]
+_UNKNOWN_UV_ALERT_LEVELS_LOGGED: set[str] = set()
+
+
+def _uv_alert_level_state(raw: str | None) -> str | None:
+    """Map MetService's uvAlertLevel label to the uv_risk ENUM sensor's state."""
+    if not raw:
+        return None
+    key = raw.strip().lower()
+    mapped = _UV_ALERT_LEVEL_MAP.get(key)
+    if mapped is None:
+        mapped = next(
+            (
+                state
+                for prefix, state in _UV_ALERT_LEVEL_PREFIXES
+                if key.startswith(prefix)
+            ),
+            None,
+        )
+    if mapped is None:
+        _warn_once(_UNKNOWN_UV_ALERT_LEVELS_LOGGED, "UV alert level", raw)
+        return None
+    return mapped
+
+
+def _uv_attrs(data: Any) -> dict[str, StateType]:
+    """Return UV detail attributes, populated only when the state itself mapped."""
+    if _uv_alert_level_state(data.uv_alert_level) is None:
+        return {}
+    return {
+        "alert_label": data.uv_alert_level,
+        "status_class": data.uv_status_class,
+        "advice": data.uv_message,
+        "protection_window_start": data.uv_window_start_at or data.uv_window_start_raw,
+        "protection_window_end": data.uv_window_end_at or data.uv_window_end_raw,
+        "has_alert": data.uv_has_alert,
+    }
+
+
+_PRESSURE_TREND_OPTIONS = ["rising", "falling", "stable"]
+_UNKNOWN_PRESSURE_TREND_LOGGED: set[str] = set()
+
+
+def _pressure_trend_state(raw: str | None) -> str | None:
+    """Map the raw observations pressure trend to its ENUM state."""
+    if not raw:
+        return None
+    key = raw.strip().lower()
+    if key in _PRESSURE_TREND_OPTIONS:
+        return key
+    _warn_once(_UNKNOWN_PRESSURE_TREND_LOGGED, "pressure trend", raw)
+    return None
+
+
+_WIND_STRENGTH_MAP: dict[str, str] = {
+    "calm": "calm",
+    "light winds": "light_winds",
+    "moderate": "moderate",
+    "fresh": "fresh",
+    "strong": "strong",
+    "gale": "gale",
+    "severe gale": "severe_gale",
+    "storm": "storm",
+}
+_WIND_STRENGTH_OPTIONS = [
+    "calm",
+    "light_winds",
+    "moderate",
+    "fresh",
+    "strong",
+    "gale",
+    "severe_gale",
+    "storm",
+]
+_UNKNOWN_WIND_STRENGTH_LOGGED: set[str] = set()
+
+
+def _wind_strength_state(raw: str | None) -> str | None:
+    """Map the raw observations wind strength label to its ENUM state."""
+    if not raw:
+        return None
+    mapped = _WIND_STRENGTH_MAP.get(raw.strip().lower())
+    if mapped is None:
+        _warn_once(_UNKNOWN_WIND_STRENGTH_LOGGED, "wind strength", raw)
+        return None
+    return mapped
+
+
+_FIRE_SEASON_OPTIONS = ["open", "restricted", "prohibited"]
+_UNKNOWN_FIRE_SEASON_LOGGED: set[str] = set()
+
+
+def _fire_season_state(raw: str | None) -> str | None:
+    """Map the raw fire season status to its ENUM state."""
+    if not raw:
+        return None
+    key = raw.strip().lower()
+    if key in _FIRE_SEASON_OPTIONS:
+        return key
+    _warn_once(_UNKNOWN_FIRE_SEASON_LOGGED, "fire season status", raw)
+    return None
+
+
+_FIRE_DANGER_INDEX_MAP: dict[int, str] = {
+    1: "low",
+    2: "moderate",
+    3: "high",
+    4: "very_high",
+    5: "extreme",
+}
+_FIRE_DANGER_OPTIONS = ["low", "moderate", "high", "very_high", "extreme"]
+_UNKNOWN_FIRE_DANGER_LOGGED: set[str] = set()
+_FIRE_DANGER_LABEL_DRIFT_LOGGED: set[str] = set()
+
+
+def _fire_danger_state(index: int | None, label: str | None) -> str | None:
+    """Map fire danger to its ENUM state: index is primary, label a fallback."""
+    if index is not None:
+        mapped = _FIRE_DANGER_INDEX_MAP.get(index)
+        if mapped is not None:
+            if (
+                label
+                and label.strip().lower().replace(" ", "_") != mapped
+                and label not in _FIRE_DANGER_LABEL_DRIFT_LOGGED
+            ):
+                _FIRE_DANGER_LABEL_DRIFT_LOGGED.add(label)
+                _LOGGER.warning(
+                    "MetService fire danger label %r doesn't match its index "
+                    "%s (%s) — please report at "
+                    "https://github.com/nagelm/metservice-weather/issues",
+                    label,
+                    index,
+                    mapped,
+                )
+            return mapped
+        _warn_once(_UNKNOWN_FIRE_DANGER_LOGGED, "fire danger index", str(index))
+        return None
+    if label:
+        candidate = label.strip().lower().replace(" ", "_")
+        if candidate in _FIRE_DANGER_OPTIONS:
+            return candidate
+        _warn_once(_UNKNOWN_FIRE_DANGER_LOGGED, "fire danger label", label)
+        return None
+    return None
+
+
+_MOON_PHASE_ENUM_MAP: dict[str, str] = {
+    "NEW": "new",
+    "FIRST": "first_quarter",
+    "FULL": "full",
+    "LAST": "last_quarter",
+}
+_UNKNOWN_MOON_PHASE_LOGGED: set[str] = set()
+
+_MOON_PHASE_CURRENT_OPTIONS = [
+    "new_moon",
+    "waxing_crescent",
+    "first_quarter",
+    "waxing_gibbous",
+    "full_moon",
+    "waning_gibbous",
+    "last_quarter",
+    "waning_crescent",
+]
+
+
+def _moon_phase_enum_state(raw: str | None) -> str | None:
+    """Map the raw NEW/FIRST/FULL/LAST phase token to its ENUM state."""
+    if not raw:
+        return None
+    mapped = _MOON_PHASE_ENUM_MAP.get(raw)
+    if mapped is None:
+        _warn_once(_UNKNOWN_MOON_PHASE_LOGGED, "moon phase", raw)
+        return None
+    return mapped
+
+
+def _long_text_state(text: str | None, fallback: str | None = None) -> str | None:
+    """Fit MetService prose into HA's 255-character state limit."""
+    if isinstance(text, str) and len(text) > MAX_LENGTH_STATE_STATE:
+        return f"{text[: MAX_LENGTH_STATE_STATE - 3]}..."
+    return text or fallback
+
+
+def _full_text_attr(text: str | None) -> dict[str, StateType]:
+    """Return full_description, present only when _long_text_state cut the text."""
+    if isinstance(text, str) and len(text) > MAX_LENGTH_STATE_STATE:
+        return {"full_description": text}
+    return {}
+
+
+def _has_observations(coordinator: Any) -> bool:
+    """Location has a weather station (rural pages have none)."""
+    return coordinator.data is not None and coordinator.data.has_observations
+
+
+def _has_breakdown(coordinator: Any) -> bool:
+    """Location's forecast carries morning/afternoon/evening/overnight conditions."""
+    return coordinator.data is not None and coordinator.data.has_breakdown
+
+
+def _tides_enabled(coordinator: Any) -> bool:
+    return coordinator.enable_tides
+
+
+def _boating_enabled(coordinator: Any) -> bool:
+    return coordinator.enable_boating
+
+
+def _surf_enabled(coordinator: Any) -> bool:
+    return coordinator.enable_surf
+
+
+@dataclass(frozen=True, kw_only=True)
 class WeatherRequiredKeysMixin:
     """Mixin for required keys."""
 
     value_fn: Callable[[dict[str, Any], str], StateType]
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class WeatherSensorEntityDescription(SensorEntityDescription, WeatherRequiredKeysMixin):
     """Describes MetService Sensor entity."""
 
-    attr_fn: Callable[[dict[str, Any]], dict[str, StateType]] = lambda _: {}
-    unit_fn: Callable[[bool], str | None] = lambda _: None
+    attr_fn: Callable[[dict[str, Any]], dict[str, StateType]] = field(
+        default=lambda _: {}
+    )
+    unit_fn: Callable[[bool], str | None] = field(default=lambda _: None)
+    exists_fn: Callable[[Any], bool] = field(default=lambda _: True)
+    seasonal: bool = False
+    device: str = "location"
 
 
 current_condition_sensor_descriptions_public = [
     WeatherSensorEntityDescription(
         key="validTimeLocal",
-        name="Forecast Description Updated Time",
+        translation_key="valid_time_local",
+        name="Forecast issued",
         device_class=SensorDeviceClass.TIMESTAMP,
-        icon="mdi:clock",
-        value_fn=lambda data, _: datetime.datetime.fromisoformat(data)
-        if isinstance(data, str)
-        else None,
+        value_fn=lambda data, _: (
+            dt.datetime.fromisoformat(data.issued_at)
+            if isinstance(data.issued_at, str)
+            else None
+        ),
     ),
     WeatherSensorEntityDescription(
         key=FIELD_DESCRIPTION,
-        name="Weather Description",
-        icon="mdi:note-text",
-        value_fn=lambda data, _: (
-            f"{data[:252]}..." if isinstance(data, str) and len(data) > 255 else (data if data else "No description")
-        ),
-        # Description can be very long, so truncate to 252 characters and append '...' if necessary
-        attr_fn=lambda data: {"full_description": data} if isinstance(data, str) and data else {},
+        translation_key="weather_description",
+        name="Weather description",
+        value_fn=lambda data, _: _long_text_state(data.forecast_text, "No description"),
+        attr_fn=lambda data: _full_text_attr(data.forecast_text),
     ),
-
     WeatherSensorEntityDescription(
         key=FIELD_HUMIDITY,
-        name="Relative Humidity",
-        icon="mdi:water-percent",
+        translation_key="relative_humidity",
+        name="Relative humidity",
+        exists_fn=_has_observations,
         device_class=SensorDeviceClass.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
         unit_fn=lambda _: PERCENTAGE,
-        value_fn=lambda data, _: cast(int, data) or 0,
+        value_fn=lambda data, _: _safe_int(data.humidity),
     ),
     WeatherSensorEntityDescription(
-        key="uvIndex",
-        name="UV Index",
-        icon="mdi:sunglasses",
-        value_fn=lambda data, _: cast(str, data.replace("status-", "") if data else None),
+        key="uv_risk",
+        translation_key="uv_risk",
+        name="UV index",
+        seasonal=True,
+        device_class=SensorDeviceClass.ENUM,
+        options=_UV_RISK_OPTIONS,
+        value_fn=lambda data, _: _uv_alert_level_state(data.uv_alert_level),
+        attr_fn=_uv_attrs,
     ),
     WeatherSensorEntityDescription(
         key=FIELD_WINDDIR,
-        name="Wind Direction",
-        icon=ICON_WIND,
-        value_fn=lambda data, _: cast(str, data),
+        translation_key="wind_direction",
+        name="Wind direction",
+        exists_fn=_has_observations,
+        value_fn=lambda data, _: cast(str, data.wind_direction),
     ),
     WeatherSensorEntityDescription(
         key="temperatureFeelsLike",
-        name="Temperature - Feels Like",
-        icon=ICON_THERMOMETER,
+        translation_key="temperature_feels_like",
+        name="Temperature feel",
+        exists_fn=_has_observations,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        unit_fn=lambda metric: UnitOfTemperature.CELSIUS
-        if metric
-        else UnitOfTemperature.FAHRENHEIT,
-        value_fn=lambda data, _: cast(float, data),
-    ),
-    WeatherSensorEntityDescription(
-        key=FIELD_TEMP,
-        name="Temperature",
-        icon=ICON_THERMOMETER,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        unit_fn=lambda metric: UnitOfTemperature.CELSIUS
-        if metric
-        else UnitOfTemperature.FAHRENHEIT,
-        value_fn=lambda data, _: cast(float, data),
-    ),
-    WeatherSensorEntityDescription(
-        key=FIELD_PRESSURE,
-        name="Pressure",
-        icon="mdi:gauge",
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.PRESSURE,
-        unit_fn=lambda metric: UnitOfPressure.MBAR if metric else UnitOfPressure.INHG,
-        value_fn=lambda data, _: cast(float, data),
-    ),
-    WeatherSensorEntityDescription(
-        key=FIELD_WINDGUST,
-        name="Wind Gust",
-        icon=ICON_WIND,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.WIND_SPEED,
-        unit_fn=lambda metric: UnitOfSpeed.KILOMETERS_PER_HOUR
-        if metric
-        else UnitOfSpeed.MILES_PER_HOUR,
-        value_fn=lambda data, _: cast(float, data),
-    ),
-    WeatherSensorEntityDescription(
-        key=FIELD_WINDSPEED,
-        name="Wind Speed",
-        icon=ICON_WIND,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.WIND_SPEED,
-        unit_fn=lambda metric: UnitOfSpeed.KILOMETERS_PER_HOUR
-        if metric
-        else UnitOfSpeed.MILES_PER_HOUR,
-        value_fn=lambda data, _: cast(float, data),
-    ),
-    WeatherSensorEntityDescription(
-        key="pressureTendencyTrend",
-        name="Pressure Tendency Trend",
-        icon="mdi:gauge",
-        value_fn=lambda data, _: cast(str, data),
-    ),
-    WeatherSensorEntityDescription(
-        key="pollen_levels",
-        name="Pollen Levels",
-        icon="mdi:flower",
-        value_fn=lambda data, _: cast(str, data),
-    ),
-    WeatherSensorEntityDescription(
-        key="pollen_type",
-        name="Pollen Type",
-        icon="mdi:flower",
-        value_fn=lambda data, _: cast(
-            str, ". ".join(i.capitalize() for i in data.lstrip(" ")[0:254].split(". "))
-        )
-        if data else None,
-        # Pollen Type can be very long, so truncate to 254 characters; and capitalise each sentence
-    ),
-    WeatherSensorEntityDescription(
-        key="weather_warnings",
-        name="MetService Weather Warnings",
-        icon="mdi:alert",
-        value_fn=lambda data, _: (data[:250] + '...') if data and len(data) > 255 else (data or "No warnings"),
-        attr_fn=lambda data: {"warnings": data} if data else {},
-    ),
-    WeatherSensorEntityDescription(
-        key="fire_season",
-        name="Fire Season",
-        icon="mdi:fire",
-        value_fn=lambda data, _: cast(str, data),
-    ),
-    WeatherSensorEntityDescription(
-        key="fire_danger",
-        name="Fire Danger",
-        icon="mdi:fire",
-        value_fn=lambda data, _: cast(str, data),
-    ),
-    WeatherSensorEntityDescription(
-        key="drying_index_morning",
-        name="Clothes Drying Time - Morning",
-        icon="mdi:tshirt-crew",
-        value_fn=lambda data, _: cast(str, data.replace("Morning: ", "")) if data else None,
-    ),
-    WeatherSensorEntityDescription(
-        key="drying_index_afternoon",
-        name="Clothes Drying Time - Afternoon",
-        icon="mdi:tshirt-crew",
-        value_fn=lambda data, _: cast(str, data.replace("Afternoon: ", "")) if data else None,
-    ),
-    WeatherSensorEntityDescription(
-        key="tides_high",
-        name="Next High Tide",
-        icon="mdi:beach",
-        device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data, _: (
-            [
-                dt_util.parse_datetime(a["time"])
-                for a in data
-                if a["type"] == "HIGH"
-                and dt_util.parse_datetime(a["time"]) is not None
-                and dt_util.parse_datetime(a["time"]) > dt_util.now(AUCKLAND_TIMEZONE)
-            ][0]
-            if data
-            else None
-        )
-        if isinstance(data, list)
-        else None,
-
-    ),
-
-    WeatherSensorEntityDescription(
-        key="tides_low",
-        name="Next Low Tide",
-        icon="mdi:beach",
-        device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data, _: (
-            [
-                dt_util.parse_datetime(a["time"])
-                for a in data
-                if a["type"] == "LOW"
-                and dt_util.parse_datetime(a["time"]) is not None
-                and dt_util.parse_datetime(a["time"]) > dt_util.now(AUCKLAND_TIMEZONE)
-            ][0]
-            if data
-            else None
-        )
-        if isinstance(data, list)
-        else None,
-    ),
-]
-
-current_condition_sensor_descriptions_mobile = [
-    WeatherSensorEntityDescription(
-        key="validTimeLocal",
-        name="Forecast Description Updated Time",
-        device_class=SensorDeviceClass.TIMESTAMP,
-        icon="mdi:clock",
-        value_fn=lambda data, _: datetime.datetime.fromisoformat(data)
-        if isinstance(data, str)
-        else None,
-    ),
-    WeatherSensorEntityDescription(
-        key=FIELD_DESCRIPTION,
-        name="Weather Description",
-        icon="mdi:note-text",
-        value_fn=lambda data, _: (
-            f"{data[:252]}..." if isinstance(data, str) and len(data) > 255 else (data if data else "No description")
+        suggested_display_precision=1,
+        unit_fn=lambda metric: (
+            UnitOfTemperature.CELSIUS if metric else UnitOfTemperature.FAHRENHEIT
         ),
-        # Description can be very long, so truncate to 252 characters and append '...' if necessary
-        attr_fn=lambda data: {"full_description": data} if isinstance(data, str) and data else {},
+        value_fn=lambda data, _: _safe_float(data.feels_like),
     ),
-    WeatherSensorEntityDescription(
-        key=FIELD_HUMIDITY,
-        name="Relative Humidity",
-        icon="mdi:water-percent",
-        device_class=SensorDeviceClass.HUMIDITY,
-        state_class=SensorStateClass.MEASUREMENT,
-        unit_fn=lambda _: PERCENTAGE,
-        value_fn=lambda data, _: cast(int, data) or 0,
-    ),
-    WeatherSensorEntityDescription( # UV index from main endpoint is UV Alert from mobile endpoint
-        key="uvAlert",
-        name="UV Alert",
-        icon="mdi:sunglasses",
-        value_fn=lambda data, _: cast(str, data),
-    ),
-    WeatherSensorEntityDescription(
-        key=FIELD_WINDDIR,
-        name="Wind Direction",
-        icon=ICON_WIND,
-        value_fn=lambda data, _: cast(str, data),
-    ),
-    # WeatherSensorEntityDescription(
-    #     key="temperatureFeelsLike",
-    #     name="Temperature - Feels Like",
-    #     icon=ICON_THERMOMETER,
-    #     state_class=SensorStateClass.MEASUREMENT,
-    #     device_class=SensorDeviceClass.TEMPERATURE,
-    #     unit_fn=lambda metric: UnitOfTemperature.CELSIUS
-    #     if metric
-    #     else UnitOfTemperature.FAHRENHEIT,
-    #     value_fn=lambda data, _: cast(float, data),
-    # ),
     WeatherSensorEntityDescription(
         key=FIELD_TEMP,
+        translation_key="temperature",
         name="Temperature",
-        icon=ICON_THERMOMETER,
+        exists_fn=_has_observations,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        unit_fn=lambda metric: UnitOfTemperature.CELSIUS
-        if metric
-        else UnitOfTemperature.FAHRENHEIT,
-        value_fn=lambda data, _: cast(float, data),
+        suggested_display_precision=1,
+        unit_fn=lambda metric: (
+            UnitOfTemperature.CELSIUS if metric else UnitOfTemperature.FAHRENHEIT
+        ),
+        value_fn=lambda data, _: _safe_float(data.temperature),
     ),
     WeatherSensorEntityDescription(
         key=FIELD_PRESSURE,
+        translation_key="pressure",
         name="Pressure",
-        icon="mdi:gauge",
+        exists_fn=_has_observations,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.PRESSURE,
+        suggested_display_precision=1,
         unit_fn=lambda metric: UnitOfPressure.MBAR if metric else UnitOfPressure.INHG,
-        value_fn=lambda data, _: cast(float, data),
+        value_fn=lambda data, _: _safe_float(data.pressure),
     ),
     WeatherSensorEntityDescription(
         key=FIELD_WINDGUST,
-        name="Wind Gust",
-        icon=ICON_WIND,
+        translation_key="wind_gust",
+        name="Wind gust",
+        exists_fn=_has_observations,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.WIND_SPEED,
-        unit_fn=lambda metric: UnitOfSpeed.KILOMETERS_PER_HOUR
-        if metric
-        else UnitOfSpeed.MILES_PER_HOUR,
-        value_fn=lambda data, _: cast(float, data),
+        suggested_display_precision=1,
+        unit_fn=lambda metric: (
+            UnitOfSpeed.KILOMETERS_PER_HOUR if metric else UnitOfSpeed.MILES_PER_HOUR
+        ),
+        value_fn=lambda data, _: _safe_float(data.wind_gust),
     ),
     WeatherSensorEntityDescription(
         key=FIELD_WINDSPEED,
-        name="Wind Speed",
-        icon=ICON_WIND,
+        translation_key="wind_speed",
+        name="Wind speed",
+        exists_fn=_has_observations,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.WIND_SPEED,
-        unit_fn=lambda metric: UnitOfSpeed.KILOMETERS_PER_HOUR
-        if metric
-        else UnitOfSpeed.MILES_PER_HOUR,
-        value_fn=lambda data, _: cast(float, data),
+        suggested_display_precision=1,
+        unit_fn=lambda metric: (
+            UnitOfSpeed.KILOMETERS_PER_HOUR if metric else UnitOfSpeed.MILES_PER_HOUR
+        ),
+        value_fn=lambda data, _: _safe_float(data.wind_speed),
     ),
     WeatherSensorEntityDescription(
-        key="pressureTendencyTrend",
-        name="Pressure Tendency Trend",
-        icon="mdi:gauge",
-        value_fn=lambda data, _: cast(str, data),
+        key="rainfall",
+        translation_key="rainfall",
+        name="Rain last hour",
+        exists_fn=_has_observations,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.PRECIPITATION,
+        suggested_display_precision=1,
+        unit_fn=lambda _: UnitOfPrecipitationDepth.MILLIMETERS,
+        value_fn=lambda data, _: _safe_float(data.rainfall),
     ),
-    # WeatherSensorEntityDescription( # Pollen is not available from mobile api
-    #     key="pollen_levels",
-    #     name="Pollen Levels",
-    #     icon="mdi:flower",
-    #     value_fn=lambda data, _: cast(str, data),
-    # ),
-    # WeatherSensorEntityDescription(
-    #     key="pollen_type",
-    #     name="Pollen Type",
-    #     icon="mdi:flower",
-    #     value_fn=lambda data, _: cast(
-    #         str, ". ".join(i.capitalize() for i in data.lstrip(" ")[0:254].split(". "))
-    #     ),
-        # Pollen Type can be very long, so truncate to 254 characters; and capitalise each sentence
-    # ),
+    WeatherSensorEntityDescription(
+        key="rain_next_8_hours",
+        translation_key="rain_next_8_hours",
+        name="Rain next 8 hours",
+        entity_registry_enabled_default=False,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.PRECIPITATION,
+        suggested_display_precision=1,
+        unit_fn=lambda _: UnitOfPrecipitationDepth.MILLIMETERS,
+        value_fn=lambda data, _: data.rain_next_8h_mm,
+    ),
+    WeatherSensorEntityDescription(
+        key="rain_next_24_hours",
+        translation_key="rain_next_24_hours",
+        name="Rain next 24 hours",
+        entity_registry_enabled_default=False,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.PRECIPITATION,
+        suggested_display_precision=1,
+        unit_fn=lambda _: UnitOfPrecipitationDepth.MILLIMETERS,
+        value_fn=lambda data, _: data.rain_next_24h_mm,
+    ),
+    WeatherSensorEntityDescription(
+        key="next_rain_at",
+        translation_key="next_rain_at",
+        name="Next rain expected",
+        entity_registry_enabled_default=False,
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=lambda data, _: (
+            dt.datetime.fromisoformat(data.next_rain_at)
+            if isinstance(data.next_rain_at, str)
+            else None
+        ),
+        attr_fn=lambda data: {
+            **(
+                {"precision": data.next_rain_precision}
+                if data.next_rain_precision
+                else {}
+            ),
+            **(
+                {
+                    "outlook": (
+                        "rain_expected" if data.next_rain_at else "no_rain_expected"
+                    ),
+                    "forecast_horizon": data.rain_forecast_horizon,
+                }
+                if data.rain_forecast_horizon
+                else {}
+            ),
+        },
+    ),
+    WeatherSensorEntityDescription(
+        key="pressure_trend",
+        translation_key="pressure_trend",
+        name="Pressure tendency",
+        exists_fn=_has_observations,
+        device_class=SensorDeviceClass.ENUM,
+        options=_PRESSURE_TREND_OPTIONS,
+        value_fn=lambda data, _: _pressure_trend_state(data.pressure_trend),
+    ),
+    WeatherSensorEntityDescription(
+        key="pollen",
+        translation_key="pollen",
+        name="Pollen",
+        device_class=SensorDeviceClass.ENUM,
+        options=["none", "low", "moderate", "high"],
+        value_fn=lambda data, _: data.pollen_state,
+        attr_fn=lambda data: (
+            {
+                **{
+                    f"{level}_allergens": ", ".join(data.pollen_active.get(level, []))
+                    for level in ("low", "moderate", "high")
+                    if data.pollen_active.get(level)
+                },
+                **(
+                    {"imminent_allergens": ", ".join(data.pollen_imminent)}
+                    if data.pollen_imminent
+                    else {}
+                ),
+            }
+            if data.pollen_state is not None
+            else {}
+        ),
+    ),
+    WeatherSensorEntityDescription(
+        key="warning_level",
+        translation_key="warning_level",
+        name="Warnings",
+        device_class=SensorDeviceClass.ENUM,
+        options=["none", "watch", "warning", "orange", "red"],
+        value_fn=lambda data, _: _warnings_enum_state(data),
+        attr_fn=lambda data: {
+            "headline": _warnings_state(data),
+            "count": len(data.warnings_list),
+            "severity_level": _warnings_severity_number(data),
+        },
+    ),
+    WeatherSensorEntityDescription(
+        key="warning_details",
+        translation_key="warning_details",
+        name="Warning details",
+        value_fn=lambda data, _: len(data.warnings_list),
+        attr_fn=lambda data: {"active_warnings": data.warnings_list},
+    ),
+    WeatherSensorEntityDescription(
+        key="fire_season_status",
+        translation_key="fire_season_status",
+        name="Fire season",
+        seasonal=True,
+        device_class=SensorDeviceClass.ENUM,
+        options=_FIRE_SEASON_OPTIONS,
+        value_fn=lambda data, _: _fire_season_state(data.fire_season_status),
+        attr_fn=lambda data: (
+            {"scope": data.fire_season_short, "detail": data.fire_season_text}
+            if _fire_season_state(data.fire_season_status) is not None
+            else {}
+        ),
+    ),
+    WeatherSensorEntityDescription(
+        key="fire_danger_level",
+        translation_key="fire_danger_level",
+        name="Fire danger",
+        seasonal=True,
+        device_class=SensorDeviceClass.ENUM,
+        options=_FIRE_DANGER_OPTIONS,
+        value_fn=lambda data, _: _fire_danger_state(
+            data.fire_danger_index, data.fire_danger
+        ),
+        attr_fn=lambda data: (
+            {
+                "index": data.fire_danger_index,
+                "guidance": data.fire_danger_text,
+                "tomorrow": data.fire_danger_forecast,
+            }
+            if _fire_danger_state(data.fire_danger_index, data.fire_danger) is not None
+            else {}
+        ),
+    ),
     WeatherSensorEntityDescription(
         key="drying_index_morning",
-        name="Clothes Drying Time - Morning",
-        icon="mdi:tshirt-crew",
-        value_fn=lambda data, _: cast(str, data.replace("Morning: ", "")),
+        translation_key="drying_index_morning",
+        name="Clothes drying morning",
+        seasonal=True,
+        value_fn=lambda data, _: (
+            cast(str, data.drying_morning) if data.drying_morning else None
+        ),
     ),
     WeatherSensorEntityDescription(
         key="drying_index_afternoon",
-        name="Clothes Drying Time - Afternoon",
-        icon="mdi:tshirt-crew",
-        value_fn=lambda data, _: cast(str, data.replace("Afternoon: ", "")),
+        translation_key="drying_index_afternoon",
+        name="Clothes drying afternoon",
+        seasonal=True,
+        value_fn=lambda data, _: (
+            cast(str, data.drying_afternoon) if data.drying_afternoon else None
+        ),
     ),
     WeatherSensorEntityDescription(
-        key="weather_warnings",
-        name="MetService Weather Warnings",
-        icon="mdi:alert",
-        value_fn=lambda data, _: (data[:250] + '...') if data and len(data) > 255 else (data or "No warnings"),
-        attr_fn=lambda data: {"warnings": data} if data else {},
-    ),
-    WeatherSensorEntityDescription(
-        key="fire_season",
-        name="Fire Season",
-        icon="mdi:fire",
-        value_fn=lambda data, _: cast(str, data),
-    ),
-    WeatherSensorEntityDescription(
-        key="fire_danger",
-        name="Fire Danger",
-        icon="mdi:fire",
-        value_fn=lambda data, _: cast(str, data),
+        key="drying_next_good_day",
+        translation_key="drying_next_good_day",
+        name="Clothes drying next good day",
+        seasonal=True,
+        value_fn=lambda data, _: (
+            cast(str, data.drying_next_good_day) if data.drying_next_good_day else None
+        ),
     ),
     WeatherSensorEntityDescription(
         key="tides_high",
-        name="Next High Tide",
-        icon="mdi:beach",
+        translation_key="tides_high",
+        name="Next high tide",
+        exists_fn=_tides_enabled,
+        device="marine",
         device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data, _: (
-            [
-                dt_util.parse_datetime(a["time"])
-                for a in data
-                if a["type"] == "HIGH"
-                and dt_util.parse_datetime(a["time"]) is not None
-                and dt_util.parse_datetime(a["time"]) > dt_util.now(AUCKLAND_TIMEZONE)
-            ][0]
-            if data
-            else None
-        )
-        if isinstance(data, list)
-        else None,
+        value_fn=lambda data, _: _next_tide_time(data.tides, "HIGH"),
+        attr_fn=lambda data: _tide_attrs(data, "HIGH"),
     ),
     WeatherSensorEntityDescription(
         key="tides_low",
-        name="Next Low Tide",
-        icon="mdi:beach",
+        translation_key="tides_low",
+        name="Next low tide",
+        exists_fn=_tides_enabled,
+        device="marine",
         device_class=SensorDeviceClass.TIMESTAMP,
-
+        value_fn=lambda data, _: _next_tide_time(data.tides, "LOW"),
+        attr_fn=lambda data: _tide_attrs(data, "LOW"),
+    ),
+    WeatherSensorEntityDescription(
+        key="tide_direction",
+        translation_key="tide_direction",
+        name="Tide direction",
+        entity_registry_enabled_default=False,
+        exists_fn=_tides_enabled,
+        device="marine",
+        device_class=SensorDeviceClass.ENUM,
+        options=["rising", "falling"],
+        value_fn=lambda data, _: _tide_direction_state(data.tides),
+        attr_fn=_tide_table_attr,
+    ),
+    WeatherSensorEntityDescription(
+        key="boating_status",
+        translation_key="boating_status",
+        name="Boating conditions",
+        exists_fn=_boating_enabled,
+        device="marine",
         value_fn=lambda data, _: (
-            [
-                dt_util.parse_datetime(a["time"])
-                for a in data
-                if a["type"] == "LOW"
-                and dt_util.parse_datetime(a["time"]) is not None
-                and dt_util.parse_datetime(a["time"]) > dt_util.now(AUCKLAND_TIMEZONE)
-            ][0]
-            if data
+            cast(str, data.boating_status) if data.boating_status else None
+        ),
+    ),
+    WeatherSensorEntityDescription(
+        key="boating_forecast",
+        translation_key="boating_forecast",
+        name="Boating forecast",
+        exists_fn=_boating_enabled,
+        device="marine",
+        value_fn=lambda data, _: _long_text_state(data.boating_forecast),
+        attr_fn=lambda data: _full_text_attr(data.boating_forecast),
+    ),
+    WeatherSensorEntityDescription(
+        key="surf_conditions",
+        translation_key="surf_conditions",
+        name="Surf conditions",
+        exists_fn=_surf_enabled,
+        device="marine",
+        value_fn=lambda data, _: (
+            cast(str, data.surf_conditions) if data.surf_conditions else None
+        ),
+    ),
+    WeatherSensorEntityDescription(
+        key="surf_rating",
+        translation_key="surf_rating",
+        name="Surf rating",
+        exists_fn=_surf_enabled,
+        device="marine",
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
+        value_fn=lambda data, _: _safe_int(data.surf_rating),
+    ),
+    WeatherSensorEntityDescription(
+        key="surf_wave_height",
+        translation_key="surf_wave_height",
+        name="Surf wave height",
+        exists_fn=_surf_enabled,
+        device="marine",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.DISTANCE,
+        suggested_display_precision=1,
+        unit_fn=lambda _: "m",
+        value_fn=lambda data, _: _safe_float(data.surf_wave_height),
+    ),
+    WeatherSensorEntityDescription(
+        key="surf_set_face",
+        translation_key="surf_set_face",
+        name="Surf set face",
+        exists_fn=_surf_enabled,
+        device="marine",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.DISTANCE,
+        suggested_display_precision=1,
+        unit_fn=lambda _: "m",
+        value_fn=lambda data, _: _safe_float(data.surf_set_face),
+    ),
+    WeatherSensorEntityDescription(
+        key="surf_swell_direction",
+        translation_key="surf_swell_direction",
+        name="Surf swell direction",
+        exists_fn=_surf_enabled,
+        device="marine",
+        value_fn=lambda data, _: (
+            cast(str, data.surf_swell_direction) if data.surf_swell_direction else None
+        ),
+    ),
+    WeatherSensorEntityDescription(
+        key="surf_swell_height",
+        translation_key="surf_swell_height",
+        name="Surf swell height",
+        exists_fn=_surf_enabled,
+        device="marine",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.DISTANCE,
+        suggested_display_precision=1,
+        unit_fn=lambda _: "m",
+        value_fn=lambda data, _: _safe_float(data.surf_swell_height),
+    ),
+    WeatherSensorEntityDescription(
+        key="surf_wind_direction",
+        translation_key="surf_wind_direction",
+        name="Surf wind direction",
+        exists_fn=_surf_enabled,
+        device="marine",
+        value_fn=lambda data, _: (
+            cast(str, data.surf_wind_direction) if data.surf_wind_direction else None
+        ),
+    ),
+    WeatherSensorEntityDescription(
+        key="surf_wind_speed",
+        translation_key="surf_wind_speed",
+        name="Surf wind speed",
+        exists_fn=_surf_enabled,
+        device="marine",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.WIND_SPEED,
+        suggested_display_precision=0,
+        unit_fn=lambda _: "kn",
+        value_fn=lambda data, _: _safe_int(data.surf_wind_speed),
+    ),
+    WeatherSensorEntityDescription(
+        key="surf_wind_gust",
+        translation_key="surf_wind_gust",
+        name="Surf wind gust",
+        exists_fn=_surf_enabled,
+        device="marine",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.WIND_SPEED,
+        suggested_display_precision=0,
+        unit_fn=lambda _: "kn",
+        value_fn=lambda data, _: _safe_int(data.surf_wind_gust),
+    ),
+    WeatherSensorEntityDescription(
+        key="surf_period",
+        translation_key="surf_period",
+        name="Surf period",
+        exists_fn=_surf_enabled,
+        device="marine",
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
+        unit_fn=lambda _: "s",
+        value_fn=lambda data, _: _safe_int(data.surf_period),
+    ),
+    WeatherSensorEntityDescription(
+        key="wind_strength_level",
+        translation_key="wind_strength_level",
+        name="Wind strength",
+        exists_fn=_has_observations,
+        device_class=SensorDeviceClass.ENUM,
+        options=_WIND_STRENGTH_OPTIONS,
+        value_fn=lambda data, _: _wind_strength_state(data.wind_strength),
+    ),
+    WeatherSensorEntityDescription(
+        key="temperature_today_high",
+        translation_key="temperature_today_high",
+        name="High temperature today",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        suggested_display_precision=1,
+        unit_fn=lambda metric: (
+            UnitOfTemperature.CELSIUS if metric else UnitOfTemperature.FAHRENHEIT
+        ),
+        value_fn=lambda data, _: _safe_float(data.temp_today_high),
+    ),
+    WeatherSensorEntityDescription(
+        key="temperature_today_low",
+        translation_key="temperature_today_low",
+        name="Low temperature today",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        suggested_display_precision=1,
+        unit_fn=lambda metric: (
+            UnitOfTemperature.CELSIUS if metric else UnitOfTemperature.FAHRENHEIT
+        ),
+        value_fn=lambda data, _: _safe_float(data.temp_today_low),
+    ),
+    WeatherSensorEntityDescription(
+        key="condition_today",
+        translation_key="condition_today",
+        name="Condition today",
+        value_fn=lambda data, _: cast(str, data.condition) if data.condition else None,
+        attr_fn=lambda data: {
+            "daily_conditions": [
+                {
+                    "date": entry.datetime[:10] if entry.datetime else None,
+                    "condition": entry.condition,
+                }
+                for entry in data.daily_entries
+                if entry.condition
+            ]
+        },
+    ),
+    WeatherSensorEntityDescription(
+        key="tomorrow_condition",
+        translation_key="tomorrow_condition",
+        name="Condition tomorrow",
+        value_fn=lambda data, _: (
+            cast(str, data.tomorrow_condition) if data.tomorrow_condition else None
+        ),
+    ),
+    WeatherSensorEntityDescription(
+        key="tomorrow_temp_high",
+        translation_key="tomorrow_temp_high",
+        name="High temperature tomorrow",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        suggested_display_precision=1,
+        unit_fn=lambda metric: (
+            UnitOfTemperature.CELSIUS if metric else UnitOfTemperature.FAHRENHEIT
+        ),
+        value_fn=lambda data, _: _safe_float(data.tomorrow_temp_high),
+    ),
+    WeatherSensorEntityDescription(
+        key="tomorrow_temp_low",
+        translation_key="tomorrow_temp_low",
+        name="Low temperature tomorrow",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        suggested_display_precision=1,
+        unit_fn=lambda metric: (
+            UnitOfTemperature.CELSIUS if metric else UnitOfTemperature.FAHRENHEIT
+        ),
+        value_fn=lambda data, _: _safe_float(data.tomorrow_temp_low),
+    ),
+    WeatherSensorEntityDescription(
+        key="tomorrow_description",
+        translation_key="tomorrow_description",
+        name="Weather description tomorrow",
+        value_fn=lambda data, _: _long_text_state(data.tomorrow_description),
+        attr_fn=lambda data: _full_text_attr(data.tomorrow_description),
+    ),
+    WeatherSensorEntityDescription(
+        key="breakdown_morning",
+        translation_key="breakdown_morning",
+        name="Condition morning",
+        exists_fn=_has_breakdown,
+        value_fn=lambda data, _: (
+            cast(str, data.breakdown_morning) if data.breakdown_morning else None
+        ),
+    ),
+    WeatherSensorEntityDescription(
+        key="breakdown_afternoon",
+        translation_key="breakdown_afternoon",
+        name="Condition afternoon",
+        exists_fn=_has_breakdown,
+        value_fn=lambda data, _: (
+            cast(str, data.breakdown_afternoon) if data.breakdown_afternoon else None
+        ),
+    ),
+    WeatherSensorEntityDescription(
+        key="breakdown_evening",
+        translation_key="breakdown_evening",
+        name="Condition evening",
+        exists_fn=_has_breakdown,
+        value_fn=lambda data, _: (
+            cast(str, data.breakdown_evening) if data.breakdown_evening else None
+        ),
+    ),
+    WeatherSensorEntityDescription(
+        key="breakdown_overnight",
+        translation_key="breakdown_overnight",
+        name="Condition overnight",
+        exists_fn=_has_breakdown,
+        value_fn=lambda data, _: (
+            cast(str, data.breakdown_overnight) if data.breakdown_overnight else None
+        ),
+    ),
+    WeatherSensorEntityDescription(
+        key="sunrise_at",
+        translation_key="sunrise_at",
+        name="Sunrise",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=lambda data, _: (
+            dt.datetime.fromisoformat(data.sunrise_at)
+            if isinstance(data.sunrise_at, str)
             else None
-        )
-        if isinstance(data, list)
-        else None,
+        ),
+        attr_fn=lambda data: {"display": data.sunrise} if data.sunrise else {},
+    ),
+    WeatherSensorEntityDescription(
+        key="sunset_at",
+        translation_key="sunset_at",
+        name="Sunset",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=lambda data, _: (
+            dt.datetime.fromisoformat(data.sunset_at)
+            if isinstance(data.sunset_at, str)
+            else None
+        ),
+        attr_fn=lambda data: {"display": data.sunset} if data.sunset else {},
+    ),
+    WeatherSensorEntityDescription(
+        key="moonrise_at",
+        translation_key="moonrise_at",
+        name="Moonrise",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=lambda data, _: (
+            dt.datetime.fromisoformat(data.moonrise_at)
+            if isinstance(data.moonrise_at, str)
+            else None
+        ),
+        attr_fn=lambda data: {"display": data.moonrise} if data.moonrise else {},
+    ),
+    WeatherSensorEntityDescription(
+        key="moonset_at",
+        translation_key="moonset_at",
+        name="Moonset",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=lambda data, _: (
+            dt.datetime.fromisoformat(data.moonset_at)
+            if isinstance(data.moonset_at, str)
+            else None
+        ),
+        attr_fn=lambda data: {"display": data.moonset} if data.moonset else {},
+    ),
+    WeatherSensorEntityDescription(
+        key="moon_phase_current",
+        translation_key="moon_phase_current",
+        name="Moon phase",
+        device_class=SensorDeviceClass.ENUM,
+        options=_MOON_PHASE_CURRENT_OPTIONS,
+        value_fn=lambda data, _: data.moon_phase_current,
+        attr_fn=lambda data: {
+            **(
+                {"next_phase": _moon_phase_enum_state(data.moon_phase)}
+                if _moon_phase_enum_state(data.moon_phase) is not None
+                else {}
+            ),
+            **(
+                {"next_phase_at": data.moon_phase_date}
+                if isinstance(data.moon_phase_date, str)
+                else {}
+            ),
+        },
     ),
 ]

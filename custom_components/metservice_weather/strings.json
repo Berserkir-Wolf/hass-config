@@ -1,0 +1,461 @@
+{
+  "config": {
+    "step": {
+      "setup": {
+        "title": "MetService Weather",
+        "description": "Configure your MetService NZ weather location.",
+        "data": {
+          "name": "Device name",
+          "location": "Weather location",
+          "marine_region": "Marine Region"
+        },
+        "data_description": {
+          "name": "Shown in the integrations list. The device and its entities are named after the selected weather location itself (e.g. \"Napier Temperature\"). Add the integration again to cover more locations.",
+          "location": "The MetService town or rural location weather data is fetched for. Choose the one closest to you.",
+          "marine_region": "Optional. Select the coastal region nearest to you to enable tide times, boating conditions, and surf sensors. You will choose specific stations for each on the next screen. Choose \"None — skip marine data\" if you don't need any of these."
+        },
+        "sections": {
+          "advanced_options": {
+            "name": "Advanced",
+            "data": {
+              "auto_hide_seasonal": "Automatically disable sensors when they are seasonally unavailable",
+              "custom_location": "Custom location"
+            },
+            "data_description": {
+              "auto_hide_seasonal": "Hides UV, fire danger and clothes drying sensors while MetService has no data for them.",
+              "custom_location": "For a town missing from the Weather location list, paste its metservice.com page address."
+            }
+          }
+        }
+      },
+      "locations": {
+        "title": "Marine locations",
+        "description": "Choose a specific station for each marine feature, or skip those you don't need.",
+        "data": {
+          "tide_url": "Tide station",
+          "boating_url": "Boating location",
+          "surf_url": "Surf location"
+        },
+        "data_description": {
+          "tide_url": "Select a tide station to get next high/low tide times. Choose \"None — skip\" to omit tide sensors.",
+          "boating_url": "Select a location to get boating conditions and forecast. Choose \"None — skip\" to omit boating sensors.",
+          "surf_url": "Select a surf spot to get wave height, swell, rating, and wind conditions. Choose \"None — skip\" to omit surf sensors."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "invalid_location": "Not a MetService location. Pick one from the list, or check the custom location under Advanced.",
+      "location_not_found": "MetService has no page for that custom location. Check the address under Advanced.",
+      "tide_location_not_found": "Could not determine the URL for the selected tide station.",
+      "boating_location_not_found": "Could not determine the URL for the selected boating location.",
+      "surf_location_not_found": "Could not determine the URL for the selected surf location."
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]",
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "valid_time_local": {
+        "name": "Forecast issued"
+      },
+      "weather_description": {
+        "name": "Weather description"
+      },
+      "relative_humidity": {
+        "name": "Relative humidity"
+      },
+      "uv_risk": {
+        "name": "UV index",
+        "state": {
+          "low": "Low",
+          "moderate": "Moderate",
+          "high": "High",
+          "very_high": "Very high",
+          "extreme": "Extreme",
+          "not_dangerous": "Not dangerous",
+          "dangerous_later": "Dangerous later today",
+          "dangerous": "Dangerous"
+        },
+        "state_attributes": {
+          "alert_label": {
+            "name": "MetService alert"
+          },
+          "status_class": {
+            "name": "Status class"
+          },
+          "advice": {
+            "name": "Sun protection advice"
+          },
+          "protection_window_start": {
+            "name": "Protection window start"
+          },
+          "protection_window_end": {
+            "name": "Protection window end"
+          },
+          "has_alert": {
+            "name": "Alert active"
+          }
+        }
+      },
+      "uv_alert": {
+        "name": "UV Alert"
+      },
+      "wind_direction": {
+        "name": "Wind direction"
+      },
+      "temperature_feels_like": {
+        "name": "Temperature feel"
+      },
+      "temperature": {
+        "name": "Temperature"
+      },
+      "pressure": {
+        "name": "Pressure"
+      },
+      "wind_gust": {
+        "name": "Wind gust"
+      },
+      "wind_speed": {
+        "name": "Wind speed"
+      },
+      "rainfall": {
+        "name": "Rain last hour"
+      },
+      "rain_next_8_hours": {
+        "name": "Rain next 8 hours"
+      },
+      "rain_next_24_hours": {
+        "name": "Rain next 24 hours"
+      },
+      "next_rain_at": {
+        "name": "Next rain expected",
+        "state_attributes": {
+          "precision": {
+            "name": "Precision"
+          },
+          "outlook": {
+            "name": "Outlook"
+          },
+          "forecast_horizon": {
+            "name": "Forecast horizon"
+          }
+        }
+      },
+      "pressure_trend": {
+        "name": "Pressure tendency",
+        "state": {
+          "rising": "Rising",
+          "falling": "Falling",
+          "stable": "Stable"
+        }
+      },
+      "pollen": {
+        "name": "Pollen",
+        "state": {
+          "none": "None",
+          "low": "Low",
+          "moderate": "Moderate",
+          "high": "High"
+        },
+        "state_attributes": {
+          "low_allergens": {
+            "name": "Low-level allergens"
+          },
+          "moderate_allergens": {
+            "name": "Moderate-level allergens"
+          },
+          "high_allergens": {
+            "name": "High-level allergens"
+          },
+          "imminent_allergens": {
+            "name": "Imminent allergens"
+          }
+        }
+      },
+      "warning_level": {
+        "name": "Warnings",
+        "state": {
+          "none": "No warnings",
+          "watch": "Watch",
+          "warning": "Warning",
+          "orange": "Orange warning",
+          "red": "Red warning"
+        },
+        "state_attributes": {
+          "headline": {
+            "name": "Headline"
+          },
+          "count": {
+            "name": "Active warning count"
+          }
+        }
+      },
+      "warning_details": {
+        "name": "Warning details",
+        "state_attributes": {
+          "active_warnings": {
+            "name": "Active warnings"
+          }
+        }
+      },
+      "fire_season_status": {
+        "name": "Fire season",
+        "state": {
+          "open": "Open",
+          "restricted": "Restricted",
+          "prohibited": "Prohibited"
+        },
+        "state_attributes": {
+          "scope": {
+            "name": "Scope"
+          },
+          "detail": {
+            "name": "Detail"
+          }
+        }
+      },
+      "fire_danger_level": {
+        "name": "Fire danger",
+        "state": {
+          "low": "Low",
+          "moderate": "Moderate",
+          "high": "High",
+          "very_high": "Very high",
+          "extreme": "Extreme"
+        },
+        "state_attributes": {
+          "index": {
+            "name": "Danger index"
+          },
+          "guidance": {
+            "name": "Guidance"
+          },
+          "tomorrow": {
+            "name": "Tomorrow's outlook"
+          }
+        }
+      },
+      "drying_index_morning": {
+        "name": "Clothes drying morning"
+      },
+      "drying_index_afternoon": {
+        "name": "Clothes drying afternoon"
+      },
+      "drying_next_good_day": {
+        "name": "Clothes drying next good day"
+      },
+      "tides_high": {
+        "name": "Next high tide",
+        "state_attributes": {
+          "height_m": {
+            "name": "Tide height (m)"
+          }
+        }
+      },
+      "tides_low": {
+        "name": "Next low tide",
+        "state_attributes": {
+          "height_m": {
+            "name": "Tide height (m)"
+          }
+        }
+      },
+      "tide_direction": {
+        "name": "Tide direction",
+        "state": {
+          "rising": "Rising",
+          "falling": "Falling"
+        },
+        "state_attributes": {
+          "tide_table": {
+            "name": "Today's tide table"
+          }
+        }
+      },
+      "boating_status": {
+        "name": "Boating conditions"
+      },
+      "boating_forecast": {
+        "name": "Boating forecast"
+      },
+      "surf_conditions": {
+        "name": "Surf conditions"
+      },
+      "surf_rating": {
+        "name": "Surf rating"
+      },
+      "surf_wave_height": {
+        "name": "Surf wave height"
+      },
+      "surf_set_face": {
+        "name": "Surf set face"
+      },
+      "surf_swell_direction": {
+        "name": "Surf swell direction"
+      },
+      "surf_swell_height": {
+        "name": "Surf swell height"
+      },
+      "surf_wind_direction": {
+        "name": "Surf wind direction"
+      },
+      "surf_wind_speed": {
+        "name": "Surf wind speed"
+      },
+      "surf_wind_gust": {
+        "name": "Surf wind gust"
+      },
+      "surf_period": {
+        "name": "Surf period"
+      },
+      "wind_strength_level": {
+        "name": "Wind strength",
+        "state": {
+          "calm": "Calm",
+          "light_winds": "Light winds",
+          "moderate": "Moderate",
+          "fresh": "Fresh",
+          "strong": "Strong",
+          "gale": "Gale",
+          "severe_gale": "Severe gale",
+          "storm": "Storm"
+        }
+      },
+      "temperature_today_high": {
+        "name": "High temperature today"
+      },
+      "temperature_today_low": {
+        "name": "Low temperature today"
+      },
+      "condition_today": {
+        "name": "Condition today"
+      },
+      "tomorrow_condition": {
+        "name": "Condition tomorrow"
+      },
+      "tomorrow_temp_high": {
+        "name": "High temperature tomorrow"
+      },
+      "tomorrow_temp_low": {
+        "name": "Low temperature tomorrow"
+      },
+      "tomorrow_description": {
+        "name": "Weather description tomorrow"
+      },
+      "breakdown_morning": {
+        "name": "Condition morning"
+      },
+      "breakdown_afternoon": {
+        "name": "Condition afternoon"
+      },
+      "breakdown_evening": {
+        "name": "Condition evening"
+      },
+      "breakdown_overnight": {
+        "name": "Condition overnight"
+      },
+      "sunrise_at": {
+        "name": "Sunrise",
+        "state_attributes": {
+          "display": {
+            "name": "Local time text"
+          }
+        }
+      },
+      "sunset_at": {
+        "name": "Sunset",
+        "state_attributes": {
+          "display": {
+            "name": "Local time text"
+          }
+        }
+      },
+      "moonrise_at": {
+        "name": "Moonrise",
+        "state_attributes": {
+          "display": {
+            "name": "Local time text"
+          }
+        }
+      },
+      "moonset_at": {
+        "name": "Moonset",
+        "state_attributes": {
+          "display": {
+            "name": "Local time text"
+          }
+        }
+      },
+      "moon_phase_current": {
+        "name": "Moon phase",
+        "state": {
+          "new_moon": "New moon",
+          "waxing_crescent": "Waxing crescent",
+          "first_quarter": "First quarter",
+          "waxing_gibbous": "Waxing gibbous",
+          "full_moon": "Full moon",
+          "waning_gibbous": "Waning gibbous",
+          "last_quarter": "Last quarter",
+          "waning_crescent": "Waning crescent"
+        },
+        "state_attributes": {
+          "next_phase": {
+            "name": "Next phase"
+          },
+          "next_phase_at": {
+            "name": "Next phase date"
+          }
+        }
+      }
+    }
+  },
+  "issues": {
+    "deprecated_entity": {
+      "title": "Deprecated sensor {entity_id} is still in use",
+      "description": "The {entity_id} sensor keeps its v2026.7.0 behaviour for existing installs, but it is deprecated and superseded by the {replacement_key} sensor. It is currently in use — evidence: {evidence}. Please update these to use {replacement_key} — {entity_id} is planned for removal in version 2026.9.0.{detail_hint}"
+    },
+    "hidden_deprecated": {
+      "title": "Deprecated sensors hidden automatically",
+      "description": "{count} deprecated MetService Weather sensor(s) were hidden because nothing currently references them: {entity_ids}. They still work and keep recording history in the background — you can un-hide any of them individually from Settings > Devices & services > Entities. This notice will not reappear once dismissed, unless another sensor is newly hidden."
+    },
+    "deprecated_sweep_v2": {
+      "title": "Deprecated sensors disabled or hidden automatically",
+      "description": "{disabled_count} deprecated sensor(s) were disabled because nothing currently uses them: {disabled_entity_ids}. Re-enable any of them from Settings > Devices & services > Entities if you need them back. {hidden_count} deprecated sensor(s) were hidden because they are still in use somewhere: {hidden_entity_ids} — see their individual repair issues for details on what's using them. This notice will not reappear once dismissed, unless another sensor is newly disabled or hidden."
+    },
+    "removed_entity": {
+      "title": "Removed entity {entity_id} is still in use",
+      "description": "The {entity_id} entity no longer exists in this MetService Weather installation, but it is still referenced by: {references}. Suggested replacement: {replacement}. Please update these automations/scripts — {entity_id} will not come back."
+    },
+    "legacy_entry": {
+      "title": "This MetService Weather entry needs reconfiguration",
+      "description": "This entry uses {reason}, which stopped working in v1.0.0. Select **Reconfigure** on this integration entry and choose a current MetService location, or stay on integration version v0.9.19 if you need the previous behaviour."
+    },
+    "forecast_attributes_removed": {
+      "title": "Removed forecast_hourly/forecast_daily attributes are still read",
+      "description": "The following automations/scripts still read the forecast_hourly or forecast_daily weather-entity attributes, which were removed: {references}. Forecasts now come from the weather.get_forecasts action (Home Assistant's 2024.4+ direction) — or use the opt-in Rain next 8 hours / Rain next 24 hours sensors as ready-made replacements."
+    },
+    "marine_device_move": {
+      "title": "Marine sensors moved to a new device",
+      "description": "Tide, boating, and surf entities now live on the {marine_device} device instead of the main location device — entity IDs are unchanged, so entity-based automations keep working. But device-based triggers, conditions, or actions in the following automations/scripts still target the old device and may no longer fire as expected: {references}. Open each one and re-select the entity, or point it at the {marine_device} device."
+    },
+    "entity_id_reclaim": {
+      "title": "{count} MetService sensor(s) can reclaim their entity IDs",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Rename {count} entity ID(s)?",
+            "description": "A deprecated sensor held the canonical ID, so these landed on suffixed ones. The deprecated sensors are gone and nothing references the current IDs:\n\n{renames}\n\nHistory and settings move with the rename.\n\nSelect **Submit** to rename, or **Ignore** this repair to leave things as they are."
+          }
+        }
+      }
+    },
+    "entity_id_reclaim_referenced": {
+      "title": "{count} MetService sensor(s) could reclaim their entity IDs, but they're in use",
+      "description": "These sensors could take their now-free canonical IDs, but something still references them:\n\n{details}\n\nAn automatic rename would break those references — rename each sensor yourself from Settings > Devices & services > Entities once you've updated them. This notice clears itself when nothing is left to reclaim."
+    }
+  }
+}

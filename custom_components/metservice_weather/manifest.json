@@ -1,12 +1,20 @@
 {
   "domain": "metservice_weather",
   "name": "MetService New Zealand Weather",
+  "after_dependencies": [
+    "automation",
+    "lovelace",
+    "script"
+  ],
   "codeowners": [
-    "@ciejer"
+    "@nagelm"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/ciejer/metservice-weather",
+  "documentation": "https://github.com/nagelm/metservice-weather",
+  "integration_type": "service",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/ciejer/metservice-weather/issues",
-  "version": "v0.9"
+  "issue_tracker": "https://github.com/nagelm/metservice-weather/issues",
+  "quality_scale": "gold",
+  "requirements": [],
+  "version": "2026.11.1"
 }

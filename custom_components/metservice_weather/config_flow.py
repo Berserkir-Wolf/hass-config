@@ -1,313 +1,495 @@
 """Config Flow to configure MetService NZ Integration."""
+
 from __future__ import annotations
+import asyncio
 import logging
-from http import HTTPStatus
-import async_timeout
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.core import callback
-from homeassistant.const import CONF_LOCATION, CONF_NAME, CONF_API_KEY
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from homeassistant.const import CONF_LOCATION, CONF_NAME
+from homeassistant.data_entry_flow import section
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
     SelectSelector,
     SelectSelectorConfig,
 )
 
-
 from .const import (
     DOMAIN,
     DEFAULT_LOCATION,
-    LOCATIONS,
+    CONF_AUTO_HIDE_SEASONAL,
+    LOCATION_PATH_RE,
+    LOCATIONS_INDEX_URL,
+    MARINE_INDEX_URL,
+    PUBLIC_URL,
 )
-# Add constantS for the tide step
-CONF_REGION = "tide_region"
-CONF_TIDE_REGION_URL = "tide_region_url"
+from .helpers import normalize_location_path
+
+CONF_MARINE_REGION = "marine_region"
 CONF_TIDE_URL = "tide_url"
-CONF_ENABLE_TIDES = "enable_tides"
+CONF_BOATING_URL = "boating_url"
+CONF_SURF_URL = "surf_url"
+CONF_API = "api"
+CONF_CUSTOM_LOCATION = "custom_location"
+
+SECTION_ADVANCED_OPTIONS = "advanced_options"
+
+_LEGACY_TIDE_REGION_URL = "tide_region_url"
+_LEGACY_BOATING_REGION = "boating_region"
+
+_SKIP = "skip"
 
 _LOGGER = logging.getLogger(__name__)
 
-CONF_API = "api"
+
+async def _async_fetch_search_locations(session, url: str) -> list[dict]:
+    """Return the searchLocations groups of a MetService index page, or []."""
+    try:
+        async with asyncio.timeout(10):
+            response = await session.get(url)
+            data = await response.json(content_type=None)
+        return data["layout"]["search"]["searchLocations"]
+    except Exception:
+        _LOGGER.exception("Failed to fetch %s", url)
+        return []
+
+
+async def _async_location_exists(session, location: str) -> bool | None:
+    """Return whether MetService serves a page for location, or None if unreachable."""
+    try:
+        async with asyncio.timeout(10):
+            response = await session.get(f"{PUBLIC_URL}{location}")
+            async with response:
+                return response.status == 200
+    except Exception:
+        _LOGGER.exception("Failed to check MetService location %s", location)
+        return None
+
+
+async def async_fetch_locations(session) -> list[dict[str, str]]:
+    """Return MetService's town and rural locations as selector options."""
+    return [
+        {"value": child["url"], "label": child["label"]}
+        for island in await _async_fetch_search_locations(session, LOCATIONS_INDEX_URL)
+        for region in island.get("items", [])
+        for child in region.get("children", [])
+        if child.get("label") and LOCATION_PATH_RE.fullmatch(child.get("url") or "")
+    ]
+
 
 class WeatherFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a MetService config flow."""
 
     VERSION = 1
-    async def async_step_user(self, user_input=None):
-        """Allow user to decide between mobile API or public API."""
-        if user_input is None:
-            return await self._show_user_form(user_input)
 
-        self.user_info = user_input
-        self.user_info[CONF_ENABLE_TIDES] = user_input.get(CONF_ENABLE_TIDES, True)
+    @property
+    def _is_reconfiguring(self) -> bool:
+        return hasattr(self, "_reconfig_entry")
 
-        if user_input["api"] == "mobile":
-            return await self.async_step_mobile()
-        else:
-            return await self.async_step_public()
-
-    async def _show_user_form(self, errors=None):
-        """Show the init form to the user."""
-        return self.async_show_form(
-            step_id="user",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        CONF_API, default="public"
-                    ): SelectSelector(SelectSelectorConfig(options=["public", "mobile"])),
-                    vol.Optional(CONF_ENABLE_TIDES, default=True): bool,
-                }
-            ),
-            errors=errors or {},
-        )
-
-
-    async def async_step_public(self, user_input=None):
-        """Handle a flow initiated by the user."""
-        if user_input is None:
-            return await self._show_public_form(user_input)
-
-        errors = {}
-        session = async_create_clientsession(self.hass)
-
-        location = user_input[CONF_LOCATION]
-        location_name = user_input[CONF_NAME]
-        headers = {
-            "Accept-Encoding": "gzip",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
-        }
-        try:
-            with async_timeout.timeout(10):
-                # Use English and US units for the initial test API call. User-supplied units and language will be used for
-                # the created entities.
-                url = f"https://www.metservice.com/publicData/webdata{location}"
-                response = await session.get(url, headers=headers)
-            # _LOGGER.debug(response.status)
-            if response.status != HTTPStatus.OK:
-                # 401 status is most likely bad api_key or api usage limit exceeded
-
-                _LOGGER.error(
-                    "MetService config responded with HTTP error %s: %s",
-                    response.status,
-                    response.reason,
-                )
-                raise Exception
-        except Exception:  # pylint: disable=broad-except
-            _LOGGER.exception("Unexpected exception")
-            errors["base"] = "unknown_error"
-            return await self._show_public_form(errors=errors)
-
-        if not errors:
-            await response.json(content_type=None)
-
-            unique_id = str(f"{DOMAIN}-{location}")
-            await self.async_set_unique_id(unique_id)
-            self._abort_if_unique_id_configured()
-
-            self.user_info[CONF_LOCATION] = user_input[CONF_LOCATION]
-            self.user_info[CONF_NAME] = location_name
-            self.user_info[CONF_API] = "public"
-            if not self.user_info.get(CONF_ENABLE_TIDES, True):
-                # The user has opted out of tides functionality, skip to creating entry
-                return self.async_create_entry(
-                    title=self.user_info[CONF_NAME],
-                    data=self.user_info,
-                )
-            return await self.async_step_tide_region()
-
-    async def _show_public_form(self, errors=None):
-        """Show the setup form to the user."""
-
-        return self.async_show_form(
-            step_id="public",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        CONF_LOCATION, default=DEFAULT_LOCATION
-                    ): SelectSelector(SelectSelectorConfig(options=LOCATIONS)),
-                    vol.Required(
-                        CONF_NAME, default=self.hass.config.location_name
-                    ): str,
-                }
-            ),
-            errors=errors or {},
-        )
-
-    async def async_step_mobile(self, user_input=None):
-        """Handle a flow initiated by the user."""
-        if user_input is None:
-            return await self._show_mobile_form(user_input)
-
-        errors = {}
-        session = async_create_clientsession(self.hass)
-
-        api_key = user_input[CONF_API_KEY]
-        location_name = user_input[CONF_NAME]
-        headers = {
-            "Accept": "*/*",
-            "User-Agent": "MetServiceNZ/2.19.3 (com.metservice.iphoneapp; build:332; iOS 17.1.1) Alamofire/5.4.3",
-            "Accept-Language": "en-CA;q=1.0",
-            "Accept-Encoding": "br;q=1.0, gzip;q=0.9, deflate;q=0.8",
-            "Connection": "keep-alive",
-            "apiKey": api_key
-        }
-        try:
-            with async_timeout.timeout(10):
-                # Use English and US units for the initial test API call. User-supplied units and language will be used for
-                # the created entities.
-                url = "https://api.metservice.com/mobile/nz/weatherData/-43.123/172.123"
-                response = await session.get(url, headers=headers)
-            # _LOGGER.debug(response.status)
-            if response.status != HTTPStatus.OK:
-                # 401 status is most likely bad api_key or api usage limit exceeded
-
-                _LOGGER.error(
-                    "MetService config responded with HTTP error %s: %s",
-                    response.status,
-                    response.reason,
-                )
-                raise Exception
-        except Exception:  # pylint: disable=broad-except
-            _LOGGER.exception("Unexpected exception")
-            errors["base"] = "unknown_error"
-            return await self._show_mobile_form(errors=errors)
-
-        if not errors:
-            await response.json(content_type=None)
-
-            unique_id = str(f"{DOMAIN}-{location_name}")
-            await self.async_set_unique_id(unique_id)
-            self._abort_if_unique_id_configured()
-
-            self.user_info[CONF_API_KEY] = api_key
-            self.user_info[CONF_NAME] = location_name
-            self.user_info[CONF_API] = "mobile"
-            if not self.user_info.get(CONF_ENABLE_TIDES, True):
-                # The user has opted out of tides functionality, skip to creating entry
-                return self.async_create_entry(
-                    title=self.user_info[CONF_NAME],
-                    data=self.user_info,
-                )
-            return await self.async_step_tide_region()
-
-    async def _show_mobile_form(self, errors=None):
-        """Show the setup form to the user."""
-        return self.async_show_form(
-            step_id="mobile",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        CONF_API_KEY, default=""
-                    ): str,
-                    vol.Required(
-                        CONF_NAME, default=self.hass.config.location_name
-                    ): str,
-                }
-            ),
-            errors=errors or {},
-        )
-    @callback
-    def _async_generate_select_schema_region(self, options: list[dict], field_name: str) -> vol.Schema:
-        """Generate a schema with a dynamic SelectSelector based on options provided."""
-        select_options = {opt['heading']['label']: opt['heading']['url'] for opt in options}
-        return vol.Schema(
-            {
-                vol.Required(field_name): SelectSelector(SelectSelectorConfig(options=list(select_options.keys()))),
-            }
-        )
-    @callback
-    def _async_generate_select_schema_location(self, options: list[dict], field_name: str) -> vol.Schema:
-        """Generate a schema with a dynamic SelectSelector based on options provided."""
-        self.locations_map = {str(index): opt['label'] for index, opt in enumerate(options)}
-        return vol.Schema(
-            {
-                vol.Required(field_name): SelectSelector(SelectSelectorConfig(options=list(self.locations_map.values()))),
-            }
-        )
-    def get_tide_location_url_from_label(self, label):
-        """Get the URL for the selected tide location."""
-        for index, location_label in self.locations_map.items():
-            if location_label == label:
-                # Assuming `self.locations` is the original list of dicts from which `locations_map` was made:
-                return self.locations[int(index)]['action']
-        return None
-
-    async def async_step_tide_region(self, user_input=None):
-        """Handle selecting a tide region."""
-        if user_input is None:
-            # Make the REST call to get the list of regions
-            session = async_create_clientsession(self.hass)
-            response = await session.get('https://www.metservice.com/publicData/webdata/marine')
-            regions_data = await response.json()
-            self.regions = regions_data['layout']['search']['searchLocations'][0]['items']
-
-            return self.async_show_form(
-                step_id="tide_region",
-                data_schema=self._async_generate_select_schema_region(self.regions, CONF_REGION),
+    def _finish_flow(self):
+        """Create a new entry or update the existing one when reconfiguring."""
+        if self._is_reconfiguring:
+            return self.async_update_reload_and_abort(
+                self._reconfig_entry,
+                unique_id=f"{DOMAIN}-{self.user_info[CONF_LOCATION]}",
+                data=self.user_info,
             )
-        # Save the selected region's URL and move to the next step
-        selected_label = user_input[CONF_REGION]
-        selected_region = next((item for item in self.regions if item['heading']['label'] == selected_label), None)
-        self.user_info[CONF_TIDE_REGION_URL] = selected_region['heading']['url'] if selected_region else None
-        return await self.async_step_tide_location()
-
-    async def async_step_tide_location(self, user_input=None):
-        """Handle selecting a specific tide location within the region."""
-        if user_input is None:
-            region = self.user_info[CONF_TIDE_REGION_URL]
-            # Make the REST call for the locations within the selected region
-            url = f"https://www.metservice.com/publicData/webdata/{region}/tides"
-            session = async_create_clientsession(self.hass)
-            response = await session.get(url)
-            locations_data = await response.json()
-            self.locations = locations_data['layout']['primary']['map']['modules'][0]['markers']  # Adjust this based on the actual structure of the response
-            return self.async_show_form(
-                step_id="tide_location",
-                data_schema=self._async_generate_select_schema_location(self.locations, CONF_TIDE_URL),
-            )
-        else:
-            # User has selected a location, find the URL and save the data to finish the config flow
-            selected_label = user_input[CONF_TIDE_URL]
-            tide_url = self.get_tide_location_url_from_label(selected_label)
-            if tide_url:
-                session = async_create_clientsession(self.hass)
-                tide_url = f"https://www.metservice.com/publicData/webdata/{tide_url}"
-                self.user_info[CONF_TIDE_URL] = tide_url
-                try:
-                    with async_timeout.timeout(10):
-                        # Use English and US units for the initial test API call. User-supplied units and language will be used for
-                        # the created entities.
-                        headers = {
-                            "Accept-Encoding": "gzip",
-                            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
-                        }
-                        response = await session.get(tide_url, headers=headers)
-                    # _LOGGER.debug(response.status)
-                    if response.status != HTTPStatus.OK:
-                        # 401 status is most likely bad api_key or api usage limit exceeded
-
-                        _LOGGER.error(
-                            "MetService config responded with HTTP error %s: %s",
-                            response.status,
-                            response.reason,
-                        )
-                        raise Exception
-                except Exception:  # pylint: disable=broad-except
-                    _LOGGER.exception("Unexpected exception")
-                    return self.async_show_form(
-                        step_id="tide_location",
-                        data_schema=self._async_generate_select_schema_location(self.locations, CONF_TIDE_URL),
-                    )
-
-            else:
-                # Handle error case where URL is not found
-                return self.async_show_form(
-                    step_id="tide_location",
-                    data_schema=self._async_generate_select_schema_location(self.locations, CONF_TIDE_URL),
-                )
-
-        # Now you can create the entry with all the necessary information
         return self.async_create_entry(
-            title=self.user_info[CONF_NAME],
-            data=self.user_info,
+            title=self.user_info[CONF_NAME], data=self.user_info
         )
+
+    async def async_step_user(self, user_input=None):
+        """Handle initial entry — seed empty user_info and go to setup."""
+        self.user_info = {}
+        return await self.async_step_setup()
+
+    async def async_step_reconfigure(self, user_input=None):
+        """Re-entry point — seed user_info from the existing entry."""
+        self._reconfig_entry = self._get_reconfigure_entry()
+        self.user_info = dict(self._reconfig_entry.data)
+        return await self.async_step_setup()
+
+    async def async_step_setup(self, user_input=None):
+        """Page 1: location, name and an optional marine region."""
+        if user_input is None:
+            session = async_get_clientsession(self.hass)
+            self.locations, marine = await asyncio.gather(
+                async_fetch_locations(session),
+                _async_fetch_search_locations(session, MARINE_INDEX_URL),
+            )
+            self.regions = marine[0].get("items", []) if marine else []
+            if not self.locations:
+                return self.async_abort(reason="cannot_connect")
+
+            return self.async_show_form(
+                step_id="setup",
+                data_schema=self._build_setup_schema(),
+            )
+
+        advanced_options = user_input.get(SECTION_ADVANCED_OPTIONS, {})
+        custom_location = advanced_options.get(CONF_CUSTOM_LOCATION, "").strip()
+        picked = user_input.get(CONF_LOCATION)
+        # A custom location left as pre-filled gives way to a different list pick.
+        use_custom = custom_location and (
+            custom_location != self._custom_prefill
+            or picked in (None, self._location_default)
+        )
+        location = normalize_location_path(custom_location) if use_custom else picked
+        error = None
+        if not location:
+            error = "invalid_location"
+        elif use_custom and location not in {o["value"] for o in self.locations}:
+            exists = await _async_location_exists(
+                async_get_clientsession(self.hass), location
+            )
+            if exists is None:
+                error = "cannot_connect"
+            elif not exists:
+                error = "location_not_found"
+        if error:
+            return self.async_show_form(
+                step_id="setup",
+                data_schema=self._build_setup_schema(user_input),
+                errors={"base": error},
+            )
+        self.user_info[CONF_LOCATION] = location
+        self.user_info[CONF_NAME] = user_input[CONF_NAME]
+        self.user_info[CONF_API] = "public"
+        self.user_info[CONF_AUTO_HIDE_SEASONAL] = advanced_options.get(
+            CONF_AUTO_HIDE_SEASONAL, False
+        )
+
+        if not self._is_reconfiguring:
+            await self.async_set_unique_id(f"{DOMAIN}-{location}")
+            self._abort_if_unique_id_configured()
+        elif (
+            other := self.hass.config_entries.async_entry_for_domain_unique_id(
+                DOMAIN, f"{DOMAIN}-{location}"
+            )
+        ) and other.entry_id != self._reconfig_entry.entry_id:
+            return self.async_abort(reason="already_configured")
+
+        marine_label = user_input.get(CONF_MARINE_REGION, _SKIP)
+        if marine_label == _SKIP:
+            self.user_info[CONF_MARINE_REGION] = ""
+            self.user_info[CONF_TIDE_URL] = ""
+            self.user_info[CONF_BOATING_URL] = ""
+            self.user_info[CONF_SURF_URL] = ""
+            self.user_info.pop(_LEGACY_TIDE_REGION_URL, None)
+            self.user_info.pop(_LEGACY_BOATING_REGION, None)
+            return self._finish_flow()
+
+        region = next(
+            (r for r in self.regions if r["heading"]["label"] == marine_label), None
+        )
+        marine_region_url = region["heading"]["url"].lstrip("/") if region else ""
+        self.user_info[CONF_MARINE_REGION] = marine_region_url
+        self.user_info.pop(_LEGACY_TIDE_REGION_URL, None)
+        self.user_info.pop(_LEGACY_BOATING_REGION, None)
+
+        return await self.async_step_locations()
+
+    def _build_setup_schema(self, submitted: dict | None = None) -> vol.Schema:
+        """Build the setup form schema."""
+        values = submitted if submitted is not None else self.user_info
+        advanced = values.get(SECTION_ADVANCED_OPTIONS, values)
+        stored_location = values.get(CONF_LOCATION)
+        location = (
+            stored_location
+            if submitted is not None
+            else stored_location or DEFAULT_LOCATION
+        )
+        listed = {option["value"] for option in self.locations}
+        custom_location = advanced.get(CONF_CUSTOM_LOCATION)
+        if custom_location is None:
+            custom_location = (
+                stored_location
+                if isinstance(stored_location, str)
+                and stored_location not in listed
+                and LOCATION_PATH_RE.fullmatch(stored_location)
+                else ""
+            )
+        if submitted is None:
+            self._custom_prefill = custom_location
+            self._location_default = location if location in listed else None
+
+        marine_default = _SKIP
+        if submitted is None:
+            current_region = self.user_info.get(CONF_MARINE_REGION, "")
+            if not current_region:
+                current_region = self.user_info.get(
+                    _LEGACY_TIDE_REGION_URL,
+                    self.user_info.get(_LEGACY_BOATING_REGION, ""),
+                )
+            for r in self.regions:
+                if r["heading"]["url"].lstrip("/") == current_region:
+                    marine_default = r["heading"]["label"]
+                    break
+        else:
+            marine_default = submitted.get(CONF_MARINE_REGION, _SKIP)
+
+        region_opts = [{"value": _SKIP, "label": "None — skip marine data"}] + [
+            {"value": r["heading"]["label"], "label": r["heading"]["label"]}
+            for r in self.regions
+        ]
+
+        return vol.Schema(
+            {
+                vol.Required(
+                    CONF_NAME,
+                    default=values.get(CONF_NAME, self.hass.config.location_name),
+                ): str,
+                vol.Optional(
+                    CONF_LOCATION,
+                    description={
+                        "suggested_value": location if location in listed else None
+                    },
+                ): SelectSelector(SelectSelectorConfig(options=self.locations)),
+                vol.Required(
+                    CONF_MARINE_REGION, default=marine_default
+                ): SelectSelector(SelectSelectorConfig(options=region_opts)),
+                vol.Required(SECTION_ADVANCED_OPTIONS): section(
+                    vol.Schema(
+                        {
+                            vol.Optional(
+                                CONF_AUTO_HIDE_SEASONAL,
+                                default=advanced.get(CONF_AUTO_HIDE_SEASONAL, False),
+                            ): bool,
+                            vol.Optional(
+                                CONF_CUSTOM_LOCATION,
+                                description={"suggested_value": custom_location},
+                            ): str,
+                        }
+                    ),
+                    {
+                        "collapsed": not (
+                            custom_location
+                            or advanced.get(CONF_AUTO_HIDE_SEASONAL, False)
+                        )
+                    },
+                ),
+            }
+        )
+
+    async def async_step_locations(self, user_input=None):
+        """Fetch and display tide, boating, and surf location selectors."""
+        marine_region = self.user_info.get(CONF_MARINE_REGION, "")
+
+        if user_input is None:
+            session = async_get_clientsession(self.hass)
+
+            results = dict(
+                zip(
+                    ["tide", "boating", "surf"],
+                    await asyncio.gather(
+                        self._fetch_tide_locations(session, marine_region),
+                        self._fetch_boating_locations(session, marine_region),
+                        self._fetch_surf_locations(session, marine_region),
+                        return_exceptions=True,
+                    ),
+                )
+            )
+
+            for key in ("tide", "boating", "surf"):
+                if isinstance(results[key], Exception):
+                    _LOGGER.error("Failed to fetch %s locations: %s", key, results[key])
+                    results[key] = []
+
+            self._tide_locations = results["tide"]
+            self._boating_locations = results["boating"]
+            self._surf_locations = results["surf"]
+
+            self._tide_map = self._build_label_map(self._tide_locations)
+            self._boating_map = self._build_label_map(self._boating_locations)
+            self._surf_map = self._build_label_map(self._surf_locations)
+
+            return self.async_show_form(
+                step_id="locations",
+                data_schema=vol.Schema(self._build_locations_schema()),
+            )
+
+        errors = {}
+
+        tide_label = user_input.get(CONF_TIDE_URL, _SKIP)
+        if tide_label == _SKIP:
+            self.user_info[CONF_TIDE_URL] = ""
+        elif self._tide_map:
+            url = self._resolve_url(
+                tide_label, self._tide_map, self._tide_locations, marine_region, "tides"
+            )
+            if not url:
+                errors[CONF_TIDE_URL] = "tide_location_not_found"
+            else:
+                self.user_info[CONF_TIDE_URL] = f"{PUBLIC_URL}/{url.lstrip('/')}"
+
+        boating_label = user_input.get(CONF_BOATING_URL, _SKIP)
+        if boating_label == _SKIP:
+            self.user_info[CONF_BOATING_URL] = ""
+        elif self._boating_map:
+            url = self._resolve_url(
+                boating_label,
+                self._boating_map,
+                self._boating_locations,
+                marine_region,
+                "boating",
+            )
+            if not url:
+                errors[CONF_BOATING_URL] = "boating_location_not_found"
+            else:
+                self.user_info[CONF_BOATING_URL] = f"{PUBLIC_URL}/{url.lstrip('/')}"
+
+        surf_label = user_input.get(CONF_SURF_URL, _SKIP)
+        if surf_label == _SKIP:
+            self.user_info[CONF_SURF_URL] = ""
+        elif self._surf_map:
+            url = self._resolve_url(
+                surf_label, self._surf_map, self._surf_locations, marine_region, "surf"
+            )
+            if not url:
+                errors[CONF_SURF_URL] = "surf_location_not_found"
+            else:
+                self.user_info[CONF_SURF_URL] = f"{PUBLIC_URL}/{url.lstrip('/')}"
+
+        if errors:
+            return self.async_show_form(
+                step_id="locations",
+                data_schema=vol.Schema(self._build_locations_schema()),
+                errors=errors,
+            )
+
+        return self._finish_flow()
+
+    def _build_label_map(self, markers: list) -> dict:
+        """Build an index→label map from a markers list."""
+        return {
+            str(i): m["label"]["text"]
+            for i, m in enumerate(markers)
+            if isinstance(m.get("label"), dict) and m["label"].get("text")
+        }
+
+    def _build_locations_schema(self) -> dict:
+        """Build the locations form schema with skip options for all three."""
+        skip_opt = [{"value": _SKIP, "label": "None — skip"}]
+
+        def _opts(label_map: dict) -> list:
+            return skip_opt + [
+                {"value": label, "label": label} for label in label_map.values()
+            ]
+
+        def _default(conf_key: str, label_map: dict) -> str:
+            """Pre-fill from the existing config entry URL, if present."""
+            stored_url = self.user_info.get(conf_key, "")
+            if not stored_url:
+                return _SKIP
+            for label in label_map.values():
+                if label.lower().replace(" ", "-") in stored_url.lower():
+                    return label
+            return _SKIP
+
+        schema = {}
+        if self._tide_map:
+            schema[
+                vol.Required(
+                    CONF_TIDE_URL, default=_default(CONF_TIDE_URL, self._tide_map)
+                )
+            ] = SelectSelector(SelectSelectorConfig(options=_opts(self._tide_map)))
+        if self._boating_map:
+            schema[
+                vol.Required(
+                    CONF_BOATING_URL,
+                    default=_default(CONF_BOATING_URL, self._boating_map),
+                )
+            ] = SelectSelector(SelectSelectorConfig(options=_opts(self._boating_map)))
+        if self._surf_map:
+            schema[
+                vol.Required(
+                    CONF_SURF_URL, default=_default(CONF_SURF_URL, self._surf_map)
+                )
+            ] = SelectSelector(SelectSelectorConfig(options=_opts(self._surf_map)))
+        return schema
+
+    async def _fetch_tide_locations(self, session, marine_region: str) -> list:
+        url = f"{PUBLIC_URL}/{marine_region}/tides"
+        async with asyncio.timeout(10):
+            response = await session.get(url)
+        data = await response.json(content_type=None)
+        for module in (
+            data.get("layout", {}).get("primary", {}).get("map", {}).get("modules", [])
+        ):
+            if "markers" in module:
+                return module["markers"]
+        return []
+
+    async def _fetch_boating_locations(self, session, marine_region: str) -> list:
+        region_slug = marine_region.split("/")[-1]
+        url = f"{PUBLIC_URL}/{marine_region}/boating"
+        async with asyncio.timeout(10):
+            response = await session.get(url)
+        data = await response.json(content_type=None)
+        all_markers = (
+            data.get("layout", {}).get("primary", {}).get("map", {}).get("markers", [])
+        )
+        prefix = f"/marine/regions/{region_slug}/boating/locations/"
+        resolved = [m for m in all_markers if self._marker_url(m).startswith(prefix)]
+        return (
+            resolved
+            if resolved
+            else [
+                m
+                for m in all_markers
+                if isinstance(m.get("label"), dict) and m["label"].get("text")
+            ]
+        )
+
+    async def _fetch_surf_locations(self, session, marine_region: str) -> list:
+        region_slug = marine_region.split("/")[-1]
+        url = f"{PUBLIC_URL}/{marine_region}/surf"
+        async with asyncio.timeout(10):
+            response = await session.get(url)
+        data = await response.json(content_type=None)
+        all_markers = (
+            data.get("layout", {}).get("primary", {}).get("map", {}).get("markers", [])
+        )
+        prefix = f"/marine/regions/{region_slug}/surf/locations/"
+        resolved = [m for m in all_markers if self._marker_url(m).startswith(prefix)]
+        return (
+            resolved
+            if resolved
+            else [
+                m
+                for m in all_markers
+                if isinstance(m.get("label"), dict) and m["label"].get("text")
+            ]
+        )
+
+    @staticmethod
+    def _marker_url(marker: dict) -> str:
+        """Extract URL from a map marker's action.modules[0].link.url."""
+        try:
+            return marker["action"]["modules"][0]["link"]["url"]
+        except KeyError, IndexError, TypeError:
+            return ""
+
+    def _resolve_url(
+        self,
+        label: str,
+        label_map: dict,
+        locations: list,
+        marine_region: str,
+        service: str,
+    ) -> str | None:
+        """Return the location page path for the selected label."""
+        for idx, loc_label in label_map.items():
+            if loc_label != label:
+                continue
+            marker = locations[int(idx)]
+            url = self._marker_url(marker)
+            if url:
+                return url
+            action = marker.get("action")
+            if isinstance(action, str) and action.startswith("/"):
+                return action
+            slug = label.lower().replace(" ", "-")
+            fallback = f"/{marine_region}/{service}/locations/{slug}"
+            _LOGGER.warning("Using constructed %s URL fallback: %s", service, fallback)
+            return fallback
+        return None

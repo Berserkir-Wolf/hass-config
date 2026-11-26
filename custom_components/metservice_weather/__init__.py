@@ -1,96 +1,149 @@
 """The MetService Weather component."""
+
+from __future__ import annotations
+
 import logging
 from typing import Final
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_NAME,
-    CONF_LATITUDE,
-    CONF_LONGITUDE,
     CONF_LOCATION,
-    CONF_API_KEY,
     Platform,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import issue_registry as ir
 from .coordinator import WeatherUpdateCoordinator, WeatherUpdateCoordinatorConfig
-from .const import DOMAIN, MOBILE_URL, PUBLIC_URL, MOBILE_WARNINGS_URL, PUBLIC_WARNINGS_URL, API_METRIC, API_URL_METRIC
+from .entity import async_register_location_device
+from .const import (
+    DOMAIN,
+    LOCATION_PATH_RE,
+    PUBLIC_URL,
+    PUBLIC_WARNINGS_URL,
+    API_METRIC,
+)
 
 PLATFORMS: Final = [Platform.WEATHER, Platform.SENSOR]
 
+type MetServiceConfigEntry = ConfigEntry[WeatherUpdateCoordinator]
+
 _LOGGER = logging.getLogger(__name__)
 
+_CONF_API = "api"
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+
+def _is_location_path(location: object) -> bool:
+    """Return True when location is a public-API location path."""
+    return (
+        isinstance(location, str) and LOCATION_PATH_RE.fullmatch(location) is not None
+    )
+
+
+_LEGACY_ENTRY_LEARN_MORE_URL = "https://github.com/nagelm/metservice-weather/releases"
+
+
+def _check_legacy_entry(hass: HomeAssistant, entry: MetServiceConfigEntry) -> None:
+    """Create or clear a repair issue for a pre-v1.0.0 entry."""
+    issue_id = f"legacy_entry_{entry.entry_id}"
+    try:
+        api = entry.data.get(_CONF_API)
+        location = entry.data.get(CONF_LOCATION)
+        if api == "mobile":
+            reason = "the private mobile API, which was removed in v1.0.0"
+        elif not _is_location_path(location):
+            reason = f"an unrecognised location value ({location!r})"
+        else:
+            ir.async_delete_issue(hass, DOMAIN, issue_id)
+            return
+
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            issue_id,
+            is_fixable=False,
+            severity=ir.IssueSeverity.ERROR,
+            translation_key="legacy_entry",
+            learn_more_url=_LEGACY_ENTRY_LEARN_MORE_URL,
+            translation_placeholders={"reason": reason},
+        )
+    except Exception:
+        _LOGGER.debug(
+            "Legacy-entry repair check failed; continuing without it", exc_info=True
+        )
+
+
+async def _async_migrate_legacy_unique_ids(
+    hass: HomeAssistant, entry: MetServiceConfigEntry
+) -> None:
+    """Re-key entities registered by v0.9.x onto the current unique_id format."""
+    try:
+        location = entry.data.get(CONF_LOCATION)
+        if not _is_location_path(location):
+            return
+        new_prefix = f"{location}_".lower()
+        ent_reg = er.async_get(hass)
+
+        @callback
+        def _rekey(reg_entry: er.RegistryEntry) -> dict[str, str] | None:
+            unique_id = reg_entry.unique_id
+            if "," not in unique_id or unique_id.startswith("/"):
+                return None
+            new_unique_id = new_prefix + unique_id.rsplit(",", 1)[1].lower()
+            if ent_reg.async_get_entity_id(reg_entry.domain, DOMAIN, new_unique_id):
+                return None
+            _LOGGER.info(
+                "Migrating %s from v0.9 unique_id %r to %r",
+                reg_entry.entity_id,
+                reg_entry.unique_id,
+                new_unique_id,
+            )
+            return {"new_unique_id": new_unique_id}
+
+        await er.async_migrate_entries(hass, entry.entry_id, _rekey)
+    except Exception:
+        _LOGGER.warning(
+            "v0.9 unique_id migration failed; v0.9 entities may be recreated",
+            exc_info=True,
+        )
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: MetServiceConfigEntry):
     """Set up the MetService Weather component."""
-    api = entry.data["api"]
-    hass.data.setdefault(DOMAIN, {})
+    _check_legacy_entry(hass, entry)
+    await _async_migrate_legacy_unique_ids(hass, entry)
 
-    unit_system_api = API_URL_METRIC
-    unit_system = API_METRIC
+    config = WeatherUpdateCoordinatorConfig(
+        location=entry.data[CONF_LOCATION],
+        location_name=entry.data[CONF_NAME],
+        tide_url=entry.data.get("tide_url", ""),
+        boating_url=entry.data.get("boating_url", ""),
+        surf_url=entry.data.get("surf_url", ""),
+        unit_system=API_METRIC,
+        api_url=PUBLIC_URL,
+        warnings_url=PUBLIC_WARNINGS_URL,
+    )
 
-    if api == "public":
+    weathercoordinator = WeatherUpdateCoordinator(hass, config)
+    await weathercoordinator.async_config_entry_first_refresh()
 
-        config = WeatherUpdateCoordinatorConfig(
-            location=entry.data[CONF_LOCATION],
-            location_name=entry.data[CONF_NAME],
-            api_type=entry.data["api"],
-            latitude = entry.data.get(CONF_LATITUDE, hass.config.latitude),
-            longitude = entry.data.get(CONF_LONGITUDE, hass.config.longitude),
-            enable_tides = entry.data.get("enable_tides", False),
-            tide_url = entry.data.get("tide_url", ""),
-            unit_system_api=unit_system_api,
-            unit_system=unit_system,
-            api_url=PUBLIC_URL,
-            warnings_url=PUBLIC_WARNINGS_URL,
-            api_key='1',
-        )
+    entry.runtime_data = weathercoordinator
 
-        weathercoordinator = WeatherUpdateCoordinator(hass, config)
-        await weathercoordinator.async_config_entry_first_refresh()
+    weathercoordinator.location_device_id = async_register_location_device(
+        hass, entry, weathercoordinator
+    )
 
-        entry.async_on_unload(entry.add_update_listener(_async_update_listener))
-        hass.data[DOMAIN][entry.entry_id] = weathercoordinator
-
-        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
-        return True
-    else: # mobile api
-        api_key = entry.data[CONF_API_KEY]
-
-        config = WeatherUpdateCoordinatorConfig(
-            location=entry.data[CONF_NAME],
-            location_name=entry.data[CONF_NAME],
-            api_type=entry.data["api"],
-            latitude = entry.data.get(CONF_LATITUDE, hass.config.latitude),
-            longitude = entry.data.get(CONF_LONGITUDE, hass.config.longitude),
-            enable_tides = entry.data.get("enable_tides", False),
-            tide_url = entry.data.get("tide_url", ""),
-            unit_system_api=unit_system_api,
-            unit_system=unit_system,
-            api_url=MOBILE_URL,
-            warnings_url=MOBILE_WARNINGS_URL,
-            api_key=api_key,
-        )
-
-        weathercoordinator = WeatherUpdateCoordinator(hass, config)
-        await weathercoordinator.async_config_entry_first_refresh()
-
-        entry.async_on_unload(entry.add_update_listener(_async_update_listener))
-        hass.data[DOMAIN][entry.entry_id] = weathercoordinator
-
-        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
-        return True
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: MetServiceConfigEntry) -> bool:
     """Unload a config entry."""
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
-
-    return unload_ok
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
-async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Update listener."""
-    await hass.config_entries.async_reload(entry.entry_id)
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate old config entry to current version."""
+    _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
+    if config_entry.version > 1:
+        return False
+    return True
