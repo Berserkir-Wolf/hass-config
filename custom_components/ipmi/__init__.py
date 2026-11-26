@@ -17,6 +17,7 @@ from homeassistant.const import (
     CONF_USERNAME,
 )
 from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse, SupportsResponse
+from homeassistant.exceptions import Unauthorized, UnknownUser
 from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -29,19 +30,26 @@ from .const import (
     CONF_IGNORE_CHECKSUM_ERRORS,
     CONF_IPMI_SERVER_HOST,
     CONF_KG_KEY,
+    CONF_NATIVE_CIPHER_SUITE,
+    CONF_NATIVE_PROTOCOL,
     CONF_PRIVILEGE_LEVEL,
     CONF_CREATE_ENERGY_SENSORS,
     CONF_MINIMAL_IPMI,
     CONF_POWER_OFF_DELAY,
+    CONF_SCAN_INTERVAL_OFF,
     CONF_SENSOR_TYPES,
     DEFAULT_MINIMAL_IPMI,
     DEFAULT_POWER_OFF_DELAY,
     COORDINATOR,
     DEFAULT_BACKEND_PREFERENCE,
     DEFAULT_KG_KEY,
+    DEFAULT_NATIVE_CIPHER_SUITE,
+    DEFAULT_NATIVE_PROTOCOL,
     DEFAULT_PRIVILEGE_LEVEL,
     DEFAULT_CREATE_ENERGY_SENSORS,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SCAN_INTERVAL_OFF,
+    MIN_SCAN_INTERVAL,
     DEFAULT_SENSOR_TYPES,
     DEFAULT_TIMEOUT,
     DISPATCHERS,
@@ -56,7 +64,15 @@ from .const import (
 )
 from .helpers import IpmiData, get_ipmi_data, get_ipmi_server
 from .server import IpmiDeviceInfo, IpmiServer
-from .util import as_str_list, effective_sensor_types, format_entry_unique_id, normalize_options
+from .util import (
+    SERVICE_CALLER_UNKNOWN,
+    as_str_list,
+    effective_scan_interval,
+    effective_sensor_types,
+    format_entry_unique_id,
+    normalize_options,
+    service_caller_denial,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -113,7 +129,19 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.data.setdefault(DOMAIN, IpmiData(servers={}, dispatchers={}))
 
     async def handle_send_command(call: ServiceCall) -> ServiceResponse:
-        """Handle the service call."""
+        """Handle the service call (admin users only)."""
+        # send_command runs arbitrary ipmitool commands with the stored BMC
+        # credentials, so it is restricted to admins (#89). Same rule as Home
+        # Assistant's async_register_admin_service, done inline because that
+        # helper only accepts supports_response from HA 2025.6.
+        user_id = call.context.user_id
+        user = await hass.auth.async_get_user(user_id) if user_id else None
+        denial = service_caller_denial(user_id, user)
+        if denial == SERVICE_CALLER_UNKNOWN:
+            raise UnknownUser(context=call.context)
+        if denial is not None:
+            raise Unauthorized(context=call.context)
+
         server = get_ipmi_server(hass, call.data.get("server"))
         message = await hass.async_add_executor_job(
             server[IPMI_DATA].send_command,
@@ -164,6 +192,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ipmi_server_host = "http://localhost"
 
     scan_interval = options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+    scan_interval_off = options.get(CONF_SCAN_INTERVAL_OFF, DEFAULT_SCAN_INTERVAL_OFF)
     backend_preference = options.get(
         CONF_BACKEND_PREFERENCE, DEFAULT_BACKEND_PREFERENCE
     )
@@ -182,6 +211,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             "privilege_level": config.get(
                 CONF_PRIVILEGE_LEVEL, DEFAULT_PRIVILEGE_LEVEL
             ),
+            CONF_NATIVE_PROTOCOL: config.get(
+                CONF_NATIVE_PROTOCOL, DEFAULT_NATIVE_PROTOCOL
+            ),
+            CONF_NATIVE_CIPHER_SUITE: config.get(
+                CONF_NATIVE_CIPHER_SUITE, DEFAULT_NATIVE_CIPHER_SUITE
+            ),
             "ipmi_server_host": ipmi_server_host,
             "addon_port": config.get(CONF_ADDON_PORT),
             "addon_interface": config.get(CONF_ADDON_INTERFACE),
@@ -192,7 +227,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             CONF_MINIMAL_IPMI: options.get(CONF_MINIMAL_IPMI, DEFAULT_MINIMAL_IPMI),
         },
     )
-    coordinator = IpmiCoordinator(hass, scan_interval, data)
+    coordinator = IpmiCoordinator(hass, scan_interval, data, scan_interval_off)
 
     # Fetch initial data so we have data when entities subscribe
     await coordinator.async_config_entry_first_refresh()
@@ -340,6 +375,16 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
             config_entry, options=new_options, minor_version=9, version=2
         )
 
+    # Migrate to version 2.10 - native python-ipmi protocol / cipher suite
+    # (defaults = IPMI 1.5, the previous hard-coded behavior)
+    if config_entry.version == 2 and config_entry.minor_version < 10:
+        new = {**config_entry.data}
+        new.setdefault(CONF_NATIVE_PROTOCOL, DEFAULT_NATIVE_PROTOCOL)
+        new.setdefault(CONF_NATIVE_CIPHER_SUITE, DEFAULT_NATIVE_CIPHER_SUITE)
+        hass.config_entries.async_update_entry(
+            config_entry, data=new, minor_version=10, version=2
+        )
+
     _LOGGER.debug(
         "Migration to version %s.%s successful",
         config_entry.version,
@@ -350,7 +395,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
 
 
 class IpmiCoordinator(DataUpdateCoordinator):
-    def __init__(self, hass, scan_interval, ipmiData):
+    def __init__(self, hass, scan_interval, ipmiData, scan_interval_off=0):
         """Initialize IPMI coordinator."""
         super().__init__(
             hass,
@@ -361,6 +406,27 @@ class IpmiCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=scan_interval),
         )
         self.ipmiData = ipmiData
+        self._scan_interval = scan_interval
+        # 0 = poll at scan_interval regardless of power state (historical behavior).
+        self._scan_interval_off = scan_interval_off
+
+    def _apply_power_state_interval(self, power_on: bool | None) -> None:
+        """Use the powered-off interval while the chassis is off, if configured."""
+        seconds = effective_scan_interval(
+            self._scan_interval,
+            self._scan_interval_off,
+            power_on,
+            minimum=MIN_SCAN_INTERVAL,
+        )
+        new_interval = timedelta(seconds=seconds)
+        if new_interval != self.update_interval:
+            _LOGGER.debug(
+                "Chassis power %s for %s; next polls every %ss",
+                "on" if power_on else "off",
+                self.ipmiData.name,
+                seconds,
+            )
+            self.update_interval = new_interval
 
     async def _async_update_data(self) -> IpmiDeviceInfo:
         """Fetch data from IPMI server."""
@@ -375,4 +441,5 @@ class IpmiCoordinator(DataUpdateCoordinator):
                         entry.async_start_reauth(self.hass)
                 raise UpdateFailed("Error fetching IPMI state")
 
+            self._apply_power_state_interval(self.ipmiData.device_info.power_on)
             return self.ipmiData.device_info

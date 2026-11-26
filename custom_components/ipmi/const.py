@@ -28,6 +28,20 @@ DEFAULT_KG_KEY = ""
 CONF_PRIVILEGE_LEVEL = "privilege_level"
 DEFAULT_PRIVILEGE_LEVEL = "ADMINISTRATOR"
 PRIVILEGE_LEVELS = ["ADMINISTRATOR", "OPERATOR", "USER"]
+
+# Native (python-ipmi) LAN protocol. Missing key = IPMI 1.5 (rmcp), the
+# historical hard-coded behavior. Does not affect the addon / ipmitool path.
+CONF_NATIVE_PROTOCOL = "native_protocol"
+NATIVE_PROTOCOL_RMCP = "rmcp"  # IPMI 1.5
+NATIVE_PROTOCOL_RMCPPLUS = "rmcpplus"  # IPMI 2.0 (RMCP+)
+DEFAULT_NATIVE_PROTOCOL = NATIVE_PROTOCOL_RMCP
+NATIVE_PROTOCOLS = [NATIVE_PROTOCOL_RMCP, NATIVE_PROTOCOL_RMCPPLUS]
+
+# RMCP+ cipher suite for the native path ("auto" = python-ipmi default: 17, then 3).
+CONF_NATIVE_CIPHER_SUITE = "native_cipher_suite"
+NATIVE_CIPHER_SUITE_AUTO = "auto"
+DEFAULT_NATIVE_CIPHER_SUITE = NATIVE_CIPHER_SUITE_AUTO
+NATIVE_CIPHER_SUITES = [NATIVE_CIPHER_SUITE_AUTO, "1", "2", "3", "15", "16", "17"]
 DEFAULT_ADDON_PORT = 9595
 DEFAULT_INTERFACE_TYPE = "lanplus"
 DEFAULT_TIMEOUT = 60
@@ -49,6 +63,11 @@ BACKEND_NONE = "none"
 
 COORDINATOR = "coordinator"
 DEFAULT_SCAN_INTERVAL = 60
+# Poll interval while the chassis reports power off. 0 = same as scan interval.
+CONF_SCAN_INTERVAL_OFF = "scan_interval_off"
+DEFAULT_SCAN_INTERVAL_OFF = 0
+MIN_SCAN_INTERVAL = 10
+MAX_SCAN_INTERVAL_OFF = 3600
 # DEFAULT_SCAN_INTERVAL = 10
 SERVERS = "servers"
 DISPATCHERS = "dispatchers"
@@ -133,6 +152,11 @@ ADDON_SKIP_SECONDS = 300
 ADDON_CAPABILITY_SENSOR_TYPES_FILTER = "sensor_types_filter"
 ADDON_CAPABILITY_RESILIENT_POLL = "resilient_poll"
 ADDON_META_PATH = "meta"
+
+# Addon request headers for BMC secrets (read by ipmi-server 2.5.1+). Keeping secrets
+# in headers instead of the query string keeps them out of HTTP access logs (#90).
+ADDON_PASSWORD_HEADER = "X-Ipmi-Password"
+ADDON_KG_KEY_HEADER = "X-Ipmi-Kg-Key"
 
 # Legacy option: prefer empty sensor_types (kept for config entry downgrade compatibility).
 CONF_MINIMAL_IPMI = "minimal_ipmi"

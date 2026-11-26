@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 import re
 from typing import Any
+from urllib.parse import quote, quote_plus
 
 _AUTH_ERROR_MARKERS = (
     "auth",
@@ -17,6 +18,28 @@ _AUTH_ERROR_MARKERS = (
     "credentials",
     "invalid user",
 )
+
+# Outcomes of ``service_caller_denial`` (admin-only services).
+SERVICE_CALLER_UNKNOWN = "unknown_user"
+SERVICE_CALLER_NOT_ADMIN = "not_admin"
+
+
+def service_caller_denial(user_id: str | None, user: Any) -> str | None:
+    """Return why a caller may not use an admin-only service, or None if allowed.
+
+    Mirrors Home Assistant's ``async_register_admin_service`` check: calls with no
+    user (automations fired by triggers, internal calls) are allowed, calls from a
+    user that no longer exists are refused, and only admin users are allowed.
+    ``user`` is the object returned by ``hass.auth.async_get_user(user_id)``.
+    """
+    if not user_id:
+        return None
+    if user is None:
+        return SERVICE_CALLER_UNKNOWN
+    if not getattr(user, "is_admin", False):
+        return SERVICE_CALLER_NOT_ADMIN
+    return None
+
 
 # IPMI sensor type codes (Table 42-3) → integration sensor groups.
 _RMCP_SENSOR_TYPE_TO_CATEGORY: dict[int, str] = {
@@ -149,6 +172,34 @@ def addon_has_capability(capabilities: set[str], name: str) -> bool:
     return name in capabilities
 
 
+def effective_scan_interval(
+    scan_interval: Any,
+    scan_interval_off: Any = 0,
+    power_on: bool | None = None,
+    minimum: int = 10,
+) -> int:
+    """Seconds until the next poll, based on the last known chassis power state.
+
+    ``scan_interval_off`` applies only when the chassis is known to be off and the
+    value is positive; 0, missing or invalid values keep ``scan_interval`` (the
+    historical single-interval behavior). Unknown power state uses ``scan_interval``.
+    """
+    try:
+        base = int(scan_interval)
+    except (TypeError, ValueError):
+        base = minimum
+    base = max(base, minimum)
+    if power_on is not False:
+        return base
+    try:
+        off = int(scan_interval_off or 0)
+    except (TypeError, ValueError):
+        return base
+    if off <= 0:
+        return base
+    return max(off, minimum)
+
+
 def normalize_options(config: Mapping[str, Any]) -> dict[str, Any]:
     """Normalize options; legacy minimal_ipmi maps to an empty sensor_types list."""
     normalized = dict(config)
@@ -184,11 +235,52 @@ def redact_connection_secrets(
 ) -> str:
     """Remove password / kg key substrings from log-facing error text."""
     redacted = message
-    if password:
-        redacted = redacted.replace(str(password), "***")
-    if kg_key:
-        redacted = redacted.replace(str(kg_key), "***")
+    for secret in (password, kg_key):
+        if not secret:
+            continue
+        secret = str(secret)
+        # Raw value plus the URL-encoded forms that appear in request URLs.
+        for variant in (secret, quote_plus(secret), quote(secret, safe="")):
+            redacted = redacted.replace(variant, "***")
     return redacted
+
+
+def header_safe_secret(value: str | None) -> bool:
+    """Return True when a secret can be sent unchanged as an HTTP header value.
+
+    Only printable ASCII without leading/trailing whitespace qualifies: other
+    values would be re-encoded or rejected by ``requests``, so they keep using
+    the query string exactly as before.
+    """
+    if not value or not isinstance(value, str):
+        return False
+    return value.isascii() and value.isprintable() and value == value.strip()
+
+
+def split_addon_secrets(
+    secrets: Mapping[str, tuple[str, str | None]],
+    *,
+    headers_supported: bool,
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Decide how to send addon secrets: ``(query_params, headers)``.
+
+    ``secrets`` maps a query field name to ``(header_name, value)``. Header-safe
+    values are always sent as headers (ignored by addons older than 2.5.1). They
+    are also kept in the query string unless ``headers_supported`` is True (the
+    addon reported ``api_version``, i.e. 2.6+, which reads the headers), so older
+    addons keep working unchanged.
+    """
+    query: dict[str, str] = {}
+    headers: dict[str, str] = {}
+    for field, (header, value) in secrets.items():
+        if not value:
+            continue
+        if header_safe_secret(value):
+            headers[header] = value
+            if headers_supported:
+                continue
+        query[field] = value
+    return query, headers
 
 
 def looks_like_auth_error(message: str | None) -> bool:
@@ -229,6 +321,60 @@ def validate_kg_key(value: str | None) -> str:
     return value.upper()
 
 
+# python-ipmi interface names for the native LAN connection.
+_NATIVE_RMCP = "rmcp"  # IPMI 1.5
+_NATIVE_RMCPPLUS = "rmcpplus"  # IPMI 2.0 (RMCP+)
+# RMCP+ cipher suites supported by python-ipmi.
+_RMCPPLUS_CIPHER_SUITES = (1, 2, 3, 15, 16, 17)
+
+
+def normalize_cipher_suite(value: Any) -> int | None:
+    """Return a fixed RMCP+ cipher suite id, or None for auto / unset.
+
+    Raises:
+        ValueError: if the value is set but not a supported cipher suite.
+    """
+    if value is None:
+        return None
+    text = str(value).strip().lower()
+    if text in ("", "auto"):
+        return None
+    try:
+        suite = int(text)
+    except ValueError as err:
+        raise ValueError(f"Unsupported cipher suite: {value}") from err
+    if suite not in _RMCPPLUS_CIPHER_SUITES:
+        raise ValueError(f"Unsupported cipher suite: {value}")
+    return suite
+
+
+def native_interface_args(
+    protocol: str | None,
+    cipher_suite: Any = None,
+    kg_key: str | None = None,
+) -> tuple[str, dict[str, Any]]:
+    """Return ``(interface_name, kwargs)`` for ``pyipmi.interfaces.create_interface``.
+
+    Anything other than ``"rmcpplus"`` (including a missing setting) returns the
+    historical IPMI 1.5 arguments unchanged, so existing entries keep working.
+    The cipher suite and Kg key only apply to RMCP+ (IPMI 2.0).
+    """
+    kwargs: dict[str, Any] = {
+        "slave_address": 0x81,
+        "host_target_address": 0x20,
+        "keep_alive_interval": 0,
+    }
+    if (protocol or "").strip().lower() != _NATIVE_RMCPPLUS:
+        return _NATIVE_RMCP, kwargs
+
+    suite = normalize_cipher_suite(cipher_suite)
+    if suite is not None:
+        kwargs["cipher_suite"] = suite
+    if kg_key:
+        kwargs["kg"] = bytes.fromhex(kg_key)
+    return _NATIVE_RMCPPLUS, kwargs
+
+
 def categorize_rmcp_sensor(
     sensor_type_code: int | None,
     units_2: int | None,
@@ -250,3 +396,51 @@ def addon_action_succeeded(response: dict[str, Any] | None) -> bool:
 
 class IpmiChassisCommandError(RuntimeError):
     """Raised when a chassis power command fails on all available backends."""
+
+
+# DCMI "Get Power Reading" fields → sensor names. The names match the labels
+# printed by ``ipmitool dcmi power reading``, which is what the addon parses,
+# so both backends produce the same sensor keys (and entity unique IDs).
+DCMI_POWER_READING_FIELDS: tuple[tuple[str, str], ...] = (
+    ("current_power", "Instantaneous power reading"),
+    ("minimum_power", "Minimum during sampling period"),
+    ("maximum_power", "Maximum during sampling period"),
+    ("average_power", "Average power reading over sample period"),
+)
+DCMI_SAMPLING_PERIOD_NAME = "Sampling period"
+
+
+def dcmi_power_reading_sensors(
+    reading: Any,
+    sensor_types: list[str] | set[str],
+) -> list[tuple[str, str, str, Any]]:
+    """Map a python-ipmi DCMI power reading to sensor entries.
+
+    Returns ``(category, sensor_id, name, value)`` tuples. Power values are in
+    watts; the sampling period is converted from milliseconds to seconds (as
+    ipmitool prints it). Fields missing from the response are skipped.
+    """
+    entries: list[tuple[str, str, str, Any]] = []
+    if reading is None:
+        return entries
+
+    if "power" in sensor_types:
+        for attr, name in DCMI_POWER_READING_FIELDS:
+            value = getattr(reading, attr, None)
+            if value is None:
+                continue
+            entries.append(("power", generate_sensor_id(name), name, value))
+
+    if "time" in sensor_types:
+        period_ms = getattr(reading, "period", None)
+        if period_ms is not None:
+            entries.append(
+                (
+                    "time",
+                    generate_sensor_id(DCMI_SAMPLING_PERIOD_NAME),
+                    DCMI_SAMPLING_PERIOD_NAME,
+                    int(period_ms) // 1000,
+                )
+            )
+
+    return entries

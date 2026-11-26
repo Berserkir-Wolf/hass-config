@@ -51,6 +51,8 @@ async def async_get_config_entry_diagnostics(
             "addon_version": data.addon_version,
             "addon_api_version": getattr(data, "_addon_api_version", None),
             "addon_capabilities": sorted(data.addon_capabilities),
+            # Names only (never values): secrets still sent in the addon query string.
+            "addon_secrets_in_query": sorted(data._addon_secret_parts()[0]),
             "host": data._host,
             "port": data._port,
             "last_rmcp_error": data._last_rmcp_error,
@@ -67,6 +69,8 @@ async def async_get_config_entry_diagnostics(
                 if coordinator.update_interval
                 else None
             ),
+            "scan_interval": getattr(coordinator, "_scan_interval", None),
+            "scan_interval_off": getattr(coordinator, "_scan_interval_off", None),
         },
         "device": device_info.device if device_info else None,
         "power_on": device_info.power_on if device_info else None,

@@ -18,7 +18,9 @@ from homeassistant.helpers.dispatcher import dispatcher_send
 
 from .const import (
     ADDON_FAILURE_SKIP_THRESHOLD,
+    ADDON_KG_KEY_HEADER,
     ADDON_META_PATH,
+    ADDON_PASSWORD_HEADER,
     ADDON_SKIP_SECONDS,
     BACKEND_ADDON,
     BACKEND_NONE,
@@ -27,29 +29,42 @@ from .const import (
     BACKEND_PREFERENCE_RMCP,
     BACKEND_RMCP,
     CONF_IGNORE_CHECKSUM_ERRORS,
+    CONF_NATIVE_CIPHER_SUITE,
+    CONF_NATIVE_PROTOCOL,
     DEFAULT_BACKEND_PREFERENCE,
     DEFAULT_HTTP_CONNECT_TIMEOUT,
     DEFAULT_HTTP_TIMEOUT,
+    DEFAULT_NATIVE_CIPHER_SUITE,
+    DEFAULT_NATIVE_PROTOCOL,
     DEFAULT_SENSOR_TYPES,
     IPMI_NEW_SENSOR_SIGNAL,
+    NATIVE_PROTOCOL_RMCPPLUS,
     SENSOR_TYPES,
 )
 from .util import (
     addon_action_succeeded,
     categorize_rmcp_sensor,
+    dcmi_power_reading_sensors,
     effective_sensor_types,
     generate_sensor_id,
     IpmiChassisCommandError,
     iter_discovered_sensor_ids,
     looks_like_auth_error,
+    native_interface_args,
     normalize_addon_mapping,
     normalize_addon_sensor_groups,
     power_only_poll,
     redact_connection_secrets,
+    split_addon_secrets,
     update_addon_capabilities,
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# Consecutive DCMI power reading failures (timeouts, transport errors) before the
+# integration stops asking until it is reloaded. A completion-code error (the BMC
+# answering "not supported") disables it immediately.
+_DCMI_MAX_FAILURES = 3
 
 # HTTP statuses that mean "this addon build does not accept POST" → fall back to GET.
 _POST_UNSUPPORTED_STATUSES = frozenset({404, 405, 501})
@@ -91,6 +106,12 @@ class IpmiServer:
         self._password = connection_data.get("password")
         self._kg_key = connection_data.get("kg_key")
         self._privilege_level = connection_data.get("privilege_level")
+        self._native_protocol = connection_data.get(
+            CONF_NATIVE_PROTOCOL, DEFAULT_NATIVE_PROTOCOL
+        )
+        self._native_cipher_suite = connection_data.get(
+            CONF_NATIVE_CIPHER_SUITE, DEFAULT_NATIVE_CIPHER_SUITE
+        )
         self._addon_url = (
             f"{connection_data.get('ipmi_server_host')}:"
             f"{connection_data.get('addon_port')}"
@@ -126,6 +147,10 @@ class IpmiServer:
         # Reused RMCP session (reconnected on error).
         self._rmcp_ipmi: pyipmi.Ipmi | None = None
         self._rmcp_lock = threading.Lock()
+
+        # DCMI power reading on the RMCP path (best effort, see _add_rmcp_dcmi_power).
+        self._dcmi_supported: bool = True
+        self._dcmi_failures = 0
 
     @property
     def name(self) -> str:
@@ -164,20 +189,42 @@ class IpmiServer:
         """Return empty sensor buckets for all dynamic sensor types."""
         return {sensor_type: {} for sensor_type in SENSOR_TYPES}
 
+    def _addon_secret_parts(self) -> tuple[dict[str, str], dict[str, str]]:
+        """Return ``(query_params, headers)`` carrying the password and Kg key.
+
+        Secrets go in ``X-Ipmi-*`` headers so they stay out of access logs (#90).
+        They are only dropped from the query string once the addon has reported
+        ``api_version`` (ipmi-server 2.6+, which reads the headers); older addons
+        and secrets that are not header-safe keep the previous query behavior.
+        """
+        return split_addon_secrets(
+            {
+                "password": (ADDON_PASSWORD_HEADER, self._password),
+                "kg_key": (ADDON_KG_KEY_HEADER, self._kg_key),
+            },
+            headers_supported=self._addon_api_version is not None,
+        )
+
     def _addon_query_params(self, extra: dict[str, Any] | None = None) -> dict[str, Any]:
-        """Build addon request parameters (auth + optional extras)."""
+        """Build addon query parameters (auth + optional extras).
+
+        The password and Kg key are only included here when they cannot be sent
+        as headers to this addon; see ``_addon_secret_parts``.
+        """
+        secret_params, _headers = self._addon_secret_parts()
         params: dict[str, Any] = {
             "host": self._host,
             "port": self._port,
             "user": self._username,
-            "password": self._password,
         }
+        if "password" in secret_params:
+            params["password"] = secret_params["password"]
 
         if self._addon_interface is not None and self._addon_interface != "auto":
             params["interface"] = self._addon_interface
 
-        if self._kg_key:
-            params["kg_key"] = self._kg_key
+        if "kg_key" in secret_params:
+            params["kg_key"] = secret_params["kg_key"]
 
         if self._privilege_level:
             params["privilege_level"] = self._privilege_level
@@ -293,18 +340,21 @@ class IpmiServer:
             return None
 
         params = self._addon_query_params(extra)
+        _secret_params, headers = self._addon_secret_parts()
         url = self._addon_url
         if path is not None:
             url = f"{url}/{path}"
 
         _LOGGER.debug(
-            "Addon request url=%s host=%s port=%s user=%s path=%s post=%s",
+            "Addon request url=%s host=%s port=%s user=%s path=%s post=%s "
+            "secret_headers=%s",
             url,
             self._host,
             self._port,
             self._username,
             path,
             self._addon_use_post,
+            sorted(headers),
         )
 
         try:
@@ -313,6 +363,7 @@ class IpmiServer:
                     http_resp = requests.post(
                         url,
                         json=params,
+                        headers=headers,
                         timeout=(DEFAULT_HTTP_CONNECT_TIMEOUT, DEFAULT_HTTP_TIMEOUT),
                     )
                     if http_resp.status_code not in _POST_UNSUPPORTED_STATUSES:
@@ -334,6 +385,7 @@ class IpmiServer:
             http_resp = requests.get(
                 url,
                 params=params,
+                headers=headers,
                 timeout=(DEFAULT_HTTP_CONNECT_TIMEOUT, DEFAULT_HTTP_TIMEOUT),
             )
             http_resp.raise_for_status()
@@ -491,6 +543,8 @@ class IpmiServer:
                         if category and id_string is not None:
                             json["sensors"][category][id_string] = name
                             json["states"][id_string] = value
+
+                self._add_rmcp_dcmi_power(ipmi, json)
             except Exception:
                 # Drop cached session so the next call reconnects.
                 self._invalidate_rmcp_session_unlocked()
@@ -506,6 +560,50 @@ class IpmiServer:
             return None
 
         return json
+
+    def _add_rmcp_dcmi_power(self, ipmi: pyipmi.Ipmi, json: dict[str, Any]) -> None:
+        """Add DCMI power readings (``dcmi power reading``) to an RMCP poll.
+
+        Some BMCs (e.g. Supermicro X11) only report power through DCMI, not SDR.
+        Best effort: errors are logged at debug level and never fail the poll.
+        Sensors already reported by SDR under the same key are left untouched.
+        Caller holds RMCP lock.
+        """
+        if not self._dcmi_supported or "power" not in self._sensor_types:
+            return
+
+        try:
+            reading = ipmi.get_power_reading(1)
+        except pyipmi.errors.CompletionCodeError as err:
+            self._dcmi_supported = False
+            _LOGGER.debug(
+                "IPMI server %s does not support DCMI power reading (CC=0x%02x); "
+                "not asking again until reload",
+                self._host,
+                err.cc,
+            )
+            return
+        except Exception as err:  # pylint: disable=broad-except
+            self._dcmi_failures += 1
+            if self._dcmi_failures >= _DCMI_MAX_FAILURES:
+                self._dcmi_supported = False
+            _LOGGER.debug(
+                "DCMI power reading for IPMI server %s failed (%d/%d): %s",
+                self._host,
+                self._dcmi_failures,
+                _DCMI_MAX_FAILURES,
+                err,
+            )
+            return
+
+        self._dcmi_failures = 0
+        for category, sensor_id, name, value in dcmi_power_reading_sensors(
+            reading, self._sensor_types
+        ):
+            if sensor_id in json["states"]:
+                continue
+            json["sensors"][category][sensor_id] = name
+            json["states"][sensor_id] = value
 
     def run_rmcp_command(self, command: int) -> None:
         """Send a chassis control command over RMCP.
@@ -566,8 +664,11 @@ class IpmiServer:
         if self._rmcp_ipmi is not None:
             return self._rmcp_ipmi
 
+        interface_name, interface_kwargs = native_interface_args(
+            self._native_protocol, self._native_cipher_suite, self._kg_key
+        )
         interface = pyipmi.interfaces.create_interface(
-            "rmcp", slave_address=0x81, host_target_address=0x20, keep_alive_interval=0
+            interface_name, **interface_kwargs
         )
         ipmi = pyipmi.create_connection(interface)
         ipmi.session.set_session_type_rmcp(self._host, int(self._port))
@@ -575,12 +676,12 @@ class IpmiServer:
             self._username or "", self._password or ""
         )
 
-        # Note: python-ipmi library does not support Kg keys - only ipmi-server addon supports this
-        if self._kg_key:
+        # Kg keys are only used by RMCP+ (IPMI 2.0); IPMI 1.5 has no Kg.
+        if self._kg_key and interface_name != NATIVE_PROTOCOL_RMCPPLUS:
             _LOGGER.warning(
-                "Kg key specified but python-ipmi library does not support Kg key "
-                "authentication. Kg key will be ignored. Consider using the "
-                "ipmi-server addon for full feature support."
+                "Kg key specified but the python-ipmi connection uses IPMI 1.5, "
+                "which does not support Kg keys. Kg key will be ignored. Select "
+                "IPMI 2.0 (RMCP+) as the IPMI protocol or use the ipmi-server addon."
             )
 
         if self._privilege_level:
